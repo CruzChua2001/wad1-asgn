@@ -1,0 +1,16 @@
+<nav>
+    <ul 
+        style="list-style: none; padding: 0; margin: 0; display: flex; gap: 0.8rem; justify-content: flex-end;"
+    >
+        <li><a href="">Home</a></li>
+        <li><a href="">Events</a></li>
+        <li><a href="">My Bookings</a></li>
+        <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+            <li><a href="">Manage Events</a></li>
+            <li><a href="">Manage Users</a></li>
+        <% } %>
+        <li><a href="">Contact Us</a></li>
+        <li><a href="">Profile</a></li>
+        <li><a href="">Sign out</a></li>
+    </ul>
+</nav>

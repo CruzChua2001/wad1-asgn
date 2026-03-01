@@ -15,7 +15,10 @@ server.get("/health", (req, res) => {
 
 // Insert code below -------------------------
 
-const userRouter = require("./routes/userRouter")
+const auth = require("./auth/auth");
+
+const authRouter = require("./routes/authRouter");
+const userRouter = require("./routes/authRouter");
 const eventRouter = require("./routes/eventRouter");
 const reserveRouter = require("./routes/reserveRouter");
 const configurationRouter = require("./routes/configurationRouter");
@@ -26,6 +29,12 @@ server.use("/event", eventRouter)                       // Claudine
 server.use("/reserve", reserveRouter);                  // Zhi Yang
 server.use("/configuration", configurationRouter);      // Mahshuk
 server.use("/feedback", feedbackRouter);                // Keifer
+
+server.get("/home", auth.requireAuth, (req, res) => {
+    return res.render("home");
+})
+
+server.use("/", authRouter);
 
 // Insert code above -------------------------
 
