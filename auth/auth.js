@@ -23,6 +23,9 @@ const requireAdmin = (req, res, next) => {
     // check if user role is admin
 
     // res.redirect("/home");
+    if (!isAdmin(req)) {
+        return res.redirect("/home");
+    }
     
     next();
 }
