@@ -1,16 +1,82 @@
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        background-color: #f0f0f0;
+    }
+    .nav-bar {
+        padding: 5px 10px;
+        list-style: none; 
+        display: flex; 
+        gap: 0.8rem; 
+        justify-content: flex-end;
+    }
+    .dropdown {
+        position: relative;
+    }
+    .nav-menu {
+        text-decoration: none;
+        color: #333;
+    }
+    .nav-menu:hover {
+        text-decoration: underline;
+    }
+    .dropdown > a {
+        color: inherit;
+        border-radius: 4px 4px 0 0;
+    }
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        left: 0;
+        top: 100%;
+        min-width: 140px;
+        z-index: 10;
+        background-color: white;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 0 2px 8px rgba(28, 28, 28, 0.08);
+    }
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+    .dropdown-menu a {
+        display: block;
+        padding: 10px;
+        color: inherit;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .dropdown-menu a:hover {
+        background: #f0f0f0;
+    }
+</style>
+
 <nav>
     <ul 
-        style="list-style: none; padding: 0; margin: 0; display: flex; gap: 0.8rem; justify-content: flex-end;"
+        class="nav-bar"
     >
-        <li><a href="/home">Home</a></li>
-        <li><a href="">Events</a></li>
-        <li><a href="">My Bookings</a></li>
+        <li><a href="/home" class="nav-menu">Home</a></li>
+
+        <li class="dropdown">
+            <a href="#" class="nav-menu">Events ▼</a>
+            <div class="dropdown-menu">
+                <a href="">Upcoming Events</a>
+                <a href="">My Bookings</a>
+                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                    <a href="" class="nav-menu">Manage Events</a>
+                <% } %>
+            </div>
+        </li>
+
         <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
-            <li><a href="">Manage Events</a></li>
-            <li><a href="">Manage Users</a></li>
+            <li><a href="" class="nav-menu">Manage Users</a></li>
         <% } %>
-        <li><a href="">Contact Us</a></li>
-        <li><a href="">Profile</a></li>
-        <li><a href="">Sign out</a></li>
+
+        <li><a href="" class="nav-menu">Contact Us</a></li>
+
+        <li><a href="" class="nav-menu">Profile</a></li>
+        
+        <li><a href="" class="nav-menu">Sign out</a></li>
     </ul>
 </nav>
+
