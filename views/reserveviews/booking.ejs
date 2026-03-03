@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+    <h1>Reserve a slot for: <%= event.name %> <%= event.date %></h1>
+    <p>Capacity: <%= event.capacity %></p>
+    <p>Currently Booked: <%= event.booked %></p>
+
+    <% if (event.booked >= event.capacity) { %>
+        <p style="color: red;"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</p>
+    <% } %>
+
+    <form action="/reserve/<%= event.id %>" method="POST">
+        <label for="numofppl">Number of people attending:</label>
+        <input 
+            type="number" 
+            id="numofppl" 
+            name="numofppl" 
+            min="1" 
+            max="<%= event.capacity - event.booked %>" 
+            value="1"
+            required
+        >
+        <button type="submit">Confirm Reservation</button>
+    </form>
+    
+    <br>
+    <a href="/reserve/reservation">Back to My Reservations</a>
+</body>
+</html>

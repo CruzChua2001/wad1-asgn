@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+     <% if (userReservationsDb) { %>
+     <h1>Welcome <%= userReservationsDb.userId %></h1>
+    <% } %>
+
+  <table border="1">
+    <tr>
+        <th>Event</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+        <th>Cancel</th>
+    </tr>
+    
+       <% for (signedupevent of userReservationsDb){  %> 
+        <% for (event of eventsDb){  %> 
+            <% if (signedupevent.eventId == event.id) { %>
+                <% let date = event.date %>
+                <% date = date.split(" ") %>
+                <tr>
+                    <td><a><%=event.name%></a></td>
+                    <td><a><%=date[0]%></a></td>
+                    <td><a><%=date[1]%></a></td>
+                    <td><%= signedupevent.status %></td>
+                    <td><form action="/reserve/<%= event.id %>?_method=DELETE" method="POST" style="display:inline;">
+                    <button type="submit">Cancel Reservation</button>
+                </form></td>
+                </tr>
+            <% } %>
+      <% }; %>
+     <% }; %>
+    
+</body>
+</html>
