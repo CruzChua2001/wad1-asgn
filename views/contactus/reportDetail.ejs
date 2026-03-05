@@ -20,13 +20,29 @@
         <br>
         <span>Submitted On: <%= report.CreatedAt.toLocaleString() %></span>
         <br><br>
-        <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReport('<%= report.ReportId %>')">Delete Report</span>
+        <% if (currentUserId === report.UserId) { %>
+            <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReport('<%= report.ReportId %>')">Delete Report</span>
+        <% } %>
+        <% if (isAdmin && report.Status !== "Not Applicable") { %>
+            <h3>Update Report Status</h3>
+            <form action="/contactus/<%= report.ReportId %>/status" method="POST">
+                <select name="status" required>
+                    <option value="">Select Status</option>
+                    <option value="Pending" <%= report.Status === "Pending" ? "selected" : "" %>>Pending</option>
+                    <option value="In-Progress" <%= report.Status === "In-Progress" ? "selected" : "" %>>In-Progress</option>
+                    <option value="Solved" <%= report.Status === "Solved" ? "selected" : "" %>>Solved</option>
+                </select>
+                <button type="submit">Update Status</button>
+            </form>
+        <% } %>
     </div>
     <br><hr><br>
 
     <div>
         <b>Comment / Feedback:</b>
-        <span style="text-decoration: underline; cursor: pointer; color: darkblue;" onclick="displayEdit()">Edit</span>
+        <% if (currentUserId === report.UserId) { %>
+            <span style="text-decoration: underline; cursor: pointer; color: darkblue;" onclick="displayEdit()">Edit</span>
+        <% } %>
         <p><%= report.Report %></p>
         <textarea id="reportContent" style="display:none;" cols="80" rows="4"><%= report.Report %></textarea>
         <button id="cancelBtn" onclick="cancelEdit()" style="display:none;" >Cancel</button>
@@ -61,7 +77,7 @@
         <% } else { %>
             <p>No reply from admin yet.</p>
         <% } %>
-
+            
         <h3>Submit a Reply</h3>
         <form action="/contactus/<%= report.ReportId %>/reply" method="POST">
             <textarea name="message" rows="4" cols="50" required></textarea><br><br>

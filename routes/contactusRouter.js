@@ -4,7 +4,7 @@ const router = express.Router();
 const path = require("path");
 
 const { formatDateTime } = require("../utils/dateUtils");
-const { requireAuth } = require("../auth/auth");
+const { requireAuth, requireAdmin } = require("../auth/auth");
 const { generateUUID } = require("../utils/uuidUtils");
 
 const REPORTTYPES = ["General Inquiry", "Feedback", "Report a Problem"];
@@ -116,10 +116,22 @@ const mockReports = [
     }
 ];  
 
+router.get("/history", requireAuth, requireAdmin, (req, res) => {
+    // TODO: Retrieve all reports from the database
+
+    res.render("contactus/history", {
+        reports: mockReports
+    });
+});
+
 router.get("/", requireAuth, (req, res) => {
     // TODO: Retrieve the reports necessary from the database
     // Retreive all reports where UserId matches logged in User
     // Retrieve reports that isDeleted is not 1 (true)
+
+    if (req.user.role === "admin") {
+        return res.redirect("/contactus/history");
+    }
 
     const currUserId = req.user.userId;
     // For now, we will just return all mock reports
@@ -179,7 +191,8 @@ router.get("/:id", requireAuth, (req, res) => {
     res.render("contactus/reportDetail", {
         report: report,
         username,
-        currentUserId: req.user.userId
+        currentUserId: req.user.userId,
+        isAdmin: res.locals.isAdmin
     });
 });
 
@@ -215,6 +228,21 @@ router.delete("/:id", requireAuth, (req, res) => {
         return res.status(404).json({ message: "Report not found." });
     }
     res.status(200).json({ message: "Report deleted successfully." });
+});
+
+router.post("/:id/status", requireAuth, requireAdmin, (req, res) => {
+    const reportId = req.params.id;
+    const { status: updatedStatus } = req.body;
+
+    const report = mockReports.find(r => r.ReportId === reportId);
+
+    if (!report) {
+        return res.status(404).json({ message: "Report not found." });
+    }
+
+    report.Status = updatedStatus;
+
+    res.redirect(`/contactus/${reportId}`);
 });
 
 router.post("/:id/reply", requireAuth, (req, res) => {
