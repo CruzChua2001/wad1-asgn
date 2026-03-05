@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        input {
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <%- include("../partials/navbar.ejs") %>
+    <h1>Contact Us</h1>
+    <p>Questions, bug reports, or feedback? We're here for it all!</p>
+    <p>Fill out the form below to get in touch with us:</p>
+
+    <div>
+        <% if (submitted) { %>
+         <h3>Thank you for contacting us!</h3>
+         <p>We'll get back to you within 2 to 3 business days.</p>
+         <p>Click <a href="/contactus">here</a> to submit another report.</p>
+        <% } else { %>
+        <form action="/contactus" method="POST">
+            <label for="category">Category*:</label><br>
+            <select name="category" id="category" required>
+                <% reportTypes.forEach(type => { %>
+                    <option value="<%= type %>"><%= type %></option>
+                <% }) %>
+            </select><br><br>
+
+            <label for="report">Message*:</label><br>
+            <textarea id="report" name="report" rows="5" cols="50" required></textarea><br><br>
+
+            <button type="submit">Submit</button>
+        </form>
+        <% } %>
+
+        <% if (!submitted) { %>
+            <h2>Report Histories</h2>
+            <% if (reports.length === 0) { %>
+                <p>No reports submitted yet.</p>
+            <% } else { %>
+                <div style="border:1px solid grey; width: fit-content; padding: 4px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Report</th>
+                                <th>Submitted On</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% reports.forEach(report => { %>
+                                <tr>
+                                    <td style="padding: 4px;"><%= report.Category %></td>
+                                    <td style="padding: 4px;"><%= report.Report %></td>
+                                    <td style="padding: 4px;"><%= report.CreatedAt.toLocaleString() %></td>
+                                    <td style="padding: 4px;"><%= report.Status === "Not Applicable" ? "" : report.Status %></td>
+                                    <td style="padding: 4px;">
+                                        <a href="/contactus/<%= report.ReportId %>">View</a>
+                                        <button class="delete-btn" data-id="<%= report.id %>" style="margin-left: 4px; border: 0; background: none; font-size: 14px; text-decoration: underline; color: red; cursor: pointer;">Delete</button>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        <% } %>
+    </div>
+</body>
+</html>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const reportId = this.getAttribute('data-id');
+            if (confirm('Are you sure you want to delete this report?')) {
+                fetch(`/contactus/${reportId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Report deleted successfully.');
+                        window.location.replace("/contactus");
+                    } else {
+                        alert('Failed to delete the report.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the report.');
+                });
+            }
+        });
+    });
+});
+</script>
