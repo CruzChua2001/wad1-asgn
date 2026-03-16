@@ -56,5 +56,5 @@ const commentSchema = new mongoose.Schema({
 const Comment = mongoose.model("Comment", commentSchema, "comment");
 
 exports.retrieveCommentByEventId = (eventId) => {
-    return Comment.find({ EventId: eventId });
+    return Comment.find({ EventId: eventId, isDeleted: 0 });
 }

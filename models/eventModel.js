@@ -58,5 +58,5 @@ const eventSchema = new mongoose.Schema({
 const Event = mongoose.model('Event', eventSchema, 'event');
 
 exports.retrieveAll = () => {
-    return Event.find();
+    return Event.find({ isDeleted: 0 });
 }

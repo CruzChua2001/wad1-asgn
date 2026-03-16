@@ -43,5 +43,5 @@ const reservationSchema = new mongoose.Schema({
 const Reservation = mongoose.model("Reservation", reservationSchema, "reservation");
 
 exports.retrieveAll = () => {
-    return Reservation.find();
+    return Reservation.find({ isDeleted: 0 });
 }

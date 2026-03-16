@@ -30,5 +30,5 @@ const categorySchema = new mongoose.Schema({
 const Category = mongoose.model("Category", categorySchema, "category");
 
 exports.retrieveAll = () => {
-    return Category.find();
+    return Category.find({ isDeleted: 0 });
 }

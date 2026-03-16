@@ -39,5 +39,5 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema, "user");
 
 exports.retrieveAll = () => {
-    return User.find();
+    return User.find({ isDeleted: 0 });
 }
