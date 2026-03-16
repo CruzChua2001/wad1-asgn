@@ -1,9 +1,14 @@
 const express = require("express");
-const server = express();
 const path = require("path");
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+
+const server = express();
 
 const HOSTNAME = "localhost";
 const PORT = 8000;
+
+dotenv.config({ path: './config.env' });
 
 server.set("view engine", "ejs");
 server.use(express.urlencoded({ extended: true }));
@@ -40,6 +45,22 @@ server.use("/", authRouter);
 
 // Insert code above -------------------------
 
-server.listen(PORT, HOSTNAME, () => {
-    console.log(`Hello! Server is currently running on http://${HOSTNAME}:${PORT}`);
-})
+const connectDB = async () => {
+    await mongoose.connect(process.env.DB);
+    try {
+        // connecting to Database with our config.env file and DB is constant in config.env
+        await mongoose.connect(process.env.DB);
+        console.log("MongoDB connected successfully");
+      } catch (error) {
+        console.error("MongoDB connection failed:", error.message);
+        process.exit(1); 
+      }
+}
+
+const startServer = () => {
+    server.listen(PORT, HOSTNAME, () => {
+        console.log(`Hello! Server is currently running on http://${HOSTNAME}:${PORT}`);
+    })
+}
+
+connectDB().then(startServer);
