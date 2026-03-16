@@ -12,7 +12,7 @@ const requireAuth = (req, res, next) => {
     // return res.redirect("/index.html");
     
     // mock user
-    req.user = { userId: "aoisjdoiq", email: "testuser", role: "admin" };
+    req.user = { userId: "aoisjdoiq", email: "testuser", role: "student" };
 
     // set 
     res.locals.isAdmin = isAdmin(req);
