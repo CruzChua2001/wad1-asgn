@@ -20,12 +20,12 @@
         <br>
         <span>Submitted On: <%= report.CreatedAt.toLocaleString() %></span>
         <br><br>
-        <% if (currentUserId === report.UserId) { %>
-            <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReport('<%= report.ReportId %>')">Delete Report</span>
+        <% if (currentUserId === report.UserID) { %>
+            <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</span>
         <% } %>
         <% if (isAdmin && report.Status !== "Not Applicable") { %>
             <h3>Update Report Status</h3>
-            <form action="/contactus/<%= report.ReportId %>/status" method="POST">
+            <form action="/contactus/<%= report.ReportID %>/status" method="POST">
                 <select name="status" required>
                     <option value="">Select Status</option>
                     <option value="Pending" <%= report.Status === "Pending" ? "selected" : "" %>>Pending</option>
@@ -40,13 +40,13 @@
 
     <div>
         <b>Comment / Feedback:</b>
-        <% if (currentUserId === report.UserId) { %>
+        <% if (currentUserId === report.UserID) { %>
             <span style="text-decoration: underline; cursor: pointer; color: darkblue;" onclick="displayEdit()">Edit</span>
         <% } %>
         <p><%= report.Report %></p>
         <textarea id="reportContent" style="display:none;" cols="80" rows="4"><%= report.Report %></textarea>
         <button id="cancelBtn" onclick="cancelEdit()" style="display:none;" >Cancel</button>
-        <button id="saveBtn" style="display:none;" onclick="saveReport('<%= report.ReportId %>')">Save</button>
+        <button id="saveBtn" style="display:none;" onclick="saveReport('<%= report.ReportID %>')">Save</button>
     </div>
 
     <br><hr><br>
@@ -57,19 +57,19 @@
             <% report.Reply.forEach(reply => { %>
                 <div style="border: 1px solid gray; padding: 5px; margin-bottom: 5px; display: flex; justify-content: space-between;">
                     <section>
-                        <b><%= reply.UserId %></b> <br>
+                        <b><%= reply.UserID %></b> <br>
                         <%= reply.CreatedAt.toLocaleString() %>
                         <p><%= reply.Message %></p>
 
                         <!-- Editable reply -->
-                        <textarea id="replyContent-<%= reply.ReplyId %>" style="display:none;" cols="80" rows="4"><%= reply.Message %></textarea>
-                        <button id="cancelReplyBtn-<%= reply.ReplyId %>" onclick="cancelEditReply('<%= reply.ReplyId %>')" style="display:none;" >Cancel</button>
-                        <button id="saveReplyBtn-<%= reply.ReplyId %>" style="display:none;" onclick="saveReply('<%= report.ReportId %>', '<%= reply.ReplyId %>')">Save</button>
+                        <textarea id="replyContent-<%= reply.ReplyID %>" style="display:none;" cols="80" rows="4"><%= reply.Message %></textarea>
+                        <button id="cancelReplyBtn-<%= reply.ReplyID %>" onclick="cancelEditReply('<%= reply.ReplyID %>')" style="display:none;" >Cancel</button>
+                        <button id="saveReplyBtn-<%= reply.ReplyID %>" style="display:none;" onclick="saveReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')">Save</button>
                     </section>
                     <section>
-                        <% if (reply.UserId === currentUserId) { %>
-                            <span style="color:darkblue; text-decoration: underline; cursor: pointer;" onclick="displayEditReply('<%= reply.ReplyId %>')">Edit</span>
-                            <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReply('<%= report.ReportId %>', '<%= reply.ReplyId %>')">Delete</span>
+                        <% if (reply.UserID === currentUserId) { %>
+                            <span style="color:darkblue; text-decoration: underline; cursor: pointer;" onclick="displayEditReply('<%= reply.ReplyID %>')">Edit</span>
+                            <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')">Delete</span>
                         <% } %>
                     </section>
                 </div>
@@ -79,7 +79,7 @@
         <% } %>
             
         <h3>Submit a Reply</h3>
-        <form action="/contactus/<%= report.ReportId %>/reply" method="POST">
+        <form action="/contactus/<%= report.ReportID %>/reply" method="POST">
             <textarea name="message" rows="4" cols="50" required></textarea><br><br>
             <button type="submit">Submit Reply</button>
         </form>
@@ -123,7 +123,7 @@
     const saveReport = (reportId) => {
         const updatedContent = document.getElementById("reportContent").value;
         fetch(`/contactus/${reportId}`, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },

@@ -1,6 +1,8 @@
 const { formatDateTime } = require("../utils/dateUtils");
 const { generateUUID } = require("../utils/uuidUtils");
 
+const reportModel = require("../models/reportModel");
+
 // TODO: To be removed
 // Report Column Structure:
 // ReportId (uuid, primary key) - Format (GE-2024-0001, FE-2024-0002, RP-2024-0003, etc. where prefix indicates category and number is auto-incremented)
@@ -116,7 +118,7 @@ exports.getReportHistory = (req, res) => {
     });
 }
 
-exports.getContactUs = (req, res) => {
+exports.getContactUs = async (req, res) => {
     // TODO: Retrieve the reports necessary from the database
     // Retreive all reports where UserId matches logged in User
     // Retrieve reports that isDeleted is not 1 (true)
@@ -127,17 +129,33 @@ exports.getContactUs = (req, res) => {
 
     const currUserId = req.user.userId;
     // For now, we will just return all mock reports
-    const userReports = mockReports.filter(report => report.UserId === currUserId && !report.isDeleted);
+    // const userReports = mockReports.filter(report => report.UserId === currUserId && !report.isDeleted);
+    try {
+        const userReports = await reportModel.retrieveReportByUserId(currUserId);
 
-    res.render("contactus/contactus", {
-        submitted: false,
-        reportTypes: REPORTTYPES,
-        reports: userReports
-    });
+        res.render("contactus/contactus", {
+            submitted: false,
+            reportTypes: REPORTTYPES,
+            reports: userReports
+        });
+    } catch (error) {
+        console.error("Error retrieving user reports:", error);
+        res.redirect("/home");
+    }
 }
 
-exports.addReport = (req, res) => {
+exports.addReport = async (req, res) => {
     const { category, report } = req.body;
+
+    if (!category || !report) {
+        let htmlResponse = `
+        <h2>Failed to submit report</h2>
+        <p>Please ensure all required fields are filled out.</p>
+        <a href="/contactus">Back to Contact Us</a>
+        `
+
+        return res.send(htmlResponse);
+    }
 
     const generateCaseNo = () => {
         const prefix = category.substring(0, 2).toUpperCase();
@@ -146,8 +164,8 @@ exports.addReport = (req, res) => {
     }
     
     const newReport = {
-        ReportId: generateUUID(),
-        UserId: req.user.userId,
+        ReportID: generateUUID(),
+        UserID: req.user.userId,
         CaseNo: generateCaseNo(),
         Category: category,
         Report: report,
@@ -157,68 +175,89 @@ exports.addReport = (req, res) => {
         isDeleted: 0
     };
 
-    // TODO: To be replaced with actual database insertion logic
-    mockReports.push(newReport);
+    try {
+        let response = await reportModel.createReport(newReport);
 
-    res.render("contactus/contactus", {
-        submitted: true,
-        reportTypes: REPORTTYPES,
-        reports: mockReports
-    });
+        if (response) {
+            return res.render("contactus/contactus", {
+                submitted: true,
+                reportTypes: REPORTTYPES,
+                reports: mockReports
+            });
+        }
+    } catch (error) {
+        console.error("Error adding new report:", error);
+
+        let htmlResponse = `
+        <h2>Failed to submit report</h2>
+        <p>There was an error while submitting your report. Please try again later.</p>
+        <a href="/contactus">Back to Contact Us</a>
+        `
+
+        return res.send(htmlResponse);
+    }
 }
 
-exports.getReportById = (req, res) => {
+exports.getReportById = async (req, res) => {
     const reportId = req.params.id;
 
-    // TODO: Implement logic to retrieve the specific report from the database using the reportId
-    const report = mockReports.find(r => r.ReportId === reportId);
+    try {
+        const report = await reportModel.retrieveReportByReportId(reportId);
 
-    const username = "Cruz Chua"; // TODO: Replace with actual username retrieval logic based on report.UserId
+        if (!report) {
+            return res.status(404).json({ message: "Report not found." });
+        }
 
-    if (!report) {
-        return res.status(404).json({ message: "Report not found." });
+        const username = "Cruz Chua"; // TODO: Replace with actual username retrieval logic based on report.UserId
+
+        res.render("contactus/reportDetail", {
+            report: report,
+            username,
+            currentUserId: req.user.userId,
+            isAdmin: res.locals.isAdmin
+        });
+    } catch (error) {
+        console.error("contactusController.getReportById: Error retrieving report by ID:", error);
+        return res.redirect("/contactus");
     }
-
-    res.render("contactus/reportDetail", {
-        report: report,
-        username,
-        currentUserId: req.user.userId,
-        isAdmin: res.locals.isAdmin
-    });
 }
 
-exports.updateReportById = (req, res) => {
+exports.updateReportById = async (req, res) => {
     const reportId = req.params.id;
     const { report: updatedReport } = req.body;
 
-    // TODO: Implement logic to update the specific report in the database using the reportId and updatedReport data
-    const report = mockReports.find(r => r.ReportId === reportId);
+    console.log("Received updateReportById request with reportId:", reportId, "and updatedReport:", updatedReport);
 
-    if (!report) {
-        return res.status(404).json({ message: "Report not found." });
+    try {
+        let response = await reportModel.updateReportByReportId(reportId, updatedReport);
+
+        if (!response) {
+            return res.status(404).json({ message: "Report not found." });
+        } else {
+            return res.status(200).json({ message: "Report updated successfully." });
+        }
+    } catch (error) {
+        console.error("contactusController.updateReportById: Error updating report:", error);
+        return res.status(500).json({ message: "An error occurred while updating the report." });
     }
-
-    report.Report = updatedReport;
-
-    res.status(200).json({ message: "Report updated successfully." });
 }
 
-exports.deleteReportById = (req, res) => {
+exports.deleteReportById = async (req, res) => {
     const reportId = req.params.id;
 
     // TODO: Implement report deletion logic from the database
-    let found = false;
-    mockReports.forEach(report => {
-        if (report.ReportId === reportId) {
-            report.isDeleted = 1; // Mark the report as deleted
-            found = true;
-        }
-    });
+    try {
+        let response = await reportModel.deleteReportByReportId(reportId);
 
-    if (!found) {
-        return res.status(404).json({ message: "Report not found." });
+        if (!response) {
+            return res.status(404).json({ message: "Report not found." });
+        } else {
+            return res.status(200).json({ message: "Report deleted successfully." });
+        }
+    } catch (error) {
+        console.error("contactusController.deletereportById: Error deleting report:", error);
+        return res.status(500).json({ message: "An error occurred while deleting the report." });
     }
-    res.status(200).json({ message: "Report deleted successfully." });
 }
 
 exports.updateStatusById = (req, res) => {
@@ -236,68 +275,62 @@ exports.updateStatusById = (req, res) => {
     res.redirect(`/contactus/${reportId}`);
 }
 
-exports.addReplyById = (req, res) => {
+exports.addReplyById = async (req, res) => {
     const reportId = req.params.id;
         const { message } = req.body;
     
         // TODO: Implement reply submission logic to the database
-        const report = mockReports.find(r => r.ReportId === reportId);
-    
-        if (!report) {
-            return res.status(404).json({ message: "Report not found." });
+        try {
+            let response = await reportModel.addReplyByReportId(reportId, {
+                ReplyID: generateUUID(),
+                UserID: req.user.userId,
+                Message: message,
+                CreatedAt: formatDateTime(new Date().toISOString())
+            });
+            if (!response) {                
+                return res.status(404).json({ message: "Report not found." });
+            } else {
+                return res.redirect(`/contactus/${reportId}`);
+            }
+        } catch (error) {
+            console.error("contactusController.addReplyById: Error adding reply:", error);
+            return res.status(500).json({ message: "An error occurred while adding the reply." });
         }
-    
-        const newReply = {
-            ReplyId: generateUUID(),
-            UserId: req.user.userId,
-            Message: message,
-            CreatedAt: formatDateTime(new Date().toISOString())
-        };
-    
-        report.Reply.push(newReply);
-    
-        res.redirect(`/contactus/${reportId}`);
 }
 
-exports.updateReplyById = (req, res) => {
+exports.updateReplyById = async (req, res) => {
     const reportId = req.params.id;
     const replyId = req.params.replyId;
     const { message: updatedMessage } = req.body;
 
-    const report = mockReports.find(r => r.ReportId === reportId);
-    
-    if (!report) {
-        return res.status(404).json({ message: "Report not found." });
+    try {
+        let response = await reportModel.updateReplyByReplyId(reportId, replyId, updatedMessage);
+        if (!response) {
+            return res.status(404).json({ message: "Report or reply not found." });
+        } else {
+            return res.status(200).json({ message: "Reply updated successfully." });
+        }
+    } catch (error) {
+        console.error("contactusController.updateReplyById: Error updating reply:", error);
+        return res.status(500).json({ message: "An error occurred while updating the reply." });
     }
-    
-    const reply = report.Reply.find(r => r.ReplyId === replyId);    
-
-    if (!reply) {
-        return res.status(404).json({ message: "Reply not found." });
-    }
-
-    reply.Message = updatedMessage;
-
-    res.status(200).json({ message: "Reply updated successfully." });
 }
 
-exports.deleteReplyById = (req, res) => {
+exports.deleteReplyById = async (req, res) => {
     const reportId = req.params.id;
     const replyId = req.params.replyId;
 
-    const report = mockReports.find(r => r.ReportId === reportId);
-    
-    if (!report) {
-        return res.status(404).json({ message: "Report not found." });
+    try {
+        let response = await reportModel.deleteReplyByReplyId(reportId, replyId); 
+        if (!response) {
+            return res.status(404).json({ message: "Report or reply not found." });
+        } else {
+            return res.status(200).json({ message: "Reply deleted successfully." });
+        }
+    } catch (error) {
+        console.error("contactusController.deleteReplyById: Error deleting reply:", error);
+        return res.status(500).json({ message: "An error occurred while deleting the reply." });
     }
 
-    const replyIndex = report.Reply.findIndex(r => r.ReplyId === replyId);
-    
-    if (replyIndex === -1) {
-        return res.status(404).json({ message: "Reply not found." });
-    }
 
-    report.Reply.splice(replyIndex, 1);
-
-    res.status(200).json({ message: "Reply deleted successfully." });
 }
