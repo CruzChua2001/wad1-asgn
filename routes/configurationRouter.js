@@ -69,46 +69,89 @@ let categoryList = [
     "createdAt": "2026-01-27T09:05:11Z"
   }
 ];
+let reservationsToApprove = [1,4,7]
+
+let reservationHistory = [5,7,8]
+//BASIC ADMIN INTERFACE
 router.get("/", (req, res) => {
     const adminOptions=
-    `<ul>
-        <li><a href="./configuration/category" style="color: green;">Manage Event Categories</a></li>
-        <li><a href="" style="color: green;">Approve Reservations</a></li>
+   ` <h2>Welcome to Admin Page</h2>
+    <ul>
+        <li><a href="./configuration/category" style="color: blue;">Manage Event Categories</a></li>
+        <li><a href="./configuration/reservationList" style="color: green;">Manage Reservations</a></li>
     <ul>`
     res.send(adminOptions)
 })
 
 module.exports = router;  
 
+
+//CATEGORY ROUTES
 router.get("/category",(req,res)=>{
     let isRegister = false;
     let missingName = false;
+    let isDuplicateCategory = false;
     res.render("configuration/category.ejs",{categoryList,isRegister})
 })
 
 router.get("/category/register",(req,res)=>{
     let isRegister = true;
     let missingName = false;
+    let isDuplicateCategory = false;
 
-    res.render("configuration/category.ejs",{categoryList,isRegister,missingName})
+    res.render("configuration/category.ejs",{categoryList,isRegister,missingName,isDuplicateCategory})
+});
+router.post("/categoryDetail",(req,res)=>{
+  const categoryId = req.body.categoryId;
+  let categoryData = {
+    categoryId,
+    events:[
+      "event A","event B", "event C"
+    ]
+  }
+  res.render("configuration/categoryDetail.ejs",{categoryData})
 });
 router.post("/category/register",(req,res)=>{
   let newCategoryName = req.body.categoryName;
+  let isDuplicateCategory = false;
   if (newCategoryName !== ""){
-    categoryList.push({
+      categoryList.forEach(c => {
+      if (newCategoryName.trim().toLowerCase() === String(c.CategoryName).trim().toLowerCase()){
+          isDuplicateCategory=true;
+          res.render("configuration/category.ejs",{categoryList,isRegister:true,missingName:false,isDuplicateCategory})
+        }
+      });
+    if(!isDuplicateCategory){
+          categoryList.push({
       CategoryID:crypto.randomUUID().substring(0,8),
       CategoryName:newCategoryName,
       isDeleted:false,
       createdAt:new Date()
     })
     res.redirect("../category")
+
+    }
   }else{
       let isRegister = true;
       let missingName = true;
-
-      res.render("configuration/category.ejs",{categoryList,isRegister,missingName})
+     
+      res.render("configuration/category.ejs",{categoryList,isRegister,missingName,isDuplicateCategory})
 
   }
 });
 
 
+//RESERVATION ROUTES
+router.get("/reservationList",(req,res)=>{
+  res.render("configuration/reservationList")
+});
+router.get("/pending",(req,res)=>{
+  res.render("configuration/pending",{reservationsToApprove})
+});
+router.post("/handle",(req,res)=>{
+  res.send("Done!")
+});
+
+router.get("/approvalHistory",(req,res)=>{
+  res.render("configuration/approvalHistory",{reservationHistory})
+})
