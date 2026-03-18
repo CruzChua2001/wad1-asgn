@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Detail</title>
+</head>
+<body>
+    <h2>Category Detail</h2>
+    <% if (categoryData.events.length >=1) { %>
+            <table border="1">
+        <tr>
+            <th>Event Name</th>
+        </tr>
+          <% (categoryData.events).forEach(e => { %>
+        <tr>
+            <td><%= e %></td>
+        </tr>
+    <% }) %>
+    </table>
+    <% } else if ((categoryData.events).length ==0) { %>
+        <p style="color: red;">No Events running in this category.</p>
+    <% } %>
+
+    <a href="./category">Back to Category Dashboard</a>
+</body>
+</html>
