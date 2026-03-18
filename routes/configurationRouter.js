@@ -9,7 +9,7 @@ let categoryList = [
     "CategoryName": "Lectures",
     "Approval": "ALL",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2025-11-14T08:32:15Z"
   },
   {
@@ -17,7 +17,7 @@ let categoryList = [
     "CategoryName": "Seminars & Workshops",
     "Approval": "adm7c2f1",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2025-12-02T14:10:47Z"
   },
   {
@@ -25,7 +25,7 @@ let categoryList = [
     "CategoryName": "Competitions",
     "Approval": "ALL",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2026-01-08T03:45:29Z"
   },
   {
@@ -33,7 +33,7 @@ let categoryList = [
     "CategoryName": "Student Group Activities",
     "Approval": "adm4b9e2",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2025-10-21T17:22:03Z"
   },
   {
@@ -41,7 +41,7 @@ let categoryList = [
     "CategoryName": "Webinar & Online Learning",
     "Approval": "ALL",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2026-02-11T11:59:54Z"
   },
   {
@@ -49,7 +49,7 @@ let categoryList = [
     "CategoryName": "Conferences & Symposiums",
     "Approval": "adm1e8c3",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2025-09-30T06:14:38Z"
   },
   {
@@ -57,7 +57,7 @@ let categoryList = [
     "CategoryName": "Performances",
     "Approval": "ALL",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2025-12-19T19:41:22Z"
   },
   {
@@ -65,7 +65,7 @@ let categoryList = [
     "CategoryName": "Talks & Forums",
     "Approval": "adm9d4f6",
     "RejectionReason": null,
-    "isDeleted": false,
+    "isDeleted": 0,
     "createdAt": "2026-01-27T09:05:11Z"
   }
 ];
