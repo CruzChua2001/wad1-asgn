@@ -67,9 +67,7 @@ exports.createReservation = async (req, res) => {
 		// Check capacity
 		const reservationCount = await Reservation.countByEvent(eventId);
 		let status = 'pending';
-		if (reservationCount + numOfPpl > event.MaxCapacity) {
-			status = 'waitlist';
-		}
+
 		// Create reservation
 		const reservationData = {
 			ReservationID: generateUUID(),
@@ -86,7 +84,7 @@ exports.createReservation = async (req, res) => {
 		// Optionally update event booked count if confirmed
 		if (status === 'confirmed') {
 			event.CurrentCapacity += numOfPpl;
-			await event.save();
+			await event.updateCapacityById(event.EventID, event.CurrentCapacity);
 		}
 		res.redirect('/reserve/reservation');
 	} catch (error) {
@@ -134,11 +132,11 @@ exports.updateReservation = async (req, res) => {
 		}
 		// Update reservation
 		reservation.numofppl = numOfPpl;
-		await reservation.save();
+		await Reservation.updatepax(reservationId, numOfPpl); // change to model update method
 		// Optionally update event booked count if confirmed
 		if (reservation.Status === 'confirmed') {
 			event.CurrentCapacity += (numOfPpl - currentNumOfPpl);
-			await event.save();
+			await event.updateCapacityById(event.EventID, event.CurrentCapacity);
 		}
 		   res.redirect('/reserve/reservation');
 	} catch (error) {
@@ -170,4 +168,8 @@ exports.deleteReservation = async (req, res) => {
 	} catch (error) {
 		res.render("reserveviews/unknownevent.ejs");
 	}
+	//create a waitlist management function to move people from waitlist to confirmed if a spot opens up (not implemented here, but can be triggered after delete or update)
+	
 };
+
+

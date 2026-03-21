@@ -143,6 +143,10 @@ exports.create = (reservationData) => {
     return reservation.save();
 };
 
+exports.updatepax = (id, numofppl) => {
+    return Reservation.findOneAndUpdate({ ReservationID: id, isDeleted: 0 }, { numofppl: numofppl }, { new: true });
+}
+
 exports.update = (id, updateData) => {
     return Reservation.findOneAndUpdate({ ReservationID: id, isDeleted: 0 }, updateData, { new: true });
 };
