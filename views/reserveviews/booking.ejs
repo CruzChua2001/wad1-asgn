@@ -26,7 +26,7 @@
         <p style="color: red;"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</p>
     <% } %>
 
-    <form action="" method="POST">
+    <form id="createReservationForm" action="" method="POST">
   
         <label for="numofppl">Number of people attending:</label>
         <input 
@@ -34,6 +34,9 @@
             id="numofppl" 
             name="numofppl" 
             min="1" 
+            step="1"
+            inputmode="numeric"
+            pattern="[0-9]+"
             max="<%= reservation.EventDetails?.Capacity - reservation.EventDetails?.Booked %>" 
             value="1"
             required
@@ -43,5 +46,16 @@
     
     <br>
     <a href="/reserve/reservation">Back to My Reservations</a>
+
+    <script>
+        const createForm = document.getElementById("createReservationForm");
+        createForm.addEventListener("submit", (e) => {
+            const numofppl = document.getElementById("numofppl").value.trim();
+            if (!/^\d+$/.test(numofppl)) {
+                e.preventDefault();
+                alert("Please enter numbers only.");
+            }
+        });
+    </script>
 </body>
 </html>

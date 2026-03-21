@@ -138,6 +138,11 @@ exports.retrieveByUser = (userId) => {
     return Reservation.find({ UserId: userId, isDeleted: 0 });
 };
 
+exports.retrieveWaitlistByEvent = (eventId) => {
+    return Reservation.find({ EventId: eventId, Status: "waitlist", isDeleted: 0 })
+        .sort({ WaitlistNo: 1, CreatedDateTime: 1 });
+};
+
 exports.create = (reservationData) => {
     const reservation = new Reservation(reservationData);
     return reservation.save();
@@ -154,5 +159,6 @@ exports.update = (id, updateData) => {
 exports.delete = (id) => {
     return Reservation.findOneAndUpdate({ ReservationID: id, isDeleted: 0 }, { isDeleted: 1 }, { new: true });
 };
+
 
 

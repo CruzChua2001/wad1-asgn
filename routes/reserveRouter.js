@@ -8,7 +8,7 @@ router.get("/:id", reserveController.getReservationById);
 router.get("/create/:EventId", reserveController.showCreateReservationForm);
 router.post("/create/:EventId", reserveController.createReservation);
 router.get("/update/:reservationId", reserveController.showUpdateReservationForm);
-router.post("/update/:reservationId", reserveController.updateReservation);
-router.get("/delete/:reservationId", reserveController.deleteReservation);
+router.patch("/update/:reservationId", reserveController.updateReservation);
+router.delete("/delete/:reservationId", reserveController.deleteReservation);
 
 module.exports = router;

@@ -42,12 +42,44 @@
             <td><%= formattedTime %></td>
             <td><%= reservation.Status %></td>
             <td><a href="/reserve/update/<%= reservation.ReservationID %>">Update</a></td>
-            <td><a href="/reserve/delete/<%= reservation.ReservationID %>">Cancel</a></td>
+            <td>
+                <button
+                    type="button"
+                    class="cancel-booking-btn"
+                    data-reservation-id="<%= reservation.ReservationID %>">
+                    Cancel
+                </button>
+            </td>
             <% } %>
         </tr>
     <% }); %>
     
   </table>
+
+  <script>
+    document.querySelectorAll(".cancel-booking-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const reservationId = btn.dataset.reservationId;
+            const shouldCancel = confirm("Cancel this booking?");
+            if (!shouldCancel) return;
+
+            try {
+                const response = await fetch(`/reserve/delete/${reservationId}`, {
+                    method: "DELETE"
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    alert(result.message || "Failed to cancel booking.");
+                    return;
+                }
+                window.location.reload();
+            } catch (err) {
+                alert("Failed to cancel booking.");
+            }
+        });
+    });
+  </script>
 
 </body>
 </html>
