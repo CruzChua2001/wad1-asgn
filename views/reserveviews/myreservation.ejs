@@ -26,17 +26,7 @@
         <tr>
             <td><%= reservation.EventDetails.EventName %></td>
             <td style="text-align: center;"><%= reservation.numofppl %></td>
-                <% 
-                    const eventDate = new Date(reservation.CreatedDateTime);
-                    // Format the date (e.g., 16/03/2026)
-                    const formattedDate = eventDate.toLocaleDateString('en-GB'); 
-                    // Format the time (e.g., 10:33:24 am)
-                    const formattedTime = eventDate.toLocaleTimeString('en-US', { 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        hour12: true 
-                    });
-                %>
+                <% const [formattedDate, formattedTime] = formatDateTime(reservation.CreatedDateTime).split(' '); %>
             
             <td><%= formattedDate %></td>
             <td><%= formattedTime %></td>

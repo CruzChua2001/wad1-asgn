@@ -9,7 +9,7 @@ exports.getAllReservations = async (req, res) => {
 		const userId = req.user.userId;
 		// Use aggregation to get event details
 		const reservations = await Reservation.getReservationsWithEventDetails({ UserId: userId });
-		res.render("reserveviews/myreservation.ejs", { reservations, userId });
+		res.render("reserveviews/myreservation.ejs", { reservations, userId, formatDateTime });
 	} catch (error) {
 		res.render("reserveviews/unknownevent.ejs");
 	}
@@ -24,7 +24,7 @@ exports.getReservationById = async (req, res) => {
 		if (!reservation) {
 			return res.render("reserveviews/unknownevent.ejs");
 		}
-		res.render("reserveviews/updatebooking.ejs", { reservation });
+		res.render("reserveviews/updatebooking.ejs", { reservation, formatDateTime });
 	} catch (error) {
 		res.render("reserveviews/unknownevent.ejs");
 	}
@@ -43,7 +43,7 @@ exports.showCreateReservationForm = async (req, res) => {
 			CreatedDateTime: new Date(),
 			Status: "pending"
 		};
-		res.render("reserveviews/booking.ejs", { reservation });
+		res.render("reserveviews/booking.ejs", { reservation, formatDateTime });
 	} catch (error) {
 		res.render("reserveviews/unknownevent.ejs");
 	}
@@ -113,7 +113,7 @@ exports.showUpdateReservationForm = async (req, res) => {
 			return res.render("reserveviews/unknownevent.ejs");
 		}
 		reservation.EventDetails = event;
-		res.render("reserveviews/updatebooking.ejs", { reservation });
+		res.render("reserveviews/updatebooking.ejs", { reservation, formatDateTime });
 	} catch (error) {
 		res.render("reserveviews/unknownevent.ejs");
 	}

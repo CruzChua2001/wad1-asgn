@@ -7,18 +7,7 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
-     <% 
-        const eventDate = new Date(reservation.CreatedDateTime);
-        // Format the date (e.g., 16/03/2026)
-        const formattedDate = eventDate.toLocaleDateString('en-GB'); 
-        // Format the time (e.g., 10:33:24 am)
-        const formattedTime = eventDate.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
-        });
-    %>
-    <h1>Reserve a slot for: <%= reservation.EventDetails?.EventName || 'Unknown Event' %> <%= formattedDate + ' ' + formattedTime || 'Unknown Date' %></h1>
+    <h1>Reserve a slot for: <%= reservation.EventDetails?.EventName || 'Unknown Event' %> <%= formatDateTime(reservation.CreatedDateTime) || 'Unknown Date' %></h1>
     <p>Capacity: <%= reservation.EventDetails?.CurrentCapacity || 'Unknown Capacity' %></p>
     <p>Currently Booked: <%= reservation.Status || 'Unknown Booked' %></p>
 
