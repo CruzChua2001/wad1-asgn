@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <%- include('../partials/navbar') %>
+        <h1>Upcoming Events</h1>
+
+        <div id="eventsContainer">
+            <% if (events.length===0) { %>
+                <p>No upcoming events.</p>
+                <% } %>
+
+                    <% events.forEach(event=> { %>
+                        <div class="event-card">
+                            <% if(event.EventImage){ %>
+                                <img src="<%= event.EventImage %>" width="150" alt="Event Image">
+                                <% } else { %>
+                                    <div
+                                        style="width:150px;height:100px;background:#ccc;text-align:center;line-height:100px;">
+                                        No Image</div>
+                                    <% } %>
+
+                                        <div class="event-info">
+                                            <h2>
+                                                <%= event.EventName %>
+                                            </h2>
+                                            <p>Type: <%= event.EventType %>
+                                            </p>
+                                            <p>
+                                                <%= event.EventDescription %>
+                                            </p>
+                                            <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %>
+                                            </p>
+                                            <a href="/event/<%= event._id %>"><button>View Details</button></a>
+                                        </div>
+                        </div>
+                        <% }) %>
+        </div>
+
+        <style>
+            #eventsContainer {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .event-card {
+                display: flex;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                padding: 15px;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .event-card img {
+                border-radius: 6px;
+                object-fit: cover;
+            }
+
+            .event-info h2 {
+                margin: 0 0 5px 0;
+            }
+
+            .event-info p {
+                margin: 3px 0;
+            }
+        </style>
+
+</body>
+
+</html>

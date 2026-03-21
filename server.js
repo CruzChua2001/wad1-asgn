@@ -31,7 +31,7 @@ const feedbackRouter = require("./routes/feedbackRouter");
 const contactusRouter = require("./routes/contactusRouter");
 
 server.use("/user", userRouter);                        // Anumitaa 
-server.use("/event", eventRouter)                       // Claudine
+server.use("/event", auth.requireAuth, eventRouter)     // Claudine
 server.use("/reserve", reserveRouter);                  // Zhi Yang
 server.use("/configuration", configurationRouter);      // Mahshuk
 server.use("/feedback", feedbackRouter);                // Keifer
