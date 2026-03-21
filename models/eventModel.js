@@ -60,3 +60,7 @@ const Event = mongoose.model('Event', eventSchema, 'event');
 exports.retrieveAll = () => {
     return Event.find({ isDeleted: 0 });
 }
+
+exports.retrieveById = (id) => {
+    return Event.findOne({ EventID: id, isDeleted: 0 });
+};

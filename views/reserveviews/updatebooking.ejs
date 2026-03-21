@@ -18,7 +18,7 @@
             hour12: true 
         });
     %>
-    <h1>Reserve a slot for: <%= reservation.EventDetails?.EventName || 'Unknown Event' %> <%= formattedDate + ' ' + formattedTime || 'Unknown Date' %></h1>
+    <h1>Update booking for: <%= reservation.EventDetails?.EventName || 'Unknown Event' %> <%= formattedDate + ' ' + formattedTime || 'Unknown Date' %></h1>
     <p>Capacity: <%= reservation.EventDetails?.CurrentCapacity || 'Unknown Capacity' %></p>
     <p>Currently Booked: <%= reservation.Status || 'Unknown Booked' %></p>
 
@@ -26,8 +26,8 @@
         <p style="color: red;"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</p>
     <% } %>
 
-    <form action="" method="POST">
-  
+    <form action="/reserve/update/<%= reservation.ReservationID %>" method="POST">
+        <input type="hidden" name="EventId" value="<%= reservation.EventId %>">
         <label for="numofppl">Number of people attending:</label>
         <input 
             type="number" 
