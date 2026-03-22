@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1> Feedback Form</h1>
+    <form method="post" action="/feedback/ <%= eventId %>"> 
+            <p>Do u want your response to be anonymous?</p>
+            <input type="radio" id="true" name="isAnonymous" value="1">
+            <label for= "true">yes</label>
+            <input type="radio" id="false" name="isAnonymous" value="0">
+            <label for= "false">no</label>"
+
+            <p>"How would you rate your experience from 1-5"</p>
+            <% ratings.forEach((r) => { %> 
+                <input type="radio" id="rating-<%=r%>" name="rating" value="<%=r%>">
+                <label for="<%=r%>"><%=r%></label>
+                <% }) %> 
+
+            <p>"How likely are you to attend similar events in the future"</p>
+            <% ratings.forEach((r) => { %> 
+                <input type="radio" id="attend-<%=r%>" name="attend" value="<%=r%>">
+                <label for="<%=r%>"><%=r%></label>
+                <% }) %> 
+            
+            <p>"How likely are you to recommend this event to a friend or colleague"</p>
+            <% ratings.forEach((r) => { %> 
+                <input type="radio" id="recommend-<%=r%>" name="recommend" value="<%=r%>">
+                <label for="<%=r%>"><%=r%></label>
+                <% }) %> 
+            
+            <p>"Did this event help you achieve your goals eg networking"</p>
+            <% ratings.forEach((r) => { %> 
+                <input type="radio" id="goals-<%=r%>" name="goals" value="<%=r%>">
+                <label for="<%=r%>"><%=r%></label>
+                <% }) %> 
+            <label for="feedback">Any other feedback?</label>
+            <textarea id="feedback" name="feedback" ></textarea>
+        <button type="submit">Submit</button>   
+    </form>
+</body>
+</html>
