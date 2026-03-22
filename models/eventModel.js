@@ -64,3 +64,7 @@ exports.retrieveAll = () => {
 exports.retrieveById = (id) => {
     return Event.findOne({ EventID: id, isDeleted: 0 });
 };
+
+exports.retrieveByCategoryId = (categoryId) =>{
+    return Event.find({EventType:categoryId,isDeleted:0})
+}

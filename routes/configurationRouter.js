@@ -5,7 +5,8 @@ const uuidUtil = require("../utils/uuidUtils.js")
 const dateUtil = require("../utils/dateUtils.js")
 
 const userModel = require("../models/userModel.js");
-const categoryModel = require("../models/categoryModel.js")
+const categoryModel = require("../models/categoryModel.js");
+const eventModel = require("../models/eventModel.js");
 
 //DUMMY DATA 
 
@@ -55,7 +56,7 @@ router.post("/category/register",async(req,res)=>{
     CategoryName:categoryName,
     CategoryDesc:categoryDescription,
     Approval:approver,
-    createdBy:req.user.userId,
+    CreatedBy:req.user.userId,
     RejectionReason:" ",
     isDeleted:0,
     createdAt:dateUtil.formatDateTime(new Date())
@@ -77,6 +78,7 @@ router.post("/category/register",async(req,res)=>{
 router.get("/categoryDetail", async(req,res)=>{
   const categoryId = req.query.categoryId;
   let catDetail;
+  let events;
   try {
     catDetail = await getCategoryById(categoryId);
     catDetail.createdAt = dateUtil.formatDateTime(String(catDetail.createdAt))
@@ -84,13 +86,16 @@ router.get("/categoryDetail", async(req,res)=>{
   } catch (error) {
     console.error("Error retrieving Category Detail",error)
   }
+  try {
+    events = await eventModel.retrieveByCategoryId(categoryId)
+  } catch (error) {
+    console.error("Error retrieving events under a category.",error)
+  }
   
   let categoryData = {
 
     catDetail,
-    events:[
-      // "event A","event B", "event C"
-    ]
+    events:events||null
   }
   res.render("configuration/categoryDetail.ejs",{categoryData,errorList:null,message:null})
 });
@@ -121,19 +126,17 @@ router.post("/categoryDetail",async(req,res)=>{
     
       catDetail:{
         CategoryID:id,
-        createdBy:req.body.creator,
+        CreatedBy:req.body.creator,
         createdAt:req.body.categoryDate,
         Approval:req.body.approver,
         CategoryName:newName,
         CategoryDesc:newDesc
       },
       
-      events:[
-        // "event A","event B", "event C"
-      ]
+      events:null
     }
 
-    res.render("configuration/categoryDetail.ejs",{categoryData,message,errorList,})
+    res.render("configuration/categoryDetail.ejs",{categoryData,message,errorList})
   }
   
 });

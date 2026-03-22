@@ -15,7 +15,7 @@
         <div>
             <label>Category ID:<input type="text" name="categoryId" value="<%= categoryData.catDetail.CategoryID %>"readonly size="40"></label>
             <br><br>
-            <label>Category Creator: <input type="text" name="creator" value="<%= categoryData.catDetail.createdBy %>" readonly></label>
+            <label>Category Creator: <input type="text" name="creator" value="<%= categoryData.catDetail.CreatedBy %>" readonly></label>
             <br><br>
             <label>Creation Date and Time <input type="datetime" name="categoryDate" value="<%=categoryData.catDetail.createdAt %>" readonly></label>
             <br><br>
@@ -42,15 +42,24 @@
         <% } %>
     </form>
 
-
-    <% if (categoryData.events.length >=1) { %>
+    <% if (!(categoryData.events)) { %>
+        <p style="color: red;">
+            Error retrieving events under this category. Please try again later.
+        </p>
+    <% } else if (categoryData.events.length >=1) { %>
+            <h2>Events Registered under this Category</h2>
             <table border="1">
+
         <tr>
+            <th>Event Creator</th>
             <th>Event Name</th>
+            
         </tr>
           <% (categoryData.events).forEach(e => { %>
         <tr>
-            <td><%= e %></td>
+            <td><br><%= e.CreatedBy %><br><br></td>
+            <td><br><%= e.EventName %><br><br></td>
+           
         </tr>
     <% }) %>
     </table>
@@ -65,4 +74,4 @@
 
     
 </body>
-</htm
+</html>
