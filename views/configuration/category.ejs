@@ -6,14 +6,15 @@
     <title>All Available Categories</title>
 </head>
 <body>
+    <%- include("../partials/navbar.ejs") %>
     <h2>Event Categories</h2>
-
+    
     <% if (categoryList.length > 0) { %>
         <ol>
             <% categoryList.forEach(c => { %>
                 <li><%= c.CategoryName %> 
-                    <form action="/configuration/categoryDetail" method="post">
-                        <input type="hidden" name="categoryId" value ="<%= c.CategoryName %>">
+                    <form action="/configuration/categoryDetail" method="get">
+                        <input type="hidden" name="categoryId" value ="<%= c.CategoryID %>">
                         <input type="submit" value="Details">
                     </form>
                     
@@ -21,20 +22,39 @@
             <% }) %>
         </ol>
     <% } %>
-    <button> <a href="./category/register" style="color: green;">Add a New Category</a></button>
+    <button> <a href="/configuration/category/register" style="color: green;">Add a New Category</a></button>
     <% if (isRegister) { %>
         <br><br>
         <form action="./register" method="post">
             <h2>Add a New Category</h2> 
-            <label>Category Name: &nbsp;<input type="text" name="categoryName"></label>
+            <label>Category Name: &nbsp;<input type="text" name="categoryName" value="<%= record ?record.categoryName:"" %>"></label>
             <br><br>
-            <% if (missingName) { %>
-                <p style="color: red;">Empty Category Name. Try Again! </p>
-            <% } else if (isDuplicateCategory) { %>
-                <p style="color: red;">Category Name Exists. Try Again! </p>
- 
+            <label>Category Description:&nbsp;<br><br><textarea name="categoryDescription" cols="30" ><%= record ? record.categoryDescription:"" %></textarea></label>
+            <br><br>
+            <% if (adminNameList) { %>
+                <label > Admin Approver: <br><br> 
+                    <select name="approver">
+                        <option value="" selected>--Please Choose an Admin--</option>
+                        <option value="ALL" <%= record && (record.approver=="ALL") ? "selected":"" %>>ANY ADMIN</option>
+
+                        <% adminNameList.forEach(name => { %>
+                            
+                            <option value="<%= name %>" <%= record && (record.approver===name) ? "selected":"" %>><%= name %></option>
+                        <% }) %>
+                    </select>
+                </label>
+
             <% } %>
-                
+
+            <% if (!validEntry) { %>
+                <p style="color: red;">We have found the following errors: </p>
+             <ol>
+                <% errorList.forEach(e => { %>
+                    <li style="color: red;"><%= e %></li>
+                <% }) %>
+             </ol>
+            <% } %>
+            <br><br>                
             <input type="submit" value="Add Category">
         </form>
     <% } %>

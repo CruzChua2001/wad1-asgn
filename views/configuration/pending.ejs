@@ -6,6 +6,7 @@
     <title>Pending Reservations</title>
 </head>
 <body>
+    <%- include("../partials/navbar.ejs") %>
         <% if (reservationsToApprove.length == 0) { %>
         <h2>0 reservations in queue</h2>
     <% } else { %>

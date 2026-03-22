@@ -37,7 +37,12 @@ const userSchema = new mongoose.Schema({
 })
 
 const User = mongoose.model("User", userSchema, "user");
-
+exports.getAdminIdByName = (name) => {
+    return User.findOne({FirstName:name.split(" ")[0],LastName:name.split(" ")[1]})
+}
+exports.getAdminUsers = () =>{
+    return User.find({Role:"admin"});
+}
 exports.retrieveAll = () => {
     return User.find({ isDeleted: 0 });
 }

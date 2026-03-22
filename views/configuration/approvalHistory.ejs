@@ -6,6 +6,8 @@
     <title>Approval History</title>
 </head>
 <body>
+    <%- include("../partials/navbar.ejs") %>
+
     <% if (reservationHistory.length === 0) { %>
         <h2>Empty Reservation History</h2>
     <% } else { %>
