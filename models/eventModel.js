@@ -60,3 +60,19 @@ const Event = mongoose.model('Event', eventSchema, 'event');
 exports.retrieveAll = () => {
     return Event.find({ isDeleted: 0 });
 }
+
+exports.getEventByID = (eventID) => {
+    return Event.findOne({ EventID: eventID, isDeleted: 0 });
+}
+
+exports.createEvent = (eventData) => {
+    // TODO: Add the event to the database
+}
+
+exports.updateEvent = (eventID, updatedEventData) => {
+    // TODO: Update the event in the database using the eventID and updatedEventData
+}
+
+exports.deleteEvent = (eventID) => {
+    // TODO: Delete the event from the database using the eventID
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View and Update Event</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <h1>View and Update Event</h1>
+
+    <div>
+        <input type="hidden" name="_method" value="PATCH">
+        <label for="EventName">Event Name:</label><br>
+        <input type="text" id="EventName" name="EventName" value="<%= event.EventName %>"><br><br>
+
+        <label for="EventDescription">Event Description:</label><br>
+        <textarea id="EventDescription" name="EventDescription"><%= event.EventDescription %></textarea><br><br>
+
+        <!-- change this to select and use ejs for each for categories -->
+        <label for="EventType">Event Type:</label><br>
+        <select id="EventType" name="EventType" >
+            <% categories.forEach(category => { %>
+                <option value="<%= category.CategoryID %>" <%= category.CategoryID === event.EventType ? "selected" : "" %>><%= category.CategoryName %></option>
+            <% }) %>
+        </select><br><br>
+
+        <label for="MaxCapacity">Max Capacity:</label><br>
+        <input type="number" id="MaxCapacity" name="MaxCapacity" value="<%= event.MaxCapacity %>"><br><br>
+
+        <button onClick="updateEvent('<%= event.EventID %>')">Update Event</button>
+    </div>
+</body>
+</html>
+
+<script>
+    // TODO: Fetch and call patch api to update the event details, then redirect back to the event manage page
+    function updateEvent(eventID) {
+        // Example:
+        /*
+        let updatedEvent = {
+            EventName: document.getElementById("EventName").value,
+            EventDescription: document.getElementById("EventDescription").value,
+            EventType: document.getElementById("EventType").value,
+            MaxCapacity: document.getElementById("MaxCapacity").value
+        };
+
+        fetch(`/event/edit/${eventID}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedEvent)
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = "/event/manage";
+            } else {
+                alert("Failed to update event. Please try again.");
+            }
+        }).catch(error => {
+            console.error("Error updating event:", error);
+            alert("An error occurred while updating the event. Please try again.");
+        });
+         */
+    }
+</script>
