@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Reservations</title>
+</head>
+<body>
+    <%- include("../partials/navbar.ejs") %>
+        <% if (reservationsToApprove.length == 0) { %>
+        <h2>0 reservations in queue</h2>
+    <% } else { %>
+        <h2><%= reservationsToApprove.length %> reservation(s) in queue.</h2>
+        <ol>
+
+        
+        <% reservationsToApprove.forEach(r => { %>
+            <li>
+                <form action="/configuration/handle" method="post">
+                    <input type="submit" value="Approve">
+                    <input type="submit" value="Reject">
+                </form>
+            </li>
+            <br><br>
+        <% }) %>
+        </ol>
+    <% } %>
+</body>
+</html>
