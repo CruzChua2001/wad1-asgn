@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Outcome</title>
+</head>
+<body>
+    <h2>Category Update Dashboard</h2>
+    <% if (result) { %>
+     <p style="color:green">
+        <%- message %>
+     </p>
+     <% } else { %>
+        <p style="color:red">
+            <%- message %>
+        </p>
+    <% } %>
+    <a href="/configuration/category">Back to Category Dashboard</a>
+</body>
+</html>

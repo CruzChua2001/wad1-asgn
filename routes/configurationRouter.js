@@ -1,146 +1,164 @@
 const express = require("express");
 const auth = require("../auth/auth.js")
 const router = express.Router();
-//DUMMY DATA FOR CATERGORIES
-let categoryList = [
-   
-  {
-    "CategoryID": "a3f1c9e2",
-    "CategoryName": "Lectures",
-    "Approval": "ALL",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2025-11-14T08:32:15Z"
-  },
-  {
-    "CategoryID": "b7e2d4a8",
-    "CategoryName": "Seminars & Workshops",
-    "Approval": "adm7c2f1",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2025-12-02T14:10:47Z"
-  },
-  {
-    "CategoryID": "c91d8a7e",
-    "CategoryName": "Competitions",
-    "Approval": "ALL",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2026-01-08T03:45:29Z"
-  },
-  {
-    "CategoryID": "d4a7c2e9",
-    "CategoryName": "Student Group Activities",
-    "Approval": "adm4b9e2",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2025-10-21T17:22:03Z"
-  },
-  {
-    "CategoryID": "e8b1f3a7",
-    "CategoryName": "Webinar & Online Learning",
-    "Approval": "ALL",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2026-02-11T11:59:54Z"
-  },
-  {
-    "CategoryID": "f2c7a9d1",
-    "CategoryName": "Conferences & Symposiums",
-    "Approval": "adm1e8c3",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2025-09-30T06:14:38Z"
-  },
-  {
-    "CategoryID": "a9d3c7e1",
-    "CategoryName": "Performances",
-    "Approval": "ALL",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2025-12-19T19:41:22Z"
-  },
-  {
-    "CategoryID": "b1e7c9a3",
-    "CategoryName": "Talks & Forums",
-    "Approval": "adm9d4f6",
-    "RejectionReason": null,
-    "isDeleted": 0,
-    "createdAt": "2026-01-27T09:05:11Z"
-  }
-];
+const uuidUtil = require("../utils/uuidUtils.js")
+const dateUtil = require("../utils/dateUtils.js")
+
+const userModel = require("../models/userModel.js");
+const categoryModel = require("../models/categoryModel.js")
+
+//DUMMY DATA 
+
+
+
+
 let reservationsToApprove = [1,4,7]
 
 let reservationHistory = [5,7,8]
 //BASIC ADMIN INTERFACE
 router.get("/", (req, res) => {
-    const adminOptions=
-   ` <h2>Welcome to Admin Page</h2>
-    <ul>
-        <li><a href="./configuration/category" style="color: blue;">Manage Event Categories</a></li>
-        <li><a href="./configuration/reservationList" style="color: green;">Manage Reservations</a></li>
-    <ul>`
-    res.send(adminOptions)
+   
+    res.render("configuration/configuration.ejs")
 })
 
 module.exports = router;  
 
 
 //CATEGORY ROUTES
-router.get("/category",(req,res)=>{
-    let isRegister = false;
-    let missingName = false;
-    let isDuplicateCategory = false;
-    res.render("configuration/category.ejs",{categoryList,isRegister})
+router.get("/category",async(req,res)=>{
+  const categoryList = await getAllCategories();
+  res.render("configuration/category.ejs",{categoryList,isRegister:false,validEntry:true,adminNameList:null,errorList:null,record:null})
+
 })
 
-router.get("/category/register",(req,res)=>{
-    let isRegister = true;
-    let missingName = false;
-    let isDuplicateCategory = false;
+router.get("/category/register",async(req,res)=>{
+    let adminNameList = await getAllAdmins()
+    let categoryList = await getAllCategories();
 
-    res.render("configuration/category.ejs",{categoryList,isRegister,missingName,isDuplicateCategory})
+    res.render("configuration/category.ejs",{categoryList,isRegister:true,validEntry:true,adminNameList,errorList:null,record:null})
 });
-router.post("/categoryDetail",(req,res)=>{
-  const categoryId = req.body.categoryId;
+
+router.post("/category/register",async(req,res)=>{
+  let categoryName = req.body.categoryName.trim();
+  let categoryDescription = req.body.categoryDescription.trim();
+  let approver = req.body.approver;
+  let adminNameList = await getAllAdmins()
+  let categoryList = await getAllCategories();
+  let validity = validateCategoryEntry(categoryDescription,categoryName,approver,categoryList);
+  let result;
+  let isRegister = true;
+  if(validity.validEntry){
+    try {
+      result = await categoryModel.addCategory(
+      {
+    CategoryID:uuidUtil.generateUUID(),
+    CategoryName:categoryName,
+    CategoryDesc:categoryDescription,
+    Approval:approver,
+    createdBy:req.user.userId,
+    RejectionReason:" ",
+    isDeleted:0,
+    createdAt:dateUtil.formatDateTime(new Date())
+    });
+    isRegister=false;
+    res.redirect("/configuration/category")
+    } catch (error) {
+      result = "fail";
+      console.error("Error adding new category",error);
+    }
+ 
+  }else{
+    res.render("configuration/category.ejs",{categoryList,isRegister,validEntry:validity.validEntry,adminNameList,errorList:validity.errorList,record:{categoryName,categoryDescription,approver}})
+
+  }
+});
+
+
+router.get("/categoryDetail", async(req,res)=>{
+  const categoryId = req.query.categoryId;
+  let catDetail;
+  try {
+    catDetail = await getCategoryById(categoryId);
+    catDetail.createdAt = dateUtil.formatDateTime(String(catDetail.createdAt))
+
+  } catch (error) {
+    console.error("Error retrieving Category Detail",error)
+  }
+  
   let categoryData = {
-    categoryId,
+
+    catDetail,
     events:[
-      "event A","event B", "event C"
+      // "event A","event B", "event C"
     ]
   }
-  res.render("configuration/categoryDetail.ejs",{categoryData})
+  res.render("configuration/categoryDetail.ejs",{categoryData,errorList:null,message:null})
 });
-router.post("/category/register",(req,res)=>{
-  let newCategoryName = req.body.categoryName;
-  let isDuplicateCategory = false;
-  if (newCategoryName !== ""){
-      categoryList.forEach(c => {
-      if (newCategoryName.trim().toLowerCase() === String(c.CategoryName).trim().toLowerCase()){
-          isDuplicateCategory=true;
-          res.render("configuration/category.ejs",{categoryList,isRegister:true,missingName:false,isDuplicateCategory})
-        }
-      });
-    if(!isDuplicateCategory){
-          categoryList.push({
-      CategoryID:crypto.randomUUID().substring(0,8),
-      CategoryName:newCategoryName,
-      isDeleted:false,
-      createdAt:new Date()
-    })
-    res.redirect("../category")
 
+router.post("/categoryDetail",async(req,res)=>{
+  const id = req.body.categoryId;
+  const newName = req.body.catNameUpdated;
+  const newDesc = req.body.catDescUpdated;
+  
+  let result,message;
+  if(newName && newDesc){
+    try {
+      result = await categoryModel.updateDetail(id,newName,newDesc)
+    } catch (error) {
+      console.log("Error updating Category Detail",error)
     }
-  }else{
-      let isRegister = true;
-      let missingName = true;
-     
-      res.render("configuration/category.ejs",{categoryList,isRegister,missingName,isDuplicateCategory})
+    message = result? `Details for Category Id <b>${id}</b>, are updated successfully.`:`Error updating Category Id <b>${id}</b>, please try again later.`;
+    res.render("configuration/outcome.ejs",{
+      message,result
+    })
 
+  }else{
+    let errorList = [];
+    !newDesc ? errorList.push("Missing Category Description"):newDesc;
+    !newName ? errorList.push("Missing Category Name"):newName;
+    let categoryData = {
+
+    
+      catDetail:{
+        CategoryID:id,
+        createdBy:req.body.creator,
+        createdAt:req.body.categoryDate,
+        Approval:req.body.approver,
+        CategoryName:newName,
+        CategoryDesc:newDesc
+      },
+      
+      events:[
+        // "event A","event B", "event C"
+      ]
+    }
+
+    res.render("configuration/categoryDetail.ejs",{categoryData,message,errorList,})
   }
+  
 });
 
+router.get("/deleteCategory",async(req,res) => {
+  const id = req.query.categoryId;
+  const option = (req.query.option).trim().toLowerCase();
+  let result;
+  if (option==="delete"){
+    try {
+      result = await categoryModel.deleteCategory(id)
+      
+      message = result? `Category Id <b>${id}</b> is deleted successfully.`:`Error deleting Category Id <b>${id}</b>, please try again later.`;
 
+    } catch (error) {
+        console.error(`Error deleting Category Id ${id}`,error)
+    }
+    res.render("configuration/outcome.ejs",{
+        message,result
+    })
+
+  }else{
+    res.redirect("/configuration/category")
+  }
+})
 //RESERVATION ROUTES
 router.get("/reservationList",(req,res)=>{
   res.render("configuration/reservationList")
@@ -155,3 +173,86 @@ router.post("/handle",(req,res)=>{
 router.get("/approvalHistory",(req,res)=>{
   res.render("configuration/approvalHistory",{reservationHistory})
 })
+
+//helper functions
+
+async function getAllAdmins(){
+    let adminNameList=[]
+    try {
+      const rawList = await userModel.getAdminUsers()
+      rawList.forEach(a => {
+        adminNameList.push(`${a.FirstName} ${a.LastName}`)
+      });
+    } catch (error) {
+      console.error("Error retrieving Admins from Database",error)
+    }
+    return adminNameList;
+
+}
+async function getAllCategories(){
+    let categoryList;
+    try {
+    categoryList = await categoryModel.retrieveAll();
+    console.log(categoryList);
+    
+  } catch (error) {
+    console.error("Error retrieving Event Categories",error)
+  }
+  return categoryList
+}
+function validateCategoryEntry(catDesc,catName,approver,catList){
+  let isDuplicateCategory = false;
+  let isMissingDescription = !catDesc;
+  let isMissingCategoryName = !catName;
+  let isInvalidApprover = (approver==="");
+
+  let errorList =[];
+  if (isMissingCategoryName){
+    errorList.push("Missing Category Name");
+  }
+  if (isMissingDescription){
+    errorList.push("Missing a Category description");
+  }
+  
+  if(isInvalidApprover){
+    errorList.push("Missing a Valid Approver: Please select 'ANY ADMIN' or one admin user");
+  }
+
+  
+ 
+  
+
+  if (!isMissingCategoryName){
+      catList.forEach(c => {
+      const newCat = catName.trim().toLowerCase();
+      const currentCat = String(c.CategoryName).trim().toLowerCase();
+      // similarity and duplicate entry checks
+      if ( newCat === currentCat ){
+          isDuplicateCategory=true;
+          
+          errorList.push("Category Name exists")
+  
+        }
+        
+      else if(newCat.includes(currentCat) || currentCat.includes(newCat)){
+          errorList.push("Category Name is similar to an existing category.")
+          isDuplicateCategory=true;
+      }  
+      });
+  }
+  let validEntry = !isDuplicateCategory && !isMissingCategoryName && !isMissingDescription && !isInvalidApprover;
+
+  return {validEntry,errorList,approverId:approver}
+}
+
+async function getCategoryById(id){
+  let categoryDetail = {}
+  try {
+    let data = await categoryModel.retrieveAll();
+    categoryDetail = data.filter(category => category.CategoryID === id)[0]
+  } catch (error) {
+    console.error("Error retrieving Category Data",error)
+  }
+  return categoryDetail;
+
+}

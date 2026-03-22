@@ -6,7 +6,43 @@
     <title>Category Detail</title>
 </head>
 <body>
-    <h2>Category Detail</h2>
+    <%- include("../partials/navbar.ejs") %>
+
+    <h2>Category Details</h2>
+    <form action="/configuration/categoryDetail" method="post">
+
+        
+        <div>
+            <label>Category ID:<input type="text" name="categoryId" value="<%= categoryData.catDetail.CategoryID %>"readonly size="40"></label>
+            <br><br>
+            <label>Category Creator: <input type="text" name="creator" value="<%= categoryData.catDetail.createdBy %>" readonly></label>
+            <br><br>
+            <label>Creation Date and Time <input type="datetime" name="categoryDate" value="<%=categoryData.catDetail.createdAt %>" readonly></label>
+            <br><br>
+            <label>Assigned Approver: <input type="text" name="approver" value="<%= categoryData.catDetail.Approval %>" readonly></label>
+            <br><br>
+
+        </div>
+        
+        <div style="color:green">
+            <label>Category Name:<input type="text" name="catNameUpdated" value="<%=categoryData.catDetail.CategoryName  %>"></label>
+            <br><br>
+            <label>Category Description: <br><br><textarea cols="50" rows="10" name="catDescUpdated"><%= categoryData.catDetail.CategoryDesc %></textarea></label>
+        </div>
+        <br>
+        
+        <input type="submit" value="Update Category Details">
+        <% if (errorList) { %>
+            <p style="color: red;">We have found the following errors: </p>
+            <ol> 
+                <% errorList.forEach(e => { %>
+                    <li style="color: red;"><%= e %></li>
+                <% }) %>
+            </ol>
+        <% } %>
+    </form>
+
+
     <% if (categoryData.events.length >=1) { %>
             <table border="1">
         <tr>
@@ -20,8 +56,13 @@
     </table>
     <% } else if ((categoryData.events).length ==0) { %>
         <p style="color: red;">No Events running in this category.</p>
+        <form action="/configuration/deleteCategory" method="get">
+            <input type="hidden" name="categoryId" value="<%= categoryData.catDetail.CategoryID %>"readonly>    
+            <label for=""><input type="text" name="option" placeholder="Type 'delete' to confirm!"></label>
+            <input style="color: red;font-weight: bold;" type="submit" value="Delete Category">
+        </form>
     <% } %>
 
-    <a href="./category">Back to Category Dashboard</a>
+    
 </body>
-</html>
+</htm
