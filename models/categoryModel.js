@@ -18,7 +18,7 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: [true, "Category require an Approval"]
     },
-    createdBy: {
+    CreatedBy: {
         type: String,
         required: [true, "Category require a CreatedBy"]
     },
@@ -48,7 +48,7 @@ exports.addCategory = (newCategory) =>{
     return Category.create(newCategory)
 }
 exports.updateDetail = (id,name,desc) =>{
-    return Category.updateOne({CategoryID:id},{CategoryName:name,CategoryDesc:desc})
+    return Category.updateOne({CategoryID:id,isDeleted:0},{CategoryName:name,CategoryDesc:desc})
 }
 
 exports.deleteCategory = (id) =>{

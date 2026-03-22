@@ -68,3 +68,7 @@ exports.retrieveById = (id) => {
 exports.updateCapacityById = (id, newCapacity) => {
     return Event.findOneAndUpdate({ EventID: id, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
 };
+
+exports.retrieveByCategoryId = (categoryId) =>{
+    return Event.find({EventType:categoryId,isDeleted:0})
+}
