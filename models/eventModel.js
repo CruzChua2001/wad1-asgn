@@ -64,3 +64,7 @@ exports.retrieveAll = () => {
 exports.retrieveById = (id) => {
     return Event.findOne({ EventID: id, isDeleted: 0 });
 };
+
+exports.updateCapacityById = (id, newCapacity) => {
+    return Event.findOneAndUpdate({ EventID: id, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
+};
