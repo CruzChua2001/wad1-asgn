@@ -55,9 +55,7 @@ exports.createReservation = async (req, res) => {
 		const eventId = req.params.EventId;
 		const userId = req.user.userId;
 		const rawNumOfPpl = String(req.body.numofppl || "").trim();
-		if (!/^\d+$/.test(rawNumOfPpl)) {
-			return res.send('Please enter numbers only. <a href="javascript:history.back()">Go back</a>');
-		}
+		
 		const numOfPpl = Number(rawNumOfPpl);
 		if (!Number.isInteger(numOfPpl) || numOfPpl < 1) {
 			return res.send('Number of pax must be at least 1. <a href="javascript:history.back()">Go back</a>');
@@ -124,9 +122,6 @@ exports.updateReservation = async (req, res) => {
 		const reservationId = req.params.reservationId;
 		const userId = req.user.userId;
 		const rawNumOfPpl = String(req.body.numofppl || "").trim();
-		if (!/^\d+$/.test(rawNumOfPpl)) {
-			return res.status(400).json({ success: false, message: "Please enter numbers only." });
-		}
 		const numOfPpl = Number(rawNumOfPpl);
 		if (!Number.isInteger(numOfPpl) || numOfPpl < 1) {
 			return res.status(400).json({ success: false, message: "Number of pax must be at least 1." });
