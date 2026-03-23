@@ -36,15 +36,6 @@
     <br>
     <a href="/reserve/reservation">Back to My Reservations</a>
 
-    <script>
-        const createForm = document.getElementById("createReservationForm");
-        createForm.addEventListener("submit", (e) => {
-            const numofppl = document.getElementById("numofppl").value.trim();
-            if (!/^\d+$/.test(numofppl)) {
-                e.preventDefault();
-                alert("Please enter numbers only.");
-            }
-        });
-    </script>
+
 </body>
 </html>
