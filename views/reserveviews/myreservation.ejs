@@ -63,6 +63,7 @@
                     alert(result.message || "Failed to cancel booking.");
                     return;
                 }
+                alert(result.message);
                 window.location.reload();
             } catch (err) {
                 alert("Failed to cancel booking.");
