@@ -116,128 +116,164 @@ exports.showUpdateReservationForm = async (req, res) => {
 		res.render("reserveviews/unknownevent.ejs");
 	}
 };
+
 // PUT update a reservation (number of people)
 exports.updateReservation = async (req, res) => {
-	try {
-		const reservationId = req.params.reservationId;
-		const userId = req.user.userId;
-		const rawNumOfPpl = String(req.body.numofppl || "").trim();
-		const numOfPpl = Number(rawNumOfPpl);
-		if (!Number.isInteger(numOfPpl) || numOfPpl < 1) {
-			return res.status(400).json({ success: false, message: "Number of pax must be at least 1." });
-		}
-		const reservation = await Reservation.retrieveById(reservationId);
-		if (!reservation || reservation.UserId !== userId) {
-			return res.status(404).json({ success: false, message: "Reservation not found." });
-		}
-		const event = await Reservation.getEventDetailsById(reservation.EventId);
-		if (!event) {
-			return res.status(404).json({ success: false, message: "Event not found." });
-		}
-		// Check if pax increase exceeds event capacity
-		const currentNumOfPpl = reservation.numofppl || 1;
-		const paxDifference = numOfPpl - currentNumOfPpl; 
+    try {
+        // --- 1. Extract inputs from request ---
+        const reservationId = req.params.reservationId;
+        const userId = req.user.userId; // From auth middleware
+        
+        // Safely convert numofppl to a number (default to empty string if missing)
+        const rawNumOfPpl = String(req.body.numofppl || "").trim();
+        const numOfPpl = Number(rawNumOfPpl);
 
-		const currentCapacity = Number(event.CurrentCapacity || 0);
-		const maxCapacity = Number(event.MaxCapacity || 0);
+        // --- 2. Validate the new pax count ---
+        if (!Number.isInteger(numOfPpl) || numOfPpl < 1) {
+            return res.status(400).json({ success: false, message: "Number of pax must be at least 1." });
+        }
 
-		if (Number.isNaN(currentCapacity) || Number.isNaN(maxCapacity)) {
-			return res.status(500).json({ success: false, message: "Event capacity is invalid." });
-		}
+        // --- 3. Verify the reservation exists and belongs to this user ---
+        const reservation = await Reservation.retrieveById(reservationId);
+        if (!reservation || reservation.UserId !== userId) {
+            return res.status(404).json({ success: false, message: "Reservation not found." });
+        }
 
-		// 2. Check if ADDING people exceeds the max limit
-		if (paxDifference > 0 && (currentCapacity + paxDifference > maxCapacity)) {
-			return res.status(400).json({ success: false, message: "Not enough capacity to add that many people." });
-		}
+        // --- 4. Verify the linked event still exists ---
+        const event = await Reservation.getEventDetailsById(reservation.EventId);
+        if (!event) {
+            return res.status(404).json({ success: false, message: "Event not found." });
+        }
 
-		const updateData = { numofppl: numOfPpl };
+        // --- 5. Calculate how many seats are being added or removed ---
+        // paxDifference > 0 means user wants MORE seats, < 0 means FEWER
+        const currentNumOfPpl = reservation.numofppl || 1;
+        const paxDifference = numOfPpl - currentNumOfPpl;
 
-		// Keep current status for reduction, but if pax increases set reservation back to pending.
-		if (paxDifference > 0) {
-			updateData.Status = "pending";
-			updateData.ApprovedBy = "";
-		}
+        // Guard against non-numeric capacity values in the DB
+        const currentCapacity = Number(event.CurrentCapacity || 0); // Currently occupied seats
+        const maxCapacity = Number(event.MaxCapacity || 0);         // Total seats available
 
-		await Reservation.update(reservationId, updateData);
+        if (Number.isNaN(currentCapacity) || Number.isNaN(maxCapacity)) {
+            return res.status(500).json({ success: false, message: "Event capacity is invalid." });
+        }
 
-		// CurrentCapacity stores occupied seats. If an approved reservation changes:
-		// - reduction keeps approved and reduces occupied seats
-		// - increase becomes pending and releases previously occupied seats
-		if (reservation.Status === "approved") {
-			let newCapacity;
-			if (paxDifference > 0) {
-				newCapacity = currentCapacity - currentNumOfPpl;
-			} else {
-				newCapacity = currentCapacity + paxDifference;
-			}
-			if (newCapacity < 0) newCapacity = 0;
-			await EventModel.updateCapacityById(event.EventID, newCapacity);
-		}
-		return res.json({ success: true, message: "Reservation updated successfully." });
-	} catch (error) {
-		console.log("updateReservation error:", error);
-		return res.status(500).json({ success: false, message: error.message || "Unable to update reservation." });
-	}
+        // --- 6. If increasing pax, check there's enough room ---
+        // Only block if adding seats would push occupied seats past the max
+        if (paxDifference > 0 && (currentCapacity + paxDifference > maxCapacity)) {
+            return res.status(400).json({ success: false, message: "Not enough capacity to add that many people." });
+        }
+
+        // --- 7. Build the update payload ---
+        const updateData = { numofppl: numOfPpl };
+
+        // Increasing pax requires re-approval — reset to pending and clear approver
+        // Decreasing pax keeps the existing status unchanged
+        if (paxDifference > 0) {
+            updateData.Status = "pending";
+            updateData.ApprovedBy = "";
+        }
+
+        await Reservation.update(reservationId, updateData);
+
+        // --- 8. Adjust event's CurrentCapacity if the reservation was previously approved ---
+        // (Pending/waitlisted reservations don't occupy seats yet, so no adjustment needed for them)
+        if (reservation.Status === "approved") {
+            let newCapacity;
+
+            if (paxDifference > 0) {
+                // Increasing pax: reservation reverts to pending, so release ALL previously occupied seats.
+                // The new (larger) pax will re-occupy seats only once approved again.
+                newCapacity = currentCapacity - currentNumOfPpl;
+            } else {
+                // Decreasing pax: reservation stays approved, so just shrink occupied seats by the difference.
+                // paxDifference is negative here, so adding it reduces the count.
+                newCapacity = currentCapacity + paxDifference;
+            }
+
+            if (newCapacity < 0) newCapacity = 0; // Safety clamp — never go below zero
+            await EventModel.updateCapacityById(event.EventID, newCapacity);
+        }
+
+        return res.json({ success: true, message: "Reservation updated successfully." });
+    } catch (error) {
+        console.log("updateReservation error:", error);
+        return res.status(500).json({ success: false, message: error.message || "Unable to update reservation." });
+    }
 };
-
 
 exports.deleteReservation = async (req, res) => {
-	try {
-		const reservationId = req.params.reservationId;
-		const userId = req.user.userId;
-		const reservation = await Reservation.retrieveById(reservationId);
-		if (!reservation || reservation.UserId !== userId) {
-			return res.status(404).json({ success: false, message: "Reservation not found." });
-		}
+    try {
+        // --- 1. Extract inputs and verify ownership ---
+        const reservationId = req.params.reservationId;
+        const userId = req.user.userId;
 
-		let promotedCount = 0;
-		if (reservation.Status === "approved") {
-			const event = await Reservation.getEventDetailsById(reservation.EventId);
-			if (event) {
-				const currentCapacity = Number(event.CurrentCapacity || 0);
-				const maxCapacity = Number(event.MaxCapacity || 0);
-				const canceledPax = Number(reservation.numofppl || 1);
-				if (Number.isNaN(currentCapacity) || Number.isNaN(maxCapacity) || Number.isNaN(canceledPax)) {
-					return res.status(500).json({ success: false, message: "Event capacity is invalid." });
-				}
+        const reservation = await Reservation.retrieveById(reservationId);
+        if (!reservation || reservation.UserId !== userId) {
+            return res.status(404).json({ success: false, message: "Reservation not found." });
+        }
 
-				// CurrentCapacity tracks occupied seats.
-				let newCapacity = currentCapacity - canceledPax;
-				if (newCapacity < 0) newCapacity = 0;
+        // --- 2. If the reservation was approved, its seats are currently occupied ---
+        // We need to free those seats and potentially promote waitlisted users
+        let promotedCount = 0;
+        if (reservation.Status === "approved") {
+            const event = await Reservation.getEventDetailsById(reservation.EventId);
+            if (event) {
+                const currentCapacity = Number(event.CurrentCapacity || 0);
+                const maxCapacity = Number(event.MaxCapacity || 0);
+                const canceledPax = Number(reservation.numofppl || 1);
 
-				// Promote waitlist users whose pax can fit into the newly available seats.
-				let availableSeats = maxCapacity - newCapacity;
-				if (availableSeats > 0) {
-					const waitlistReservations = await Reservation.retrieveWaitlistByEvent(reservation.EventId);
-					for (const waitlistReservation of waitlistReservations) {
-						const waitlistPax = Number(waitlistReservation.numofppl || 1);
-						if (Number.isNaN(waitlistPax) || waitlistPax <= 0) {
-							continue;
-						}
-						if (waitlistPax <= availableSeats) {
-							await Reservation.update(waitlistReservation.ReservationID, {
-								Status: "approved",
-								WaitlistNo: 0
-							});
-							newCapacity += waitlistPax;
-							availableSeats -= waitlistPax;
-							promotedCount += 1;
-						}
-					}
-				}
+                if (Number.isNaN(currentCapacity) || Number.isNaN(maxCapacity) || Number.isNaN(canceledPax)) {
+                    return res.status(500).json({ success: false, message: "Event capacity is invalid." });
+                }
 
-				await EventModel.updateCapacityById(event.EventID, newCapacity);
-			}
-		}
-		await Reservation.delete(reservationId);
-		return res.json({
-			success: true,
-			message: "Reservation canceled successfully.",
-			promotedCount
-		});
-	} catch (error) {
-		return res.status(500).json({ success: false, message: "Unable to cancel reservation." });
-	}
+                // --- 3. Free the seats vacated by the canceled reservation ---
+                let newCapacity = currentCapacity - canceledPax;
+                if (newCapacity < 0) newCapacity = 0;
+
+                // --- 4. Use the freed seats to promote users off the waitlist ---
+                let availableSeats = maxCapacity - newCapacity; // How many seats are now open
+                if (availableSeats > 0) {
+                    // Retrieve waitlisted reservations ordered by their WaitlistNo (priority)
+                    const waitlistReservations = await Reservation.retrieveWaitlistByEvent(reservation.EventId);
+
+                    for (const waitlistReservation of waitlistReservations) {
+                        const waitlistPax = Number(waitlistReservation.numofppl || 1);
+
+                        // Skip any entries with bad data
+                        if (Number.isNaN(waitlistPax) || waitlistPax <= 0) {
+                            continue;
+                        }
+
+                        // Only promote if the entire group fits in the remaining open seats
+                        if (waitlistPax <= availableSeats) {
+                            await Reservation.update(waitlistReservation.ReservationID, {
+                                Status: "approved",
+                                WaitlistNo: 0 // Remove from waitlist queue
+                            });
+
+                            // Occupy the seats and shrink the available pool for the next iteration
+                            newCapacity += waitlistPax;
+                            availableSeats -= waitlistPax;
+                            promotedCount += 1;
+                        }
+                        // If the group is too large to fit, skip them (don't break — a smaller group later may still fit)
+                    }
+                }
+
+                // --- 5. Persist the final occupied seat count back to the event ---
+                await EventModel.updateCapacityById(event.EventID, newCapacity);
+            }
+        }
+
+        // --- 6. Delete the reservation record and return the result ---
+        await Reservation.delete(reservationId);
+        return res.json({
+            success: true,
+            message: "Reservation canceled successfully.",
+            promotedCount // Lets the caller know how many waitlisted users were auto-approved
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Unable to cancel reservation." });
+    }
 };
-
-
