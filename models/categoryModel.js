@@ -54,3 +54,8 @@ exports.updateDetail = (id,name,desc) =>{
 exports.deleteCategory = (id) =>{
     return Category.updateOne({CategoryID:id},{isDeleted:1})
 }
+
+// retrieve the approver 
+exports.retrieveCategoryById = (CategoryId) =>{
+    return Category.findOne({CategoryID:CategoryId})
+}

@@ -138,6 +138,10 @@ exports.retrieveByUser = (userId) => {
     return Reservation.find({ UserId: userId, isDeleted: 0 });
 };
 
+exports.retrievePending = () => {
+    return Reservation.find({Status:"pending", isDeleted: 0});
+}
+
 exports.create = (reservationData) => {
     const reservation = new Reservation(reservationData);
     return reservation.save();
