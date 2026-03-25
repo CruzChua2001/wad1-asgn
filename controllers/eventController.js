@@ -14,9 +14,13 @@ exports.getAllEvents = async (req, res) => {
 };
 
 exports.getManageEvents = async (req, res) => {
-    // TODO: Retrieve all events and pass it to the eventmanage.ejs page
-
-    res.render("events/eventmanage");
+    try {
+        const events = await eventModel.retrieveAll();
+        res.render("events/eventmanage", { events });
+    } catch (err) {
+        console.log(err);
+        res.send("Error loading events");
+    }
 }
 
 let newEventErrorMsg = [];
@@ -37,45 +41,36 @@ exports.getNewEvent = async (req, res) => {
         return res.render("events/eventnew", { errors: newEventErrorMsg, categories });
     } catch (error) {
         // Log your errors
+        newEventErrorMsg.push("Error loading page, please try again");
         res.redirect("/event/manage");
     }
 }
 
 exports.postNewEvent = async (req, res) => {
     newEventErrorMsg = [];
-    // TODO:
-    // 1. Get the details from the form
-        // Check for empty fields and push error message
-        /* Example:
-        if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime) {
-            newEventErrorMsg.push("Please fill in all the fields");
-        }
 
-        if (newEventErrorMsg.length > 0) {
-            return res.redirect("/event/new");
-        }
-        */
-    // 2. Create a new event using the details
-            /* Example:
-            const newEvent = {
-                EventID: generateUUID(),
-                EventName: req.body.EventName,
-                EventDescription: req.body.EventDescription,
-                EventImage: "", // Leave it empty first
-                EventType: req.body.EventType,
-                CurrentCapacity: 0, // Set it to 0 for new event
-                MaxCapacity: req.body.MaxCapacity, // Convert to Number
-                CreatedBy: req.user.UserID, // u can get the userid from this
-                EndDateTime: req.body.EndDateTime, // Combine date and time from the form OR however u want to do it
-                Status: 'active' // Set as default active, only edit can change this 
-            }
-            */
-    // 3. In your eventModel, create a function for creating a new event
-        // Example: eventModel.createEvent(newEvent);
+    if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime) {
+        newEventErrorMsg.push("Please fill in all the fields");
+    }
+
+    if (newEventErrorMsg.length > 0) {
+        return res.redirect("/event/new");
+    }
+
+    let newEvent = {
+        EventID: generateUUID(),
+        EventName: req.body.EventName,
+        EventDescription: req.body.EventDescription,
+        EventImage: "", // Leave it empty first
+        EventType: req.body.EventType,
+        MaxCapacity: Number(req.body.MaxCapacity),
+        CreatedBy: "adm001", // req.user.UserID, use this when can login
+        EndDateTime: new Date(req.body.EndDateTime), // Combine date and time from the form OR however u want to do it
+        Status: 'active' // Set as default active, only edit can change this 
+    }
 
     try {
-        // Save the new event to the database
-        
+        await eventModel.createEvent(newEvent);
         res.redirect("/event/manage");
     } catch (error) {
         // Log your errors
@@ -106,13 +101,11 @@ exports.getManageEventByID = async (req, res) => {
     let eventID = req.params.id;
 
     try {
-        // TODO: Use the model to retrieve the event by ID
-        // Example: let event = await eventModel.getEventByID(eventID);
-        // get category list
+        let event = await eventModel.getEventByID(eventID);
+
         let categories = await categoryModel.retrieveAll();
-        
-        // TODO: add event inside the object
-        res.render("events/eventmanagedetail", { errors: editEventErrorMsg, categories});
+    
+        res.render("events/eventmanagedetail", { errors: editEventErrorMsg, categories, event});
     } catch (error) {
         // Log your errors
         res.redirect("/event/manage");
@@ -121,55 +114,43 @@ exports.getManageEventByID = async (req, res) => {
 
 exports.editEvent = async (req, res) => {
     let eventID = req.params.id;
-    
-    // TODO: Get the details from the form
-    // 1. Check for empty fields and push error message
-            /* Example:
-            if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime) {
-                editEventErrorMsg.push("Please fill in all the fields");
-            }
 
-            if (editEventErrorMsg.length > 0) {
-                return res.redirect(`/event/${eventID}`);
-            }
-            */
-    // 2. Create an updated event object using the details
-            /* Example:
-            const updatedEvent = {
-                EventName: req.body.EventName,
-                EventDescription: req.body.EventDescription,
-                EventType: req.body.EventType,
-                MaxCapacity: req.body.MaxCapacity, // Convert to Number
-                EndDateTime: req.body.EndDateTime, // Combine date and time from the form OR however u want to do it
-            }
-            */
-    // 3. In your eventModel, create a function for updating an event
-        // Example: eventModel.updateEvent(eventID, updatedEvent);
+    editEventErrorMsg = []; // reset
+
+    if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime) {
+        return res.status(400).json({ message: "Please fill in all the fields" });
+    }
+
+    const updatedEvent = {
+        EventName: req.body.EventName,
+        EventDescription: req.body.EventDescription,
+        EventType: req.body.EventType,
+        MaxCapacity: Number(req.body.MaxCapacity),
+        EndDateTime: new Date(req.body.EndDateTime)
+    };
 
     try {
-        // Update the event in the database
-        
-        res.redirect("/event/manage");
+        await eventModel.updateEvent(eventID, updatedEvent);
+        res.status(200).json({ message: "Event updated successfully" });
+
     } catch (error) {
-        // Log your errors
-        editEventErrorMsg.push("Error updating event, please try again");
-        return res.redirect(`/event/${eventID}`);
+        console.error(error);
+        res.status(500).json({ message: "Error updating event" });
     }
-}
+};
 
 exports.deleteEvent = async (req, res) => {
     let eventID = req.params.id;
-
     try {
-        // TODO: Use the model to delete the event
-        /* Example: let response await eventModel.deleteEvent(eventID);
+        let response = await eventModel.deleteEvent(eventID);
+
         if (response.deletedCount === 0) {
             return res.status(404).json({ message: "Event not found" });
         }
-        */
+
         res.status(200).json({ message: "Event deleted successfully" });
     } catch (error) {
-        // Log your errors
+        console.error(error);
         res.status(500).json({ message: "Error deleting event, please try again" });
     }
 }

@@ -29,6 +29,9 @@
         <label for="MaxCapacity">Max Capacity:</label><br>
         <input type="number" id="MaxCapacity" name="MaxCapacity" value="<%= event.MaxCapacity %>"><br><br>
 
+        <label for="EndDateTime">End Date and Time:</label><br>
+        <input type="datetime-local" id="EndDateTime" name="EndDateTime" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>"><br><br>
+
         <button onClick="updateEvent('<%= event.EventID %>')">Update Event</button>
     </div>
 </body>
@@ -37,13 +40,12 @@
 <script>
     // TODO: Fetch and call patch api to update the event details, then redirect back to the event manage page
     function updateEvent(eventID) {
-        // Example:
-        /*
         let updatedEvent = {
             EventName: document.getElementById("EventName").value,
             EventDescription: document.getElementById("EventDescription").value,
             EventType: document.getElementById("EventType").value,
-            MaxCapacity: document.getElementById("MaxCapacity").value
+            MaxCapacity: document.getElementById("MaxCapacity").value,
+            EndDateTime: document.getElementById("EndDateTime").value
         };
 
         fetch(`/event/edit/${eventID}`, {
@@ -52,16 +54,20 @@
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(updatedEvent)
-        }).then(response => {
+        })
+        .then(async response => {
+            const data = await response.json();
+
             if (response.ok) {
+                alert(data.message);
                 window.location.href = "/event/manage";
             } else {
-                alert("Failed to update event. Please try again.");
+                alert(data.message);
             }
-        }).catch(error => {
+        })
+        .catch(error => {
             console.error("Error updating event:", error);
             alert("An error occurred while updating the event. Please try again.");
         });
-         */
     }
 </script>

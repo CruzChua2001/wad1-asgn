@@ -47,7 +47,7 @@ const eventSchema = new mongoose.Schema({
     Status: {
         type: String,
         required: [true, 'Event require a Status'],
-        enum: ['active', 'inactive']
+        enum: ['active', 'inactive'] // restricts to only these 2 values
     },
     isDeleted: {
         type: Number,
@@ -65,14 +65,14 @@ exports.getEventByID = (eventID) => {
     return Event.findOne({ EventID: eventID, isDeleted: 0 });
 }
 
-exports.createEvent = (eventData) => {
-    // TODO: Add the event to the database
+exports.createEvent = (newEvent) => {
+    return Event.create(newEvent);
 }
 
 exports.updateEvent = (eventID, updatedEventData) => {
-    // TODO: Update the event in the database using the eventID and updatedEventData
+    return Event.updateOne({ EventID: eventID }, updatedEventData);
 }
 
 exports.deleteEvent = (eventID) => {
-    // TODO: Delete the event from the database using the eventID
+    return Event.deleteOne({ EventID: eventID });
 }

@@ -11,6 +11,7 @@ const PORT = 8000;
 dotenv.config({ path: './config.env' });
 
 server.set("view engine", "ejs");
+server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use(express.static(path.join(__dirname, "public")))
 
