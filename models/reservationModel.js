@@ -142,6 +142,9 @@ exports.retrieveWaitlistByEvent = (eventId) => {
     return Reservation.find({ EventId: eventId, Status: "waitlist", isDeleted: 0 })
         .sort({ WaitlistNo: 1, CreatedDateTime: 1 });
 };
+exports.retrievePending = () => {
+    return Reservation.find({Status:"pending", isDeleted: 0});
+}
 
 exports.create = (reservationData) => {
     const reservation = new Reservation(reservationData);

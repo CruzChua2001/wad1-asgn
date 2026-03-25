@@ -7,23 +7,46 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
-        <% if (reservationsToApprove.length == 0) { %>
+    <%  %>
+        <% if (!pendingReservations) { %>
         <h2>0 reservations in queue</h2>
     <% } else { %>
-        <h2><%= reservationsToApprove.length %> reservation(s) in queue.</h2>
-        <ol>
+
+        <h2><%= pendingReservations.length %> reservation(s) Pending Approval</h2>
+
 
         
-        <% reservationsToApprove.forEach(r => { %>
-            <li>
-                <form action="/configuration/handle" method="post">
-                    <input type="submit" value="Approve">
-                    <input type="submit" value="Reject">
-                </form>
-            </li>
-            <br><br>
-        <% }) %>
-        </ol>
+
+        <table border="2">
+        
+            <tr>
+                <th>Event </th>
+                <th>Reservation User</th>
+                <th>Reservation Date & Time</th>
+                <th>Pax</th>
+                <th>&nbsp;</th>
+            </tr>
+                <ol>
+                <% pendingReservations.forEach(r => { %>
+
+                    
+                        <tr>
+                            <td><%= r.EventId %></td>
+                            <td><%= r.UserId %></td>
+                            <td><%= r.newTime %></td>
+                            <td><%= r.numofppl %></td>
+
+                            <td><form action="/configuration/handle" method="get"><input type="submit" value="Manage Reservation"></form></td>
+                            
+                            
+                        
+                        
+                        </tr>
+                    
+                <% }) %>
+
+                </ol>
+        </table>
     <% } %>
 </body>
 </html>
