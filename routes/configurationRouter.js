@@ -7,12 +7,13 @@ const userModel = require("../models/userModel.js");
 const categoryModel = require("../models/categoryModel.js");
 const eventModel = require("../models/eventModel.js");
 
+const reserveModel = require("../models/reservationModel.js")
 //DUMMY DATA 
 
 
 
 
-let reservationsToApprove = [1,4,7]
+
 
 let reservationHistory = [5,7,8]
 //BASIC ADMIN INTERFACE
@@ -109,7 +110,7 @@ router.post("/categoryDetail",async(req,res)=>{
     try {
       result = await categoryModel.updateDetail(id,newName,newDesc)
     } catch (error) {
-      console.log("Error updating Category Detail",error)
+      console.error("Error updating Category Detail",error)
     }
     message = result? `Details for Category Id <b>${id}</b>, are updated successfully.`:`Error updating Category Id <b>${id}</b>, please try again later.`;
     res.render("configuration/outcome.ejs",{
@@ -146,6 +147,12 @@ router.get("/deleteCategory",async(req,res) => {
   let result;
   if (option==="delete"){
     try {
+      let eventRecord = await eventModel.retrieveByCategoryId(id);
+      
+      if (eventRecord.length>=1){
+        res.redirect("/configuration/category");
+        return
+      }
       result = await categoryModel.deleteCategory(id)
       
       message = result? `Category Id <b>${id}</b> is deleted successfully.`:`Error deleting Category Id <b>${id}</b>, please try again later.`;
@@ -165,10 +172,29 @@ router.get("/deleteCategory",async(req,res) => {
 router.get("/reservationList",(req,res)=>{
   res.render("configuration/reservationList")
 });
-router.get("/pending",(req,res)=>{
-  res.render("configuration/pending",{reservationsToApprove})
+router.get("/pending",async(req,res)=>{
+  let pendingReservations;
+  try {
+    pendingReservations=await reserveModel.retrievePending()
+    if (pendingReservations){
+      pendingReservations.forEach((r,index) => {
+        //new attribute for formatted Date Time
+        r.newTime = dateUtil.formatDateTime(String(r.CreatedDateTime));
+        console.log("event id",r.EventId)
+        if (!filterAllowedReservation(r.EventId)){
+          pendingReservations.splice(index,1)
+        }
+
+    });
+    }
+    
+  } catch (error) {
+    console.error("Error retrieving pending reservations",error)
+  }
+  console.log(pendingReservations)
+  res.render("configuration/pending",{pendingReservations})
 });
-router.post("/handle",(req,res)=>{
+router.get("/handle",(req,res)=>{
   res.send("Done!")
 });
 
@@ -195,7 +221,6 @@ async function getAllCategories(){
     let categoryList;
     try {
     categoryList = await categoryModel.retrieveAll();
-    console.log(categoryList);
     
   } catch (error) {
     console.error("Error retrieving Event Categories",error)
@@ -257,4 +282,19 @@ async function getCategoryById(id){
   }
   return categoryDetail;
 
+}
+
+
+async function filterAllowedReservation(EventId){
+  let app;
+  try {
+      let event=await eventModel.retrieveByEventid(EventId)
+      console.log("Eventype",event.EventType)
+      app = await categoryModel.retrieveCategoryById(event.EventType)
+
+  } catch (error) {
+    console.error("Error finding the corresponding category's approver",error)
+  }
+  console.log("Approver",app)
+  return (app=="ALL") || null
 }
