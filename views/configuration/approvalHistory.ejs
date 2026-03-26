@@ -8,10 +8,11 @@
 <body>
     <%- include("../partials/navbar.ejs") %>
 
-    <% if (reservationHistory.length === 0) { %>
+    <% if (!reservationHistory || reservationHistory.length ==0) { %>
         <h2>Empty Reservation History</h2>
+        <p>Please check for pending reservation requests next time. </p>
     <% } else { %>
-         <h2><%= reservationHistory.length %>reservation(s) Approved</h2>
+         <h2><%= reservationHistory.length %> reservation(s) Approved</h2>
          <ol>
 
          
