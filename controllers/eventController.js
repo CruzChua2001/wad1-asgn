@@ -5,8 +5,11 @@ const generateUUID = require('../utils/uuidUtils').generateUUID;
 
 exports.getAllEvents = async (req, res) => {
     try {
-        const events = await eventModel.retrieveAll();
-        res.render("events/event", { events });
+        const events = await eventModel.retrieveAllWithCategory();
+
+        const filteredEvents = events.filter(e => e.Status === 'active')
+
+        res.render("events/event", { events: filteredEvents });
     } catch (err) {
         console.log(err);
         res.send("Error loading events");
@@ -15,8 +18,15 @@ exports.getAllEvents = async (req, res) => {
 
 exports.getManageEvents = async (req, res) => {
     try {
-        const events = await eventModel.retrieveAll();
-        res.render("events/eventmanage", { events });
+        const searchTerm = req.query.search || ""; // get search query from URL
+        let events = await eventModel.retrieveAllWithCategory(); // fetch all events with category
+
+        if (searchTerm) {
+            const regex = new RegExp(searchTerm, "i"); // case-insensitive search
+            events = events.filter(e => regex.test(e.EventName));
+        }
+
+        res.render("events/eventmanage", { events, searchTerm });
     } catch (err) {
         console.log(err);
         res.send("Error loading events");
@@ -84,7 +94,9 @@ exports.getEventByID = async (req, res) => {
     let eventID = req.params.id;
 
     try {
-        let event = await eventModel.getEventByID(eventID);
+        let events = await eventModel.getEventByID(eventID); // returns array
+        let event = events[0]; // pick the first (and only) event
+        
         if (!event) {
             return res.status(404).send("Event not found");
         }
@@ -101,15 +113,24 @@ exports.getManageEventByID = async (req, res) => {
     let eventID = req.params.id;
 
     try {
-        let event = await eventModel.getEventByID(eventID);
+        let events = await eventModel.getEventByID(eventID); // aggregation returns array
+        let event = events[0];
 
-        let categories = await categoryModel.retrieveAll();
-    
-        res.render("events/eventmanagedetail", { errors: editEventErrorMsg, categories, event});
+        if (!event) {
+            return res.redirect("/event/manage");
+        }
+
+        // convert EndDateTime to JS Date if it's not
+        if (event.EndDateTime && !(event.EndDateTime instanceof Date)) {
+            event.EndDateTime = new Date(event.EndDateTime);
+        }
+
+        res.render("events/eventmanagedetail", { event, categories: await categoryModel.retrieveAll(), errors: editEventErrorMsg });
     } catch (error) {
-        // Log your errors
+        console.error(error);
         res.redirect("/event/manage");
     }
+    
 }
 
 exports.editEvent = async (req, res) => {
@@ -117,7 +138,7 @@ exports.editEvent = async (req, res) => {
 
     editEventErrorMsg = []; // reset
 
-    if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime) {
+    if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime || !req.body.Status) {
         return res.status(400).json({ message: "Please fill in all the fields" });
     }
 
@@ -126,7 +147,8 @@ exports.editEvent = async (req, res) => {
         EventDescription: req.body.EventDescription,
         EventType: req.body.EventType,
         MaxCapacity: Number(req.body.MaxCapacity),
-        EndDateTime: new Date(req.body.EndDateTime)
+        EndDateTime: new Date(req.body.EndDateTime),
+        Status: req.body.Status
     };
 
     try {

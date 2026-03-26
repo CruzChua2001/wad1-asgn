@@ -32,6 +32,12 @@
         <label for="EndDateTime">End Date and Time:</label><br>
         <input type="datetime-local" id="EndDateTime" name="EndDateTime" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>"><br><br>
 
+        <label for="Status">Status:</label><br>
+        <select id="Status" name="Status">
+            <option value="active" <%= event.Status === 'active' ? "selected" : "" %>>Active</option>
+            <option value="inactive" <%= event.Status === 'inactive' ? "selected" : "" %>>Inactive</option>
+        </select><br><br>
+
         <button onClick="updateEvent('<%= event.EventID %>')">Update Event</button>
     </div>
 </body>
@@ -45,7 +51,8 @@
             EventDescription: document.getElementById("EventDescription").value,
             EventType: document.getElementById("EventType").value,
             MaxCapacity: document.getElementById("MaxCapacity").value,
-            EndDateTime: document.getElementById("EndDateTime").value
+            EndDateTime: document.getElementById("EndDateTime").value,
+            Status: document.getElementById("Status").value
         };
 
         fetch(`/event/edit/${eventID}`, {

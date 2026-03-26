@@ -16,31 +16,26 @@
                 <p>No upcoming events.</p>
                 <% } %>
 
-                    <% events.forEach(event=> { %>
-                        <div class="event-card">
-                            <% if(event.EventImage){ %>
-                                <img src="<%= event.EventImage %>" width="150" alt="Event Image">
-                                <% } else { %>
-                                    <div
-                                        style="width:150px;height:100px;background:#ccc;text-align:center;line-height:100px;">
-                                        No Image</div>
-                                    <% } %>
+                    <% events.forEach(event => { %>
+    <div class="event-card">
+        <% if(event.EventImage){ %>
+            <img src="<%= event.EventImage %>" width="150" alt="Event Image">
+        <% } else { %>
+            <div style="width:150px;height:100px;background:#ccc;text-align:center;line-height:100px;">
+                No Image
+            </div>
+        <% } %>
 
-                                        <div class="event-info">
-                                            <h2>
-                                                <%= event.EventName %>
-                                            </h2>
-                                            <p>Type: <%= event.EventType %>
-                                            </p>
-                                            <p>
-                                                <%= event.EventDescription %>
-                                            </p>
-                                            <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %>
-                                            </p>
-                                            <a href="/event/<%= event.EventID %>"><button>View Details</button></a>
-                                        </div>
-                        </div>
-                        <% }) %>
+        <div class="event-info">
+            <h2><%= event.EventName %></h2>
+            <p>Type: <%= event.categoryDetails.CategoryName %></p>
+            <p><%= event.EventDescription %></p>
+            <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></p>
+            <a href="/event/<%= event.EventID %>"><button>View Details</button></a>
+        </div>
+    </div>
+<% }) %>
+
         </div>
 
         <style>

@@ -10,58 +10,83 @@
 <body>
     <%- include('../partials/navbar') %>
 
-    <h1>Event Management</h1>
+        <h1>Event Management</h1>
 
-    <p>
-        <a href="/event/new">Create New Event</a>
-    </p>
-    
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Event Name</th>
-                <th>Event Type</th>
-                <th>Current Capacity</th>
-                <th>Max Capacity</th>
-                <th>End Date and Time</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody> 
-            <% events.forEach(event => { %>
-            <tr>
-                <td><%= event.EventName %></td>
-                <td><%= event.EventType %></td>
-                <td><%= event.CurrentCapacity %></td>
-                <td><%= event.MaxCapacity %></td>
-                <td><%= event.EndDateTime.toLocaleString() %></td>
-                <td><%= event.Status === 'active'? 'Open':'Closed' %></td>
-                <td>
-                    <a style="color: darkblue; margin-right: 5px;" href="/event/manage/<%= event.EventID %>">View</a>
-                    <a style="text-decoration: underline; color: darkblue; cursor: pointer;" onClick="deleteEvent('<%= event.EventID %>')">Delete</a>
-                </td>
-            </tr>
-               <% }); %>
-        </tbody>
-     </table>
+        <p>
+            <a href="/event/new">Create New Event</a>
+        </p>
+        <form action="/event/manage" method="GET">
+            <input type="text" name="search" placeholder="Search by Event Name..." value="<%= searchTerm %>">
+            <button type="submit">Search</button><br><br>
+        </form>
+        <% if (events.length===0) { %>
+            <p>No matching events.</p>
+            <% } else { %>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Event Type</th>
+                            <th>Current Capacity</th>
+                            <th>Max Capacity</th>
+                            <th>End Date and Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% events.forEach(event=> { %>
+                            <tr>
+                                <td>
+                                    <%= event.EventName %>
+                                </td>
+                                <td>
+                                    <%= event.categoryDetails.CategoryName %>
+                                </td>
+                                <td>
+                                    <%= event.CurrentCapacity %>
+                                </td>
+                                <td>
+                                    <%= event.MaxCapacity %>
+                                </td>
+                                <td>
+                                    <%= new Date(event.EndDateTime).toLocaleDateString() %>,
+                                        <%= new Date(event.EndDateTime).toLocaleTimeString([], { hour: '2-digit' ,
+                                            minute: '2-digit' }) %>
+                                </td>
+                                <td>
+                                    <%= event.Status==='active' ? 'Open' :'Closed' %>
+                                </td>
+                                <td>
+                                    <a style="color: darkblue; margin-right: 5px;"
+                                        href="/event/manage/<%= event.EventID %>">View</a>
+                                    <a style="text-decoration: underline; color: darkblue; cursor: pointer;"
+                                        onClick="deleteEvent('<%= event.EventID %>')">Delete</a>
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </tbody>
+                </table>
+                <% } %>
 </body>
+
 </html>
 
 <script>
     const deleteEvent = async (eventid) => {
         if (confirm("Are you sure you want to delete this event?")) {
             try {
-        const response = await fetch(`/event/delete/${eventid}`, { method: 'DELETE' });
-        if (response.ok) {
-            alert("Event deleted successfully.");
-            window.location.href = "/event/manage"; // stay on manage page
-        } else {
-            alert("Failed to delete event.");
+                const response = await fetch(`/event/delete/${eventid}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert("Event deleted successfully.");
+                    window.location.href = "/event/manage"; // stay on manage page
+                } else {
+                    alert("Failed to delete event.");
+                }
+            } catch (error) {
+                console.error("Error deleting event:", error);
+                alert("An error occurred while deleting the event.");
+            }
         }
-    } catch (error) {
-        console.error("Error deleting event:", error);
-        alert("An error occurred while deleting the event.");
-    }}
     };
 </script>
