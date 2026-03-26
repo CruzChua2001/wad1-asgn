@@ -8,8 +8,9 @@
 <body>
     <%- include("../partials/navbar.ejs") %>
     <%  %>
-        <% if (!pendingReservations) { %>
+        <% if (!pendingReservations || pendingReservations.length==0) { %>
         <h2>0 reservations in queue</h2>
+        <p>Please wait for reservations for events under your allowed categories.</p>
     <% } else { %>
 
         <h2><%= pendingReservations.length %> reservation(s) Pending Approval</h2>
@@ -35,8 +36,14 @@
                             <td><%= r.UserId %></td>
                             <td><%= r.newTime %></td>
                             <td><%= r.numofppl %></td>
-
-                            <td><form action="/configuration/handle" method="get"><input type="submit" value="Manage Reservation"></form></td>
+                            <form action="" method="post"></form>
+                            <td>
+                                <form action="/configuration/handle" method="post">
+                                    <input style="background-color: green;" type="submit" value="Approve">
+                                    <input style="background-color: red;"type="submit" value="Reject">
+                                </form>
+                            </td>
+                            
                             
                             
                         

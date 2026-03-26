@@ -13,9 +13,6 @@ const reserveModel = require("../models/reservationModel.js")
 
 
 
-
-
-let reservationHistory = [5,7,8]
 //BASIC ADMIN INTERFACE
 router.get("/", (req, res) => {
    
@@ -173,32 +170,51 @@ router.get("/reservationList",(req,res)=>{
   res.render("configuration/reservationList")
 });
 router.get("/pending",async(req,res)=>{
-  let pendingReservations;
+  let pendingReservations =[];
+  let raw =[]
+  
   try {
-    pendingReservations=await reserveModel.retrievePending()
-    if (pendingReservations){
-      pendingReservations.forEach((r,index) => {
-        //new attribute for formatted Date Time
-        r.newTime = dateUtil.formatDateTime(String(r.CreatedDateTime));
-        console.log("event id",r.EventId)
-        if (!filterAllowedReservation(r.EventId)){
-          pendingReservations.splice(index,1)
-        }
+    raw=await reserveModel.retrievePending()
+    
+        
 
-    });
-    }
+    
     
   } catch (error) {
     console.error("Error retrieving pending reservations",error)
   }
-  console.log(pendingReservations)
+  if (raw){
+    for (const r of raw) {
+      //new attribute for formatted Date Time
+      r.newTime = dateUtil.formatDateTime(String(r.CreatedDateTime));
+      
+      try {
+        let isAllowed = await filterAllowedReservation(r.EventId,req.user.userId)
+        
+        if (isAllowed){
+          pendingReservations.push(r)
+        }
+      }catch (error) {
+        console.error("Error filtering allowed reservations",error)
+      }
+      
+    }
+  }
+  
   res.render("configuration/pending",{pendingReservations})
 });
-router.get("/handle",(req,res)=>{
+router.post("/handle",(req,res)=>{
   res.send("Done!")
 });
 
-router.get("/approvalHistory",(req,res)=>{
+router.get("/approvalHistory",async(req,res)=>{
+  let reservationHistory;
+  
+  try {
+    reservationHistory = await reserveModel.retrieveApprovedByAdminId(req.user.userId)
+  } catch (error) {
+    console.error("Error retrieving approved reservations for current Admin",error)
+  }
   res.render("configuration/approvalHistory",{reservationHistory})
 })
 
@@ -285,16 +301,17 @@ async function getCategoryById(id){
 }
 
 
-async function filterAllowedReservation(EventId){
+async function filterAllowedReservation(EventId,currentUser){
   let app;
+  
   try {
       let event=await eventModel.retrieveByEventid(EventId)
-      console.log("Eventype",event.EventType)
+      
       app = await categoryModel.retrieveCategoryById(event.EventType)
 
   } catch (error) {
     console.error("Error finding the corresponding category's approver",error)
   }
-  console.log("Approver",app)
-  return (app=="ALL") || null
+ 
+  return (app.Approval=="ALL" ||app.Approval==currentUser) || false
 }
