@@ -10,63 +10,79 @@
 <body>
     <%- include('../partials/navbar') %>
         <h1>Upcoming Events</h1>
+        
+        <form action="/event" method="GET">
+            <input type="text" name="search" placeholder="Search by Event Name..." value="<%= searchTerm || '' %>">
+            <button type="submit">Search</button>
+            <a href="/event"><button type="button">Clear</button></a>
+        </form>
 
-        <div id="eventsContainer">
-            <% if (events.length===0) { %>
-                <p>No upcoming events.</p>
+        <br>
+
+        <% if (events.length===0) { %>
+            <p style="text-align: center; color: grey; font-style: italic;">No matching events</p>
+            <% } else { %>
+
+                <div id="eventsContainer">
+
+                    <% events.forEach(event=> { %>
+                        <div class="event-card">
+                            <% if(event.EventImage){ %>
+                                <img src="<%= event.EventImage %>" width="150" alt="Event Image">
+                                <% } else { %>
+                                    <div
+                                        style="width:150px;height:100px;background:#ccc;text-align:center;line-height:100px;">
+                                        No Image
+                                    </div>
+                                    <% } %>
+
+                                        <div class="event-info">
+                                            <h2>
+                                                <%= event.EventName %>
+                                            </h2>
+                                            <p>Type: <%= event.categoryDetails.CategoryName %>
+                                            </p>
+                                            <p>
+                                                <%= event.EventDescription %>
+                                            </p>
+                                            <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %>
+                                            </p>
+                                            <a href="/event/<%= event.EventID %>"><button>View Details</button></a>
+                                        </div>
+                                </div>
+                        <% }) %>
+                    </div>
                 <% } %>
 
-                    <% events.forEach(event => { %>
-    <div class="event-card">
-        <% if(event.EventImage){ %>
-            <img src="<%= event.EventImage %>" width="150" alt="Event Image">
-        <% } else { %>
-            <div style="width:150px;height:100px;background:#ccc;text-align:center;line-height:100px;">
-                No Image
-            </div>
-        <% } %>
+                <style>
+                    #eventsContainer {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                    }
 
-        <div class="event-info">
-            <h2><%= event.EventName %></h2>
-            <p>Type: <%= event.categoryDetails.CategoryName %></p>
-            <p><%= event.EventDescription %></p>
-            <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></p>
-            <a href="/event/<%= event.EventID %>"><button>View Details</button></a>
-        </div>
-    </div>
-<% }) %>
+                    .event-card {
+                        display: flex;
+                        border: 1px solid #ddd;
+                        border-radius: 6px;
+                        padding: 15px;
+                        gap: 15px;
+                        align-items: flex-start;
+                    }
 
-        </div>
+                    .event-card img {
+                        border-radius: 6px;
+                        object-fit: cover;
+                    }
 
-        <style>
-            #eventsContainer {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-            }
+                    .event-info h2 {
+                        margin: 0 0 5px 0;
+                    }
 
-            .event-card {
-                display: flex;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                padding: 15px;
-                gap: 15px;
-                align-items: flex-start;
-            }
-
-            .event-card img {
-                border-radius: 6px;
-                object-fit: cover;
-            }
-
-            .event-info h2 {
-                margin: 0 0 5px 0;
-            }
-
-            .event-info p {
-                margin: 3px 0;
-            }
-        </style>
+                    .event-info p {
+                        margin: 3px 0;
+                    }
+                </style>
 
 </body>
 

@@ -5,11 +5,23 @@ const generateUUID = require('../utils/uuidUtils').generateUUID;
 
 exports.getAllEvents = async (req, res) => {
     try {
-        const events = await eventModel.retrieveAllWithCategory();
+        const searchTerm = req.query.search || "";
 
-        const filteredEvents = events.filter(e => e.Status === 'active')
+        let events = await eventModel.retrieveAllWithCategory();
 
-        res.render("events/event", { events: filteredEvents });
+        // Search by Event Name
+        if (searchTerm) {
+            const regex = new RegExp(searchTerm, "i"); // case-insensitive
+            events = events.filter(e => regex.test(e.EventName));
+        }
+
+        // Only show active events
+        const filteredEvents = events.filter(e => e.Status === 'active');
+
+        res.render("events/event", {
+            events: filteredEvents,
+            searchTerm // MUST pass this
+        });
     } catch (err) {
         console.log(err);
         res.send("Error loading events");
@@ -20,13 +32,14 @@ exports.getManageEvents = async (req, res) => {
     try {
         const searchTerm = req.query.search || ""; // get search query from URL
         let events = await eventModel.retrieveAllWithCategory(); // fetch all events with category
+        const categories = await categoryModel.retrieveAll();
 
         if (searchTerm) {
             const regex = new RegExp(searchTerm, "i"); // case-insensitive search
             events = events.filter(e => regex.test(e.EventName));
         }
 
-        res.render("events/eventmanage", { events, searchTerm });
+        res.render("events/eventmanage", { events, searchTerm, categories });
     } catch (err) {
         console.log(err);
         res.send("Error loading events");
@@ -74,7 +87,7 @@ exports.postNewEvent = async (req, res) => {
         EventImage: "", // Leave it empty first
         EventType: req.body.EventType,
         MaxCapacity: Number(req.body.MaxCapacity),
-        CreatedBy: "adm001", // req.user.UserID, use this when can login
+        CreatedBy: req.user.userId,
         EndDateTime: new Date(req.body.EndDateTime), // Combine date and time from the form OR however u want to do it
         Status: 'active' // Set as default active, only edit can change this 
     }
@@ -96,7 +109,7 @@ exports.getEventByID = async (req, res) => {
     try {
         let events = await eventModel.getEventByID(eventID); // returns array
         let event = events[0]; // pick the first (and only) event
-        
+
         if (!event) {
             return res.status(404).send("Event not found");
         }
@@ -130,7 +143,7 @@ exports.getManageEventByID = async (req, res) => {
         console.error(error);
         res.redirect("/event/manage");
     }
-    
+
 }
 
 exports.editEvent = async (req, res) => {
