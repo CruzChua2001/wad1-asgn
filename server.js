@@ -34,7 +34,7 @@ server.use("/user", userRouter);                        // Anumitaa
 server.use("/event", eventRouter)                       // Claudine
 server.use("/reserve",auth.requireAuth, reserveRouter);                  // Zhi Yang
 server.use("/configuration", configurationRouter);      // Mahshuk
-server.use("/feedback", feedbackRouter);                // Keifer
+server.use("/feedback", auth.requireAuth, feedbackRouter);                // Keifer
 server.use("/contactus", auth.requireAuth, contactusRouter);            // Cruz
 
 server.get("/home", auth.requireAuth, (req, res) => {

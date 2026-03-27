@@ -12,7 +12,7 @@
             <input type="radio" id="true" name="isAnonymous" value="1">
             <label for= "true">yes</label>
             <input type="radio" id="false" name="isAnonymous" value="0">
-            <label for= "false">no</label>"
+            <label for= "false">no</label>
 
             <p>"How would you rate your experience from 1-5"</p>
             <% ratings.forEach((r) => { %> 
@@ -37,8 +37,11 @@
                 <input type="radio" id="goals-<%=r%>" name="goals" value="<%=r%>">
                 <label for="<%=r%>"><%=r%></label>
                 <% }) %> 
+            <br>
             <label for="feedback">Any other feedback?</label>
+            <br>
             <textarea id="feedback" name="feedback" ></textarea>
+            <br><br>
         <button type="submit">Submit</button>   
     </form>
 </body>
