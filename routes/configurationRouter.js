@@ -6,217 +6,42 @@ const dateUtil = require("../utils/dateUtils.js")
 const userModel = require("../models/userModel.js");
 const categoryModel = require("../models/categoryModel.js");
 const eventModel = require("../models/eventModel.js");
-
-const reserveModel = require("../models/reservationModel.js")
-//DUMMY DATA 
-
-
-
-
-//BASIC ADMIN INTERFACE
-router.get("/", (req, res) => {
-   
-    res.render("configuration/configuration.ejs")
-})
+const configurationController = require ("../controllers/configurationController.js");
+const reserveModel = require("../models/reservationModel.js");
+const { config } = require("dotenv");
+const reserveData = {
+  "A":"accepted",
+  "R":"rejected",
+  "W":"waitlist",
+}
 
 module.exports = router;  
 
+//BASIC ADMIN INTERFACE
+router.get("/", configurationController.displayDashboard);
+
+
 
 //CATEGORY ROUTES
-router.get("/category",async(req,res)=>{
-  const categoryList = await getAllCategories();
-  res.render("configuration/category.ejs",{categoryList,isRegister:false,validEntry:true,adminNameList:null,errorList:null,record:null})
+router.get("/category",configurationController.displayCategories)
 
-})
+router.get("/category/register",configurationController.displayCategoryForm);
 
-router.get("/category/register",async(req,res)=>{
-    let adminNameList = await getAllAdmins()
-    let categoryList = await getAllCategories();
-
-    res.render("configuration/category.ejs",{categoryList,isRegister:true,validEntry:true,adminNameList,errorList:null,record:null})
-});
-
-router.post("/category/register",async(req,res)=>{
-  let categoryName = req.body.categoryName.trim();
-  let categoryDescription = req.body.categoryDescription.trim();
-  let approver = req.body.approver;
-  let adminNameList = await getAllAdmins()
-  let categoryList = await getAllCategories();
-  let validity = validateCategoryEntry(categoryDescription,categoryName,approver,categoryList);
-  let result;
-  let isRegister = true;
-  if(validity.validEntry){
-    try {
-      result = await categoryModel.addCategory(
-      {
-    CategoryID:uuidUtil.generateUUID(),
-    CategoryName:categoryName,
-    CategoryDesc:categoryDescription,
-    Approval:approver,
-    CreatedBy:req.user.userId,
-    RejectionReason:" ",
-    isDeleted:0,
-    createdAt:dateUtil.formatDateTime(new Date())
-    });
-    isRegister=false;
-    res.redirect("/configuration/category")
-    } catch (error) {
-      result = "fail";
-      console.error("Error adding new category",error);
-    }
- 
-  }else{
-    res.render("configuration/category.ejs",{categoryList,isRegister,validEntry:validity.validEntry,adminNameList,errorList:validity.errorList,record:{categoryName,categoryDescription,approver}})
-
-  }
-});
+router.post("/category/register",configurationController.categoryRegistration);
 
 
-router.get("/categoryDetail", async(req,res)=>{
-  const categoryId = req.query.categoryId;
-  let catDetail;
-  let events;
-  try {
-    catDetail = await getCategoryById(categoryId);
-    catDetail.createdAt = dateUtil.formatDateTime(String(catDetail.createdAt))
+router.get("/categoryDetail", configurationController.displayCategoryDetail);
 
-  } catch (error) {
-    console.error("Error retrieving Category Detail",error)
-  }
-  try {
-    events = await eventModel.retrieveByCategoryId(categoryId)
-  } catch (error) {
-    console.error("Error retrieving events under a category.",error)
-  }
-  
-  let categoryData = {
+router.post("/categoryDetail",configurationController.updateCategoryDetail);
 
-    catDetail,
-    events:events||null
-  }
-  res.render("configuration/categoryDetail.ejs",{categoryData,errorList:null,message:null})
-});
-
-router.post("/categoryDetail",async(req,res)=>{
-  const id = req.body.categoryId;
-  const newName = req.body.catNameUpdated;
-  const newDesc = req.body.catDescUpdated;
-  
-  let result,message;
-  if(newName && newDesc){
-    try {
-      result = await categoryModel.updateDetail(id,newName,newDesc)
-    } catch (error) {
-      console.error("Error updating Category Detail",error)
-    }
-    message = result? `Details for Category Id <b>${id}</b>, are updated successfully.`:`Error updating Category Id <b>${id}</b>, please try again later.`;
-    res.render("configuration/outcome.ejs",{
-      message,result
-    })
-
-  }else{
-    let errorList = [];
-    !newDesc ? errorList.push("Missing Category Description"):newDesc;
-    !newName ? errorList.push("Missing Category Name"):newName;
-    let categoryData = {
-
-    
-      catDetail:{
-        CategoryID:id,
-        CreatedBy:req.body.creator,
-        createdAt:req.body.categoryDate,
-        Approval:req.body.approver,
-        CategoryName:newName,
-        CategoryDesc:newDesc
-      },
-      
-      events:null
-    }
-
-    res.render("configuration/categoryDetail.ejs",{categoryData,message,errorList})
-  }
-  
-});
-
-router.get("/deleteCategory",async(req,res) => {
-  const id = req.query.categoryId;
-  const option = (req.query.option).trim().toLowerCase();
-  let result;
-  if (option==="delete"){
-    try {
-      let eventRecord = await eventModel.retrieveByCategoryId(id);
-      
-      if (eventRecord.length>=1){
-        res.redirect("/configuration/category");
-        return
-      }
-      result = await categoryModel.deleteCategory(id)
-      
-      message = result? `Category Id <b>${id}</b> is deleted successfully.`:`Error deleting Category Id <b>${id}</b>, please try again later.`;
-
-    } catch (error) {
-        console.error(`Error deleting Category Id ${id}`,error)
-    }
-    res.render("configuration/outcome.ejs",{
-        message,result
-    })
-
-  }else{
-    res.redirect("/configuration/category")
-  }
-})
+router.get("/deleteCategory",configurationController.deleteCategory)
 //RESERVATION ROUTES
-router.get("/reservationList",(req,res)=>{
-  res.render("configuration/reservationList")
-});
-router.get("/pending",async(req,res)=>{
-  let pendingReservations =[];
-  let raw =[]
-  
-  try {
-    raw=await reserveModel.retrievePending()
-    
-        
+router.get("/reservationDashboard",configurationController.displayReservationDashboard);
+router.get("/pending",configurationController.displayPendingReservations);
 
-    
-    
-  } catch (error) {
-    console.error("Error retrieving pending reservations",error)
-  }
-  if (raw){
-    for (const r of raw) {
-      //new attribute for formatted Date Time
-      r.newTime = dateUtil.formatDateTime(String(r.CreatedDateTime));
-      
-      try {
-        let isAllowed = await filterAllowedReservation(r.EventId,req.user.userId)
-        
-        if (isAllowed){
-          pendingReservations.push(r)
-        }
-      }catch (error) {
-        console.error("Error filtering allowed reservations",error)
-      }
-      
-    }
-  }
-  
-  res.render("configuration/pending",{pendingReservations})
-});
-router.post("/handle",(req,res)=>{
-  res.send("Done!")
-});
+router.post("/handle",configurationController.handleReservationApproval);
 
-router.get("/approvalHistory",async(req,res)=>{
-  let reservationHistory;
-  
-  try {
-    reservationHistory = await reserveModel.retrieveApprovedByAdminId(req.user.userId)
-  } catch (error) {
-    console.error("Error retrieving approved reservations for current Admin",error)
-  }
-  res.render("configuration/approvalHistory",{reservationHistory})
-})
+router.get("/approvalHistory",configurationController.displayApprovalHistory)
 
 //helper functions
 
@@ -314,4 +139,51 @@ async function filterAllowedReservation(EventId,currentUser){
   }
  
   return (app.Approval=="ALL" ||app.Approval==currentUser) || false
+}
+
+async function checkVacancy(eventId,pax){
+  let event;
+  try {
+    
+    event = await eventModel.retrieveByEventid(eventId)
+    return {currentCapacity: event.CurrentCapacity,approvalStatus:(event.CurrentCapacity + pax <= event.MaxCapacity)?"A":"W"}
+  } catch (error) {
+    console.error(`Error retrieving Event Record: ${eventId}`,error)
+    return "Error"
+  }
+
+}
+
+async function updateEventCapacity(eventId,pax){
+   let res;
+   try {
+    res = await eventModel.updateEventPax(eventId,pax)
+    await reserveModel.update()
+   } catch (error) {
+      console.error(`Error updating event pax for event id: ${eventId}`,error)
+   }
+   return res;
+  
+} 
+
+async function updateReservationStatus (reservationId,action,approverId,waitListData){
+    let updateRes;
+    // default updateData for waitlist and approved
+    let updateData={
+        "Status":reserveData[action]
+      };
+    if (approverId){// if reservation is approved, additonal attribute to be updated
+      updateData["ApprovedBy"] = approverId;
+    }
+    if (waitListData){ // if reservation is waitlisted, update reservation with the current waitlist number
+      updateData["WaitlistNo"]=waitListData;
+    }
+    if(action)
+      try {
+      updateRes = await reserveModel.update(reservationId, updateData);
+      
+    } catch (error) {
+        console.error(`Error updating Reservation ID:${reservationId} to status '${reserveData[action]}'`,error);
+    }
+    return updateRes
 }

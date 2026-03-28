@@ -7,53 +7,112 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
-    <%  %>
-        <% if (!pendingReservations || pendingReservations.length==0) { %>
+        <% if (reservationOutcome) { %>
+             <% if (reservationOutcome.outcome !== "error") { %>
+            <p style="color: green;">Reservation status <b><%= reservationOutcome.id %></b>
+                <b><u>
+                    <%= reservationOutcome.outcome==="R"?"rejected":"" %>
+                    <%= reservationOutcome.outcome==="A"?"accepted":"" %>
+                    <%= reservationOutcome.outcome==="W"?"placed on waitlist":"" %>
+                </u></b>
+                successfully.
+                <% if (reservationOutcome.outcome==="W") { %>
+                    <p style="color: red;">This event has reached maximum capacity. </p>
+                <% } %>
+            </p>
+            <% } else if (reservationOutcome.outcome ==="error") { %>
+                    <p style="color: red;">
+                        Database error in updating the reservation status <b><%= reservationOutcome.id %></b>
+                        Please try again later.
+                    </p>
+            <% } %>
+
+    <% } %>
+
+    <% if (!pendingReservations || pendingReservations.length==0) { %>
         <h2>0 reservations in queue</h2>
         <p>Please wait for reservations for events under your allowed categories.</p>
-    <% } else { %>
+    <% } 
+    
+
+    else { %>
 
         <h2><%= pendingReservations.length %> reservation(s) Pending Approval</h2>
 
-
+        
         
 
         <table border="2">
         
             <tr>
-                <th>Event </th>
+                <th>Event ID</th>
+                <th>Event Name</th>
                 <th>Reservation User</th>
-                <th>Reservation Date & Time</th>
+                <th>Reservation Creation Date</th>
                 <th>Pax</th>
-                <th>&nbsp;</th>
+                <th>Reservation Outcome?</th>
             </tr>
                 <ol>
                 <% pendingReservations.forEach(r => { %>
-
+                    
                     
                         <tr>
                             <td><%= r.EventId %></td>
+                            <td><%= r.EventName %></td>
                             <td><%= r.UserId %></td>
-                            <td><%= r.newTime %></td>
-                            <td><%= r.numofppl %></td>
-                            <form action="" method="post"></form>
+                            <td><%= r.formattedTime %></td>
+                            <td><%= r.nuwmofppl %></td>
+                            
                             <td>
                                 <form action="/configuration/handle" method="post">
-                                    <input style="background-color: green;" type="submit" value="Approve">
-                                    <input style="background-color: red;"type="submit" value="Reject">
+                                    <div style="background-color:green;color: white;">
+                                        <label for="approve">Approve
+                                            <input type="radio" name="action" id="approve" value="A!<%= r.ReservationID%> %>">
+                                        </label>
+
+                                    </div>
+                                    <div>
+                                        &nbsp;
+                                    </div>
+                                    <div style="background-color:red;color: white; ">
+                                        <label for="reject">Reject
+                                            <input type="radio" name="action" id="reject" value="R!<%= r.ReservationID %>">
+                                            
+                                        </label>
+                                        
+                                    </div>
+                                    <input type="hidden" name="numPax" value="<%= r.numofppl %>">
+                                    <input type="hidden" name="EventId" value="<%= r.EventId %>">
+                                    
+                                    <br>
+                                    <input style="background-color: blue;color: white;"type="submit" value="Confirm Action">
+
+                                    
                                 </form>
                             </td>
-                            
-                            
-                            
-                        
-                        
+                        </tr>
+                        <tr border="hidden">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
                         </tr>
                     
                 <% }) %>
 
                 </ol>
         </table>
+        <% if (missingCategory) { %>
+            <p style="color: red;">Please click on an Action. Otherwise, please return to Admin Page.</p>
+
+        <% } %>
+       <% if (missingCategory) { %>
+            <p style="color: red;">Please click on an Action. Otherwise, please return to Admin Page.</p>
+
+        <% } %>
     <% } %>
+        <a href="/configuration">Back to Admin Dashboard</a>
+
 </body>
 </html>
