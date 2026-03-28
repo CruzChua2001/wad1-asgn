@@ -142,7 +142,7 @@ exports.retrievePending = () => {
     return Reservation.find({Status:"pending", isDeleted: 0});
 }
 exports.retrieveApprovedByAdminId = (adminId) => {
-    return Reservation.find({Status:"approved","ApprovedBy":adminId})
+    return Reservation.find({Status:"accepted","ApprovedBy":adminId})
 }
 exports.create = (reservationData) => {
     const reservation = new Reservation(reservationData);

@@ -60,7 +60,9 @@ const Event = mongoose.model('Event', eventSchema, 'event');
 exports.retrieveAll = () => {
     return Event.find({ isDeleted: 0 });
 }
-
+exports.retrieveEventName = (EventId) =>{
+    return Event.findOne({EventID:EventId,isDeleted:0}).select('EventName')
+}
 exports.retrieveById = (id) => {
     return Event.findOne({ EventID: id, isDeleted: 0 });
 };
@@ -70,5 +72,8 @@ exports.retrieveByCategoryId = (categoryId) =>{
 }
 
 exports.retrieveByEventid = (eventId) =>{
-    return Event.findOne({EventID:eventId}).select("EventType")
+    return Event.findOne({EventID:eventId})
+}
+exports.updateEventPax = (eventId,pax) =>{
+    return Event.updateOne({EventID:eventId},{CurrentCapacity:pax});
 }

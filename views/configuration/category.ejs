@@ -9,7 +9,9 @@
     <%- include("../partials/navbar.ejs") %>
    
     <h2>Event Categories</h2>
-    
+    <% if (newCategoryId) { %>
+        <p style="color: green;"> A new category with Category Id: <b><%= newCategoryId %></b> successfully created.</p>
+    <% } %>
     <% if (categoryList.length > 0) { %>
         <ol>
             <% categoryList.forEach(c => { %>
@@ -60,5 +62,7 @@
             <input type="submit" value="Add Category">
         </form>
     <% } %>
+    <br><br>
+    <a href="/configuration">Back to Admin Dashboard</a>
 </body>
 </html>

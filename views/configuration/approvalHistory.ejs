@@ -8,18 +8,40 @@
 <body>
     <%- include("../partials/navbar.ejs") %>
 
-    <% if (!reservationHistory || reservationHistory.length ==0) { %>
+    <% if (reservationHistory.length ==0) { %>
         <h2>Empty Reservation History</h2>
-        <p>Please check for pending reservation requests next time. </p>
+        <p>You have not approved any reservations yet.</p>
+    <% } else if (err) { %>
+         <p style="color: red;">Error retrieving approved reservations. Please try again later. </p>
     <% } else { %>
          <h2><%= reservationHistory.length %> reservation(s) Approved</h2>
-         <ol>
-
          
+
+         <table border="1">
+            <tr>
+                <th>Reservation ID</th>
+                <th>Event ID</th>
+                <th>Event Name</th>
+                <th>Reservation User</th>
+                <th>Reservation Creation Date</th>
+                <th>Pax</th>
+                
+            </tr>
+        
          <% reservationHistory.forEach(r => { %>
-            <li><%= r %></li>
+            <tr>
+                <td><%= r.ReservationID  %></td>
+                <td><%= r.EventId %></td>
+                <td><%= r.EventName %></td>
+                <td><%= r.CreatedBy %></td>
+                <td><%= r.formattedTime %></td>
+                <td><%= r.numofppl %></td>
+                
+            </tr>
          <% }) %>
-         </ol>
+          </table>
     <% } %>
+    <br>
+    <a href="/configuration">Back to Admin Dashboard</a>
 </body>
 </html>
