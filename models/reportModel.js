@@ -92,3 +92,7 @@ exports.updateReplyByReplyId = (reportID, replyID, updatedMessage) => {
 exports.deleteReplyByReplyId = (reportID, replyID) => {
     return Report.updateOne({ ReportID: reportID }, { $pull: { Reply: { ReplyID: replyID } } })
 }
+
+exports.updateReportStatusByReportId = (reportID, updatedStatus) => {
+    return Report.updateOne({ ReportID: reportID }, { Status: updatedStatus });
+}

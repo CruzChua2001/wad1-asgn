@@ -110,12 +110,23 @@ const mockReports = [
 
 const REPORTTYPES = ["General Inquiry", "Feedback", "Report a Problem"];
 
-exports.getReportHistory = (req, res) => {
+exports.getReportHistory = async (req, res) => {
     // TODO: Retrieve all reports from the database
+    try {
+        const allReports = await reportModel.retrieveAllReport();
 
-    res.render("contactus/history", {
-        reports: mockReports
-    });
+        // Sort reports by CreatedAt in descending order (most recent first)
+        allReports.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
+
+        // For now, we will just return all mock reports
+        // In actual implementation, replace mockReports with filteredReports
+        res.render("contactus/history", {
+            reports: allReports
+        });
+    } catch (error) {
+        console.error("contactusController.getReportHistory: Error retrieving report history:", error);
+        return res.redirect("/home");
+    }
 }
 
 exports.getContactUs = async (req, res) => {
@@ -260,19 +271,22 @@ exports.deleteReportById = async (req, res) => {
     }
 }
 
-exports.updateStatusById = (req, res) => {
+exports.updateStatusById = async (req, res) => {
     const reportId = req.params.id;
     const { status: updatedStatus } = req.body;
 
-    const report = mockReports.find(r => r.ReportId === reportId);
+    try {
+        let response = await reportModel.updateReportStatusByReportId(reportId, updatedStatus);
 
-    if (!report) {
-        return res.status(404).json({ message: "Report not found." });
+        if (!response) {
+            return res.status(404).json({ message: "Report not found." });
+        } else {
+            return res.redirect(`/contactus/${reportId}`);
+        }
+    } catch (error) {
+        console.error("contactusController.updateStatusById: Error updating report status:", error);
+        return res.status(500).json({ message: "An error occurred while updating the report status." });
     }
-
-    report.Status = updatedStatus;
-
-    res.redirect(`/contactus/${reportId}`);
 }
 
 exports.addReplyById = async (req, res) => {
