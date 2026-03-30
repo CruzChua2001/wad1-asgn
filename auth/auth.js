@@ -6,18 +6,19 @@ const isAdmin = (req) => {
     return req.user && req.user.role === "admin";
 };
 
-const requireAuth = (req, res, next) => {
-    // TODO: Check if user is authenticated via cookie
-
-    // return res.redirect("/index.html");
-    
-    // mock user
-    req.user = { userId: "aoisjdoiq", email: "testuser", role: "student" };
-
-    // set 
+const attachUserLocals = (req, res, next) => {
+    req.user = req.session && req.session.user ? req.session.user : null;
+    res.locals.currentUser = req.user;
     res.locals.isAdmin = isAdmin(req);
     next();
-}
+};
+
+const requireAuth = (req, res, next) => {
+    if (!req.user) {
+        return res.redirect("/login");
+    }
+    next();
+};
 
 const requireAdmin = (req, res, next) => {
     // check if user role is admin
@@ -31,6 +32,7 @@ const requireAdmin = (req, res, next) => {
 }
 
 module.exports = {
+    attachUserLocals,
     requireAuth,
     requireAdmin
 }
