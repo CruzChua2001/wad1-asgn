@@ -69,3 +69,12 @@ const deleteUser = (userID) => {
 // soft delete as a safety mechanism to prevent accidental deletions and potential data loss, also bc user data might be linked to other records
 
 module.exports = { retrieveAll, findByEmail, findByUserID, createUser, updatePasswordByEmail, deleteUser };
+exports.getAdminIdByName = (name) => {
+    return User.findOne({FirstName:name.split(" ")[0],LastName:name.split(" ")[1]})
+}
+exports.getAdminUsers = () =>{
+    return User.find({Role:"admin"});
+}
+exports.retrieveAll = () => {
+    return User.find({ isDeleted: 0 });
+}

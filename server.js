@@ -40,7 +40,7 @@ const contactusRouter = require("./routes/contactusRouter");
 server.use("/user", userRouter);                        // Anumitaa 
 server.use("/event", eventRouter)                       // Claudine
 server.use("/reserve",auth.requireAuth, reserveRouter);                  // Zhi Yang
-server.use("/configuration", configurationRouter);      // Mahshuk
+server.use("/configuration",auth.requireAuth,auth.requireAdmin, configurationRouter);      // Mahshuk
 server.use("/feedback", feedbackRouter);                // Keifer
 server.use("/contactus", auth.requireAuth, contactusRouter);            // Cruz
 

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { formatDateTime } = require('../utils/dateUtils');
 
 const categorySchema = new mongoose.Schema({
     CategoryID: {
@@ -8,6 +9,10 @@ const categorySchema = new mongoose.Schema({
     CategoryName: {
         type: String,
         required: [true, "Category require a CategoryName"]
+    },
+    CategoryDesc:{
+        type:String,
+        required:[true,"Category require a valid Description"]
     },
     Approval: {
         type: String,
@@ -24,11 +29,33 @@ const categorySchema = new mongoose.Schema({
     isDeleted: {
         type: Number,
         default: 0
+    },
+    createdAt:{
+        type:Date,
+        required:[true,"Category require a Creation Date and Time Recorded"]
     }
 })
 
 const Category = mongoose.model("Category", categorySchema, "category");
 
+
+
 exports.retrieveAll = () => {
     return Category.find({ isDeleted: 0 });
+}
+
+exports.addCategory = (newCategory) =>{
+    return Category.create(newCategory)
+}
+exports.updateDetail = (id,name,desc) =>{
+    return Category.updateOne({CategoryID:id,isDeleted:0},{CategoryName:name,CategoryDesc:desc})
+}
+
+exports.deleteCategory = (id) =>{
+    return Category.updateOne({CategoryID:id},{isDeleted:1})
+}
+
+// retrieve the approver 
+exports.retrieveCategoryById = (CategoryId) =>{
+    return Category.findOne({CategoryID:CategoryId})
 }
