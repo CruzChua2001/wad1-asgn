@@ -7,9 +7,9 @@ const feedbackModel = require("./models/feedbackModel");
 
 const server = express();
 
-const PORT = Number(process.env.PORT) || 8000;
-
 dotenv.config();
+
+const PORT = Number(process.env.PORT) || 8000;
 
 server.set("view engine", "ejs");
 server.use(express.json());
@@ -62,7 +62,6 @@ server.use("/", authRouter);
 // Insert code above -------------------------
 
 const connectDB = async () => {
-    await mongoose.connect(process.env.DB);
     try {
         // connecting to Database with our config.env file and DB is constant in config.env
         await mongoose.connect(process.env.DB);
