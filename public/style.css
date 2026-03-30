@@ -670,6 +670,73 @@ tr:hover td{ background: rgba(87,166,255,.06); }
   background: rgba(11,16,39,.35);
 }
 
+/* Feedback form */
+.feedback-grid{
+  display:grid;
+  gap: 16px;
+}
+.feedback-question{
+  padding: 12px;
+  border: 1px solid rgba(130,170,255,.14);
+  border-radius: 14px;
+  background: rgba(5,7,18,.28);
+}
+.feedback-options{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.rating-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(130,170,255,.22);
+  background: rgba(11,16,39,.55);
+  color: rgba(234,240,255,.92);
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.rating-pill:hover{
+  transform: translateY(-1px);
+  border-color: rgba(51,246,255,.35);
+  box-shadow: 0 0 0 3px rgba(87,166,255,.12);
+}
+.rating-pill input{
+  display:none;
+}
+.rating-pill:has(input:checked){
+  border-color: rgba(51,246,255,.45);
+  box-shadow: 0 0 0 3px rgba(87,166,255,.16), 0 0 18px rgba(51,246,255,.14);
+  background: linear-gradient(135deg, rgba(87,166,255,.20), rgba(125,92,255,.16));
+}
+
+/* Feedback details */
+.metric-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.metric-card{
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(130,170,255,.14);
+  background: rgba(5,7,18,.28);
+}
+.metric-card .label{
+  color: rgba(234,240,255,.72);
+  font-size: 13px;
+}
+.metric-card .value{
+  font-family: "Rajdhani","Space Grotesk",system-ui,sans-serif;
+  font-size: 28px;
+  line-height: 1.1;
+  margin-top: 4px;
+}
+
 /* Event detail image height */
 .event-detail-image{
   height: 280px;

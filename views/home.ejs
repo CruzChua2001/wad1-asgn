@@ -15,7 +15,7 @@
                 <div class="spacer"></div>
                 <h1>Discover the best events on campus.</h1>
                 <p>
-                    Explore what’s trending, save your spot, and leave feedback to power the leaderboard.
+                    Explore what’s trending, save your spot to our latest events.
                     The list below is based on ratings from real attendees.
                 </p>
                 <div class="form-actions">
@@ -29,7 +29,7 @@
             <div class="panel-header carousel-head">
                 <div>
                     <h2>Top-rated events</h2>
-                    <p class="subtle">A “movie list” of the current top 10, ranked by feedback score.</p>
+                    <p class="subtle">Top 10 events, ranked by fellow attendees.</p>
                 </div>
                 <div class="carousel-controls">
                     <button class="btn btn-ghost" type="button" data-carousel-left aria-label="Scroll left">←</button>
@@ -61,7 +61,7 @@
                                         <%= event.eventDescription || "No description yet — click through to see details." %>
                                     </div>
                                     <div class="movie-actions">
-                                        <a class="btn btn-primary" href="/event/<%= event.eventId %>">View details</a>
+                                        <a class="btn btn-primary" href="/event/<%= event.EventID %>">View details</a>
                                         <a class="btn btn-ghost" href="/event">More events</a>
                                     </div>
                                 </div>

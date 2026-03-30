@@ -11,14 +11,14 @@ exports.submitFeedback = async (req,res) => {
     try {
         const userId = req.user.userId
         const eventId = req.params.eventId
-        const event = await Event.findOne({eventId:eventId})
 
         await addfeedback(userId, eventId, req.body)
         res.redirect("/")
-        } catch (error) {
-          console.log(error)
-          res.send("Error fetching feedback")};
-        }
+    } catch (error) {
+        console.log(error)
+        res.send("Error fetching feedback")
+    };
+}
 
 exports.getHistoryForm = async(req,res) => {
   try{

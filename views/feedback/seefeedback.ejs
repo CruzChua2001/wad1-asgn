@@ -7,35 +7,61 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
-    <h1>Feedback Details</h1>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>Feedback Details</h1>
+          <p class="subtle">Review your submitted response.</p>
+        </div>
+        <div class="panel-inner stack">
+          <% if (!feedback) { %>
+            <div class="note note-danger text-danger">Feedback not found.</div>
+            <a class="btn btn-ghost btn-sm" href="/feedback/history">Back to History</a>
+          <% } else { %>
+            <div class="feedback-question">
+              <h2><%= feedback.EventName || "Unknown Event" %></h2>
+              <div class="movie-meta">
+                <span class="pill">Date: <%= feedback.CreatedDateTime %></span>
+                <span class="pill">Anonymous: <%= feedback.isAnonymous == 1 ? "Yes" : "No" %></span>
+                <span class="pill">Feedback ID: <%= feedback.FeedbackID %></span>
+              </div>
+            </div>
 
-    <% if (!feedback) { %>
-        <p>Feedback not found.</p>
-    <% } else { %>
-        <p>Event Name: <%= feedback.EventName || "Unknown Event" %></p>
-        <p>Date / Time: <%= feedback.CreatedDateTime %></p>
-        <p>Anonymous: <%= feedback.isAnonymous == 1 ? "Yes" : "No" %></p>
-        <p>Rating: <%= feedback.rating %> / 5</p>
-        <p>Attend Similar Events: <%= feedback.attend %> / 5</p>
-        <p>Recommend to Others: <%= feedback.recommend %> / 5</p>
-        <p>Helped Achieve Goals: <%= feedback.goals %> / 5</p>
-        <p>Additional Feedback: <%= feedback.Feedback || "No additional feedback" %></p>
+            <div class="metric-grid">
+              <div class="metric-card">
+                <div class="label">Overall Rating</div>
+                <div class="value"><%= feedback.rating %><span class="label"> / 5</span></div>
+              </div>
+              <div class="metric-card">
+                <div class="label">Attend Similar</div>
+                <div class="value"><%= feedback.attend %><span class="label"> / 5</span></div>
+              </div>
+              <div class="metric-card">
+                <div class="label">Recommend</div>
+                <div class="value"><%= feedback.recommend %><span class="label"> / 5</span></div>
+              </div>
+              <div class="metric-card">
+                <div class="label">Goals Achieved</div>
+                <div class="value"><%= feedback.goals %><span class="label"> / 5</span></div>
+              </div>
+            </div>
 
-        <br><br>
+            <div class="feedback-question">
+              <label>Additional Feedback</label>
+              <p><%= feedback.Feedback || "No additional feedback." %></p>
+            </div>
 
-        <a href="/feedback/edit/<%= feedback.FeedbackID %>">
-            <button>Edit Feedback</button>
-        </a>
-
-        <form action="/feedback/delete/<%= feedback.FeedbackID %>" method="POST">
-            <button type="submit">Delete</button>
-                Delete Feedback
-            </button>
-        </form>
-    <% } %>
-
-    <br><br>
-    <a href="/feedback/history">Back to History</a>
+            <div class="form-actions">
+              <a class="btn btn-primary btn-sm" href="/feedback/edit/<%= feedback.FeedbackID %>">Edit Feedback</a>
+              <form action="/feedback/delete/<%= feedback.FeedbackID %>" method="POST">
+                <button class="btn btn-danger btn-sm" type="submit">Delete Feedback</button>
+              </form>
+              <a class="btn btn-ghost btn-sm" href="/feedback/history">Back to History</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
 
 </body>
 </html>

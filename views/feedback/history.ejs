@@ -7,34 +7,40 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>My Feedback History</h1>
+          <p class="subtle">A timeline of feedback you submitted for past events.</p>
+        </div>
+        <div class="panel-inner stack">
 
-        <h1>My Feedback History</h1>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Event Name</th>
-                <th>Date / Time</th>
-                <th>View</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (typeof history === "undefined" || history.length === 0) { %>
-                <tr>
-                    <td colspan="3">No feedback history found.</td>
-                </tr>
-            <% } else { %>
-                <% history.forEach((item) => { %>
-                    <tr>
-                        <td><%= item.EventName || "Unknown Event" %></td>
-                        <td><%= item.CreatedDateTime %></td>
-                        <td>
-                            <a href="/feedback/view/<%= item.FeedbackID %>">View</a>
-                        </td>
-                    </tr>
-                <% }) %>
-            <% } %>
-        </tbody>
-    </table>
+          <% if (typeof history === "undefined" || history.length === 0) { %>
+            <div class="note center">No feedback history found.</div>
+          <% } else { %>
+            <div class="event-list">
+              <% history.forEach((item) => { %>
+                <article class="event-card">
+                  <div class="event-thumb">
+                    <div class="event-thumb-placeholder">Feedback</div>
+                  </div>
+                  <div class="event-info stack">
+                    <h2><%= item.EventName || "Unknown Event" %></h2>
+                    <div class="meta">
+                      <span class="pill">Submitted: <%= item.CreatedDateTime %></span>
+                      <span class="pill">Feedback ID: <%= item.FeedbackID %></span>
+                    </div>
+                    <div class="movie-actions">
+                      <a class="btn btn-ghost btn-sm" href="/feedback/seefeedback/<%= item.FeedbackID %>">View Feedback</a>
+                      <a class="btn btn-primary btn-sm" href="/feedback/edit/<%= item.FeedbackID %>">Edit</a>
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

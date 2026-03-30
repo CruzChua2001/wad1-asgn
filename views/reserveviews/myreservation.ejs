@@ -40,6 +40,9 @@
                                 <td>
                                     <div class="actions-col">
                                         <a class="btn btn-primary btn-sm" href="/reserve/update/<%= reservation.ReservationID %>">Update</a>
+                                        <% if (String(reservation.Status).toLowerCase() === "approved") { %>
+                                          <a class="btn btn-ghost btn-sm" href="/feedback/<%= reservation.EventDetails.EventID %>">Give Feedback</a>
+                                        <% } %>
                                         <button
                                         type="button"
                                         class="btn btn-danger btn-sm cancel-booking-btn"

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { generateUUID } = require('../utils/uuidUtils');
 const {formatDateTime} = require('../utils/dateUtils')
+const Event = require("./eventModel")
 
 const feedbackSchema = new mongoose.Schema({
     FeedbackID: {
@@ -79,7 +80,7 @@ exports.getTopEvents = async () => {
     }
 
     for (const eventId in eventMap) {
-        const event = await Event.findOne({ eventId: eventId });
+        const event = await Event.retrieveById(eventId);
 
         if (event) {
             topEvents.push({
@@ -96,8 +97,6 @@ exports.getTopEvents = async () => {
     return topEvents.slice(0, 10);
 };
 
-const Event = require("./eventModel")
-
 exports.getHistory = async (userId) => {
     const feedbacks = await Feedback.find({
         UserID: userId,
@@ -107,7 +106,7 @@ exports.getHistory = async (userId) => {
     const history = []
 
     for (const feedback of feedbacks) {
-        const event = await Event.findOne({ eventId: feedback.EventID })
+        const event = await Event.retrieveById(feedback.EventID)
 
         history.push({
             FeedbackID: feedback.FeedbackID,
@@ -130,7 +129,7 @@ exports.getFeedbackByID = async (feedbackId, userId) => {
 
     if (!feedback) return null
 
-    const event = await Event.findOne({ eventId: feedback.EventID })
+    const event = await Event.retrieveById(feedback.EventID)
 
     return {
         FeedbackID: feedback.FeedbackID,
