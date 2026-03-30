@@ -22,7 +22,7 @@ const postLogin = async (req, res) => {
         const match = await bcrypt.compare(password, user.Password);
         if (!match) return res.render("auth/login", { error: "Invalid email or password." }); // re render login page if entered pw doesnt match stored pw
 
-        req.session.user = { userID: user.UserID, email: user.Email, role: user.Role }; // save user info in session
+        req.session.user = { userId: user.UserID, email: user.Email, role: user.Role }; // save user info in session
         
         return res.redirect("/home");
     } catch (err) {
