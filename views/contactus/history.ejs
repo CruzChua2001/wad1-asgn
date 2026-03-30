@@ -7,36 +7,42 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
-    <h1>Report History</h1>
-    <p>Here are all the reports that were submitted by users:</p>
-    <% if (reports.length === 0) { %>
-        <p>No reports submitted yet.</p>
-    <% } else { %>
-        <div style="border:1px solid grey; width: fit-content; padding: 4px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Category</th>
-                        <th>Report</th>
-                        <th>Submitted On</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% reports.forEach(report => { %>
-                        <tr>
-                            <td style="padding: 4px;"><%= report.UserID %></td>
-                            <td style="padding: 4px;"><%= report.Category %></td>
-                            <td style="padding: 4px;"><%= report.Report %></td>
-                            <td style="padding: 4px;"><%= report.CreatedAt %></td>
-                            <td style="padding: 4px;" align="center"><%= report.Status %></td>
-                            <td style="padding: 4px;"><a href="/contactus/<%= report.ReportID %>">View</a></td>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+    <main class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>Report History</h1>
+          <p class="subtle">All reports submitted by users.</p>
         </div>
-    <% } %>
+        <div class="panel-inner stack">
+          <% if (reports.length === 0) { %>
+              <div class="note">No reports submitted yet.</div>
+          <% } else { %>
+            <div class="event-list">
+              <% reports.forEach(report => { %>
+                <div class="event-card">
+                  <div class="event-thumb">
+                    <div class="event-thumb-placeholder">Report</div>
+                  </div>
+                  <div class="event-info stack">
+                    <h2><%= report.Category %></h2>
+                    <div class="meta">
+                      <span class="pill">User: <%= report.UserID %></span>
+                      <span class="pill">Status: <%= report.Status %></span>
+                      <span class="pill">Submitted: <%= report.CreatedAt %></span>
+                    </div>
+                    <div class="movie-desc">
+                      <%= report.Report %>
+                    </div>
+                    <div class="movie-actions">
+                      <a class="btn btn-ghost btn-sm" href="/contactus/<%= report.ReportID %>">View</a>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+        <% } %>
+      </div>
+    </div>
+    </main>
 </body>
 </html>
