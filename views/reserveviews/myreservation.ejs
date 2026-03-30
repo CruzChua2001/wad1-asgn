@@ -7,70 +7,82 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
-     <% if (reservations) { %>
-        <h1>Welcome <%= userId %></h1>
+    <% if (reservations) { %>
+    <div class="container stack">
+        <div class="panel">
+            <div class="panel-header">
+                <h1>My Reservations</h1>
+                <p class="subtle">Welcome <%= userId %>. Manage your bookings below.</p>
+            </div>
+            <div class="panel-inner stack">
     <% } %>
 
-  <table border="1">
-    <tr>
-        <th>Event</th>
-        <th>Pax</th>
-        <th>Date</th>
-        <th>Time</th>
-        <th>Status</th>
-        <th>Update</th>
-        <th>Cancel</th>
-    </tr>
-    <% reservations.forEach(reservation => { %>
-        <% if (reservation.EventDetails?.EventID == reservation.EventId) { %>
-        <tr>
-            <td><%= reservation.EventDetails.EventName %></td>
-            <td style="text-align: center;"><%= reservation.numofppl %></td>
-                <% const [formattedDate, formattedTime] = formatDateTime(reservation.CreatedDateTime).split(' '); %>
-            
-            <td><%= formattedDate %></td>
-            <td><%= formattedTime %></td>
-            <td><%= reservation.Status %></td>
-            <td><a href="/reserve/update/<%= reservation.ReservationID %>">Update</a></td>
-            <td>
-                <button
-                    type="button"
-                    class="cancel-booking-btn"
-                    data-reservation-id="<%= reservation.ReservationID %>">
-                    Cancel
-                </button>
-            </td>
-            <% } %>
-        </tr>
-    <% }); %>
-    
-  </table>
+                <div class="table-wrap">
+                    <table>
+                        <tr>
+                            <th>Event</th>
+                            <th>Pax</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        <% reservations.forEach(reservation => { %>
+                            <% if (reservation.EventDetails?.EventID == reservation.EventId) { %>
+                            <tr>
+                                <td><%= reservation.EventDetails.EventName %></td>
+                                <td class="cell-center"><%= reservation.numofppl %></td>
+                                <% const [formattedDate, formattedTime] = formatDateTime(reservation.CreatedDateTime).split(' '); %>
 
-  <script>
-    document.querySelectorAll(".cancel-booking-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const reservationId = btn.dataset.reservationId;
-            const shouldCancel = confirm("Cancel this booking?");
-            if (!shouldCancel) return;
+                                <td><%= formattedDate %></td>
+                                <td><%= formattedTime %></td>
+                                <td><%= reservation.Status %></td>
+                                <td>
+                                    <div class="actions-col">
+                                        <a class="btn btn-primary btn-sm" href="/reserve/update/<%= reservation.ReservationID %>">Update</a>
+                                        <button
+                                        type="button"
+                                        class="btn btn-danger btn-sm cancel-booking-btn"
+                                        data-reservation-id="<%= reservation.ReservationID %>">
+                                        Cancel
+                                        </button>
+                                    </div>
+                                </td>
+                            <% } %>
+                            </tr>
+                        <% }); %>
 
-            try {
-                const response = await fetch(`/reserve/delete/${reservationId}`, {
-                    method: "DELETE"
-                });
-                const result = await response.json();
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                if (!response.ok) {
-                    alert(result.message || "Failed to cancel booking.");
-                    return;
+    <script>
+        document.querySelectorAll(".cancel-booking-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const reservationId = btn.dataset.reservationId;
+                const shouldCancel = confirm("Cancel this booking?");
+                if (!shouldCancel) return;
+
+                try {
+                    const response = await fetch(`/reserve/delete/${reservationId}`, {
+                        method: "DELETE"
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        alert(result.message || "Failed to cancel booking.");
+                        return;
+                    }
+                    alert(result.message);
+                    window.location.reload();
+                } catch (err) {
+                    alert("Failed to cancel booking.");
                 }
-                alert(result.message);
-                window.location.reload();
-            } catch (err) {
-                alert("Failed to cancel booking.");
-            }
+            });
         });
-    });
-  </script>
+    </script>
 
 </body>
 </html>
