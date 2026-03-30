@@ -8,7 +8,13 @@
 <body>
     <%- include("../partials/navbar.ejs") %>
 
-    <h2>Category Details</h2>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Category Details</h2>
+          <p class="subtle">Review, update, and inspect events under this category.</p>
+        </div>
+        <div class="panel-inner stack">
     <form action="/configuration/categoryDetail" method="post">
 
         
@@ -24,31 +30,30 @@
 
         </div>
         
-        <div style="color:green">
+        <div>
             <label>Category Name:<input type="text" name="catNameUpdated" value="<%=categoryData.catDetail.CategoryName  %>"></label>
             <br><br>
             <label>Category Description: <br><br><textarea cols="50" rows="10" name="catDescUpdated"><%= categoryData.catDetail.CategoryDesc %></textarea></label>
         </div>
         <br>
         
-        <input type="submit" value="Update Category Details">
+        <button class="btn btn-primary" type="submit">Update Category Details</button>
         <% if (errorList) { %>
-            <p style="color: red;">We have found the following errors: </p>
+            <div class="note note-danger text-danger">We have found the following errors:</div>
             <ol> 
                 <% errorList.forEach(e => { %>
-                    <li style="color: red;"><%= e %></li>
+                    <li class="text-danger"><%= e %></li>
                 <% }) %>
             </ol>
         <% } %>
     </form>
 
     <% if (!(categoryData.events)) { %>
-        <p style="color: red;">
-            Error retrieving events under this category. Please try again later.
-        </p>
+        <div class="note note-danger text-danger">Error retrieving events under this category. Please try again later.</div>
     <% } else if (categoryData.events.length >=1) { %>
             <h2>Events Registered under this Category</h2>
-            <table border="1">
+            <div class="table-wrap">
+            <table>
 
         <tr>
             <th>Event Creator</th>
@@ -63,15 +68,18 @@
         </tr>
     <% }) %>
     </table>
+    </div>
     <% } else if ((categoryData.events).length ==0) { %>
-        <p style="color: red;">No Events running in this category.</p>
+        <div class="note note-danger text-danger">No Events running in this category.</div>
         <form action="/configuration/deleteCategory" method="get">
             <input type="hidden" name="categoryId" value="<%= categoryData.catDetail.CategoryID %>"readonly>    
             <label for=""><input type="text" name="option" placeholder="Type 'delete' to confirm!"></label>
-            <input style="color: red;font-weight: bold;" type="submit" value="Delete Category">
+            <button class="btn btn-danger" type="submit">Delete Category</button>
         </form>
     <% } %>
 
-    
+        </div>
+      </div>
+    </div>
 </body>
 </html>

@@ -8,37 +8,65 @@
 <body>
     <%- include('../partials/navbar') %>
 
-    <h1>View and Update Event</h1>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header row-between">
+          <div>
+            <h1>View & Update Event</h1>
+            <p class="subtle">Make changes and hit Update.</p>
+          </div>
+          <span class="pill">ID: <%= event.EventID %></span>
+        </div>
 
-    <div>
-        <input type="hidden" name="_method" value="PATCH">
-        <label for="EventName">Event Name:</label><br>
-        <input type="text" id="EventName" name="EventName" value="<%= event.EventName %>"><br><br>
+        <div class="panel-inner grid-2">
+          <div class="movie-poster event-detail-image">
+            <% if (event.EventImage) { %>
+              <img src="<%= event.EventImage %>" alt="<%= event.EventName %> poster">
+            <% } else { %>
+              <div class="event-thumb-placeholder">No Image</div>
+            <% } %>
+          </div>
 
-        <label for="EventDescription">Event Description:</label><br>
-        <textarea id="EventDescription" name="EventDescription"><%= event.EventDescription %></textarea><br><br>
+          <div class="form-card stack">
+            <div class="stack">
+              <label for="EventName">Event Name</label>
+              <input type="text" id="EventName" name="EventName" value="<%= event.EventName %>">
 
-        <!-- change this to select and use ejs for each for categories -->
-        <label for="EventType">Event Type:</label><br>
-        <select id="EventType" name="EventType" >
-            <% categories.forEach(category => { %>
-                <option value="<%= category.CategoryID %>" <%= category.CategoryID === event.EventType ? "selected" : "" %>><%= category.CategoryName %></option>
-            <% }) %>
-        </select><br><br>
+              <label for="EventDescription">Event Description</label>
+              <textarea id="EventDescription" name="EventDescription"><%= event.EventDescription %></textarea>
 
-        <label for="MaxCapacity">Max Capacity:</label><br>
-        <input type="number" id="MaxCapacity" name="MaxCapacity" value="<%= event.MaxCapacity %>"><br><br>
+              <label for="EventType">Event Type</label>
+              <select id="EventType" name="EventType">
+                <% categories.forEach(category => { %>
+                  <option value="<%= category.CategoryID %>" <%= category.CategoryID === event.EventType ? "selected" : "" %>><%= category.CategoryName %></option>
+                <% }) %>
+              </select>
 
-        <label for="EndDateTime">End Date and Time:</label><br>
-        <input type="datetime-local" id="EndDateTime" name="EndDateTime" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>"><br><br>
+              <div class="form-row">
+                <div>
+                  <label for="MaxCapacity">Max Capacity</label>
+                  <input type="number" id="MaxCapacity" name="MaxCapacity" value="<%= event.MaxCapacity %>">
+                </div>
+                <div>
+                  <label for="EndDateTime">End Date & Time</label>
+                  <input type="datetime-local" id="EndDateTime" name="EndDateTime" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>">
+                </div>
+              </div>
 
-        <label for="Status">Status:</label><br>
-        <select id="Status" name="Status">
-            <option value="active" <%= event.Status === 'active' ? "selected" : "" %>>Active</option>
-            <option value="inactive" <%= event.Status === 'inactive' ? "selected" : "" %>>Inactive</option>
-        </select><br><br>
+              <label for="Status">Status</label>
+              <select id="Status" name="Status">
+                <option value="active" <%= event.Status === 'active' ? "selected" : "" %>>Active</option>
+                <option value="inactive" <%= event.Status === 'inactive' ? "selected" : "" %>>Inactive</option>
+              </select>
+            </div>
 
-        <button onClick="updateEvent('<%= event.EventID %>')">Update Event</button>
+            <div class="form-actions">
+              <button class="btn btn-primary" onClick="updateEvent('<%= event.EventID %>')" type="button">Update Event</button>
+              <button class="btn btn-ghost" type="button" onclick="history.back()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 </body>
 </html>

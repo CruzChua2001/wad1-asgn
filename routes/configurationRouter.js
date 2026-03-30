@@ -10,7 +10,7 @@ const configurationController = require ("../controllers/configurationController
 const reserveModel = require("../models/reservationModel.js");
 const { config } = require("dotenv");
 const reserveData = {
-  "A":"accepted",
+  "A":"approved",
   "R":"rejected",
   "W":"waitlist",
 }
@@ -35,8 +35,7 @@ router.get("/categoryDetail", configurationController.displayCategoryDetail);
 router.post("/categoryDetail",configurationController.updateCategoryDetail);
 
 router.get("/deleteCategory",configurationController.deleteCategory)
-//RESERVATION ROUTES
-router.get("/reservationDashboard",configurationController.displayReservationDashboard);
+
 router.get("/pending",configurationController.displayPendingReservations);
 
 router.post("/handle",configurationController.handleReservationApproval);

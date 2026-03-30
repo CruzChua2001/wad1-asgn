@@ -7,71 +7,77 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
-    <h1>Report Detail</h1>
-    <span>Case Number: <%= report.CaseNo %></span>
-    <br><br>
+    <main class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>Report Detail</h1>
+          <p class="subtle">Case number: <%= report.CaseNo %></p>
+        </div>
+        <div class="panel-inner stack">
 
-    <div>
-        <span>Category: <%= report.Category %></span>
-        <br>
-        <span>Submitted By: <%= username %></span>
-        <br>
-        <span>Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
-        <br>
-        <span>Submitted On: <%= report.CreatedAt.toLocaleString() %></span>
-        <br><br>
+    <div class="row">
+        <span class="pill">Category: <%= report.Category %></span>
+        <span class="pill">Submitted by: <%= username %></span>
+        <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
+        <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
+    </div>
+
         <% if (currentUserId === report.UserID) { %>
-            <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</span>
+            <button class="btn-link text-danger" type="button" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</button>
         <% } %>
         <% if (isAdmin && report.Status !== "Not Applicable") { %>
             <h3>Update Report Status</h3>
             <form action="/contactus/<%= report.ReportID %>/status" method="POST">
-                <select name="status" required>
-                    <option value="">Select Status</option>
-                    <option value="Pending" <%= report.Status === "Pending" ? "selected" : "" %>>Pending</option>
-                    <option value="In-Progress" <%= report.Status === "In-Progress" ? "selected" : "" %>>In-Progress</option>
-                    <option value="Solved" <%= report.Status === "Solved" ? "selected" : "" %>>Solved</option>
-                </select>
-                <button type="submit">Update Status</button>
+                <div class="status-row">
+                    <select name="status" required>
+                        <option value="">Select Status</option>
+                        <option value="Pending" <%= report.Status === "Pending" ? "selected" : "" %>>Pending</option>
+                        <option value="In-Progress" <%= report.Status === "In-Progress" ? "selected" : "" %>>In-Progress</option>
+                        <option value="Solved" <%= report.Status === "Solved" ? "selected" : "" %>>Solved</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" type="submit">Update</button>
+                </div>
             </form>
         <% } %>
     </div>
-    <br><hr><br>
+    <hr>
 
     <div>
         <b>Comment / Feedback:</b>
         <% if (currentUserId === report.UserID) { %>
-            <span style="text-decoration: underline; cursor: pointer; color: darkblue;" onclick="displayEdit()">Edit</span>
+            <button class="btn-link" type="button" onclick="displayEdit()">Edit</button>
         <% } %>
         <p><%= report.Report %></p>
-        <textarea id="reportContent" style="display:none;" cols="80" rows="4"><%= report.Report %></textarea>
-        <button id="cancelBtn" onclick="cancelEdit()" style="display:none;" >Cancel</button>
-        <button id="saveBtn" style="display:none;" onclick="saveReport('<%= report.ReportID %>')">Save</button>
+        <textarea id="reportContent" class="hidden" cols="80" rows="4"><%= report.Report %></textarea>
+        <button class="btn btn-ghost hidden" id="cancelBtn" onclick="cancelEdit()" type="button">Cancel</button>
+        <button class="btn btn-primary hidden" id="saveBtn" onclick="saveReport('<%= report.ReportID %>')" type="button">Save</button>
     </div>
 
-    <br><hr><br>
+    <hr>
 
     <div>
         <h2>Reply</h2>
         <% if (report.Reply && report.Reply.length > 0) { %>
             <% report.Reply.forEach(reply => { %>
-                <div style="border: 1px solid gray; padding: 5px; margin-bottom: 5px; display: flex; justify-content: space-between;">
+                <div class="panel mb-10">
+                  <div class="panel-inner row-top">
                     <section>
                         <b><%= reply.UserID %></b> <br>
                         <%= reply.CreatedAt.toLocaleString() %>
                         <p><%= reply.Message %></p>
 
                         <!-- Editable reply -->
-                        <textarea id="replyContent-<%= reply.ReplyID %>" style="display:none;" cols="80" rows="4"><%= reply.Message %></textarea>
-                        <button id="cancelReplyBtn-<%= reply.ReplyID %>" onclick="cancelEditReply('<%= reply.ReplyID %>')" style="display:none;" >Cancel</button>
-                        <button id="saveReplyBtn-<%= reply.ReplyID %>" style="display:none;" onclick="saveReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')">Save</button>
+                        <textarea id="replyContent-<%= reply.ReplyID %>" class="hidden" cols="80" rows="4"><%= reply.Message %></textarea>
+                        <button class="btn btn-ghost hidden" id="cancelReplyBtn-<%= reply.ReplyID %>" onclick="cancelEditReply('<%= reply.ReplyID %>')" type="button">Cancel</button>
+                        <button class="btn btn-primary hidden" id="saveReplyBtn-<%= reply.ReplyID %>" onclick="saveReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')" type="button">Save</button>
                     </section>
-                    <section>
+                    <div class="reply-actions">
                         <% if (reply.UserID === currentUserId) { %>
-                            <span style="color:darkblue; text-decoration: underline; cursor: pointer;" onclick="displayEditReply('<%= reply.ReplyID %>')">Edit</span>
-                            <span style="color:red; text-decoration: underline; cursor: pointer;" onclick="deleteReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')">Delete</span>
+                            <button class="btn-link" type="button" onclick="displayEditReply('<%= reply.ReplyID %>')">Edit</button>
+                            <button class="btn-link text-danger" type="button" onclick="deleteReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')">Delete</button>
                         <% } %>
-                    </section>
+                    </div>
+                  </div>
                 </div>
             <% }); %>
         <% } else { %>
@@ -81,9 +87,12 @@
         <h3>Submit a Reply</h3>
         <form action="/contactus/<%= report.ReportID %>/reply" method="POST">
             <textarea name="message" rows="4" cols="50" required></textarea><br><br>
-            <button type="submit">Submit Reply</button>
+            <button class="btn btn-primary" type="submit">Submit Reply</button>
         </form>
     </div>
+</div>
+</div>
+</main>
 </body>
 </html>
 
@@ -109,15 +118,15 @@
     };
 
     const displayEdit = () => {
-        document.getElementById("cancelBtn").style.display = "inline-block";
-        document.getElementById("reportContent").style.display = "block";
-        document.getElementById("saveBtn").style.display = "inline-block";
+        document.getElementById("cancelBtn").classList.remove("hidden");
+        document.getElementById("reportContent").classList.remove("hidden");
+        document.getElementById("saveBtn").classList.remove("hidden");
     };
 
     const cancelEdit = () => {
-        document.getElementById("cancelBtn").style.display = "none";
-        document.getElementById("reportContent").style.display = "none";
-        document.getElementById("saveBtn").style.display = "none";
+        document.getElementById("cancelBtn").classList.add("hidden");
+        document.getElementById("reportContent").classList.add("hidden");
+        document.getElementById("saveBtn").classList.add("hidden");
     };
 
     const saveReport = (reportId) => {
@@ -164,15 +173,15 @@
     };
 
     const displayEditReply = (replyId) => {
-        document.getElementById(`cancelReplyBtn-${replyId}`).style.display = "inline-block";
-        document.getElementById(`replyContent-${replyId}`).style.display = "block";
-        document.getElementById(`saveReplyBtn-${replyId}`).style.display = "inline-block";
+        document.getElementById(`cancelReplyBtn-${replyId}`).classList.remove("hidden");
+        document.getElementById(`replyContent-${replyId}`).classList.remove("hidden");
+        document.getElementById(`saveReplyBtn-${replyId}`).classList.remove("hidden");
     };
 
     const cancelEditReply = (replyId) => {
-        document.getElementById(`cancelReplyBtn-${replyId}`).style.display = "none";
-        document.getElementById(`replyContent-${replyId}`).style.display = "none";
-        document.getElementById(`saveReplyBtn-${replyId}`).style.display = "none";
+        document.getElementById(`cancelReplyBtn-${replyId}`).classList.add("hidden");
+        document.getElementById(`replyContent-${replyId}`).classList.add("hidden");
+        document.getElementById(`saveReplyBtn-${replyId}`).classList.add("hidden");
     };
 
     const saveReply = (reportId, replyId) => {

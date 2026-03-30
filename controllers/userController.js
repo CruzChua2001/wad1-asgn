@@ -14,14 +14,18 @@ const getAllUsers = async (req, res) => {
 
 const getProfile = async (req, res) => { // when admin visits /users
     try {
-        const user = await userModel.findByUserID(req.user.userID);
+        const user = await userModel.findByUserID(req.user.userId);
         if (!user) {
             return res.redirect("/login");}
-        return res.render("users/profile", { user });
+        return res.render("users/profile", { user, error: null, success: null });
     } catch (err) {
         console.error(err);
         return res.status(500).send("Error loading profile.");
     }
+};
+
+const postProfile = async (req, res) => {
+    // Update profile info
 };
 
 const getUserById = async (req, res) => { // when admin visits users/:id
@@ -38,7 +42,7 @@ const getUserById = async (req, res) => { // when admin visits users/:id
 
 const deleteUser = async (req, res) => { // when admin submits delete form for a user
     try {
-        if (req.params.id === req.user.userID) // check if admin is deleteting themselves
+        if (req.params.id === req.user.userId) // check if admin is deleting themselves
             return res.redirect("/user?error=Cannot delete your own account.");
         await userModel.deleteUser(req.params.id);
         return res.redirect("/user"); // show admin updated user list
@@ -77,4 +81,4 @@ const createAdmin = async (req, res) => {
     }
 };
 
-module.exports = { getAllUsers, getProfile, getUserById, deleteUser, createAdmin };
+module.exports = { getAllUsers, getProfile, postProfile, getUserById, deleteUser, createAdmin };

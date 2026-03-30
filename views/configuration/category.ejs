@@ -8,60 +8,85 @@
 <body>
     <%- include("../partials/navbar.ejs") %>
    
-    <h2>Event Categories</h2>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Event Categories</h2>
+          <p class="subtle">Create categories and assign an admin approver.</p>
+        </div>
+        <div class="panel-inner stack">
     <% if (newCategoryId) { %>
-        <p style="color: green;"> A new category with Category Id: <b><%= newCategoryId %></b> successfully created.</p>
+        <div class="note note-success text-success">A new category with Category Id: <b><%= newCategoryId %></b> successfully created.</div>
     <% } %>
-    <% if (categoryList.length > 0) { %>
-        <ol>
-            <% categoryList.forEach(c => { %>
-                <li><%= c.CategoryName %> 
-                    <form action="/configuration/categoryDetail" method="get">
-                        <input type="hidden" name="categoryId" value ="<%= c.CategoryID %>">
-                        <input type="submit" value="Details">
-                    </form>
-                    
-                </li>
-            <% }) %>
-        </ol>
-    <% } %>
-    <button> <a href="/configuration/category/register" style="color: green;">Add a New Category</a></button>
+
+    <div class="row-between">
+      <div>
+        <h2>Event Categories</h2>
+        <p class="subtle">Manage your event categories.</p>
+      </div>
+
+      <% if (!isRegister) { %>
+        <a class="btn btn-primary btn-sm" href="/configuration/category/register">Add Category</a>
+      <% } %>
+    </div>
+
     <% if (isRegister) { %>
-        <br><br>
-        <form action="./register" method="post">
-            <h2>Add a New Category</h2> 
-            <label>Category Name: &nbsp;<input type="text" name="categoryName" value="<%= record ?record.categoryName:"" %>"></label>
-            <br><br>
-            <label>Category Description:&nbsp;<br><br><textarea name="categoryDescription" cols="30" ><%= record ? record.categoryDescription:"" %></textarea></label>
-            <br><br>
-            <% if (adminNameList) { %>
-                <label > Admin Approver: <br><br> 
-                    <select name="approver">
-                        <option value="" selected>--Please Choose an Admin--</option>
-                        <option value="ALL" <%= record && (record.approver=="ALL") ? "selected":"" %>>ANY ADMIN</option>
+      <div class="form-card category-form stack">
+        <h2>Add a New Category</h2>
 
-                        <% adminNameList.forEach(name => { %>
-                            
-                            <option value="<%= name %>" <%= record && (record.approver===name) ? "selected":"" %>><%= name %></option>
-                        <% }) %>
-                    </select>
-                </label>
+        <form action="./register" method="post" class="stack">
+          <label>Category Name
+            <input type="text" name="categoryName" value="<%= record ?record.categoryName:"" %>">
+          </label>
 
-            <% } %>
+          <label>Category Description
+            <textarea name="categoryDescription" cols="30"><%= record ? record.categoryDescription:"" %></textarea>
+          </label>
 
-            <% if (!validEntry) { %>
-                <p style="color: red;">We have found the following errors: </p>
-             <ol>
-                <% errorList.forEach(e => { %>
-                    <li style="color: red;"><%= e %></li>
+          <% if (adminNameList) { %>
+            <label>Admin Approver
+              <select name="approver" style="height: 35px; font-size:15px;">
+                <option value="" selected>--Please Choose an Admin--</option>
+                <option value="ALL" <%= record && (record.approver=="ALL") ? "selected":"" %>>ANY ADMIN</option>
+                <% adminNameList.forEach(name => { %>
+                  <option value="<%= name %>" <%= record && (record.approver===name) ? "selected":"" %>><%= name %></option>
                 <% }) %>
-             </ol>
-            <% } %>
-            <br><br>                
-            <input type="submit" value="Add Category">
+              </select>
+            </label>
+          <% } %>
+
+          <% if (!validEntry) { %>
+            <div class="note note-danger text-danger mt-10">We have found the following errors:</div>
+            <ol class="mt-10">
+              <% errorList.forEach(e => { %>
+                <li class="text-danger"><%= e %></li>
+              <% }) %>
+            </ol>
+          <% } %>
+
+          <div class="form-actions mt-10">
+            <button class="btn btn-primary btn-sm" type="submit">Add Category</button>
+            <a class="btn btn-ghost btn-sm" href="/configuration/category">Cancel</a>
+          </div>
         </form>
+      </div>
     <% } %>
+
+    <% if (categoryList.length > 0) { %>
+      <div class="pill-grid">
+        <% categoryList.forEach(c => { %>
+          <div class="pill-item">
+            <span><%= c.CategoryName %></span>
+            <a class="btn btn-ghost btn-sm" href="/configuration/categoryDetail?categoryId=<%= c.CategoryID %>">Details</a>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
     <br><br>
-    <a href="/configuration">Back to Admin Dashboard</a>
+    <a class="btn btn-ghost" href="/configuration">Back to Admin Dashboard</a>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

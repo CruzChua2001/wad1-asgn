@@ -10,16 +10,21 @@
 <body>
     <%- include('../partials/navbar') %>
 
-        <h1>Event Management</h1>
+    <div class="container stack">
+        <div class="panel">
+          <div class="panel-header">
+            <h1>Event Management</h1>
+            <p class="subtle">Create, filter, and manage events.</p>
+          </div>
+          <div class="panel-inner stack">
 
         <p>
-            <a href="/event/new">Create New Event</a>
+            <a class="btn btn-primary" href="/event/new">Create New Event</a>
         </p>
 
-        <form action="/event/manage" method="GET">
-            <input type="text" name="search" placeholder="Search by Event Name..." value="<%= searchTerm %>">
-            <button type="submit">Search</button>
-            <a href="/event/manage"><button type="button">Clear</button></a><br><br>
+        <form class="search-row" action="/event/manage" method="GET">
+            <input class="search-input" type="text" name="search" placeholder="Search by Event Name..." value="<%= searchTerm %>">
+            <button class="btn btn-ghost btn-sm" type="submit">Search</button>
         </form>
 
         <div class="filter-bar">
@@ -51,138 +56,132 @@
                 <option value="dateDesc">Date ↓</option>
             </select>
 
-            <!-- Clear Filters Button -->
-            <button type="button" onclick="clearFilters()">Clear Filters</button>
+
+            <a class="btn btn-ghost btn-sm" href="/event/manage">Clear</a>
         </div>
 
-        <table id="eventTable" border="1">
-            <thead>
-                <tr>
-                    <th>Event Name</th>
-                    <th>Event Type</th>
-                    <th>Current Capacity</th>
-                    <th>Max Capacity</th>
-                    <th>End Date and Time</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% if (events.length===0) { %>
-                    <tr class="no-match-row">
-                        <td colspan="7" style="text-align: center; color: grey; font-style: italic;">
-                            No matching events
-                        </td>
-                    </tr>
-                    <% } else { %>
-                        <% events.forEach(event=> { %>
-                            <tr data-date="<%= new Date(event.EndDateTime).toISOString() %>">
-                                <td>
-                                    <%= event.EventName %>
-                                </td>
-                                <td>
-                                    <%= event.categoryDetails.CategoryName %>
-                                </td>
-                                <td>
-                                    <%= event.CurrentCapacity %>
-                                </td>
-                                <td>
-                                    <%= event.MaxCapacity %>
-                                </td>
-                                <td>
-                                    <%= new Date(event.EndDateTime).toLocaleDateString() %>,
-                                        <%= new Date(event.EndDateTime).toLocaleTimeString([], { hour: '2-digit' ,
-                                            minute: '2-digit' }) %>
-                                </td>
-                                <td>
-                                    <%= event.Status==='active' ? 'Open' : 'Closed' %>
-                                </td>
-                                <td>
-                                    <a style="color: darkblue; margin-right: 5px;"
-                                        href="/event/manage/<%= event.EventID %>">View</a>
-                                    <a style="text-decoration: underline; color: darkblue; cursor: pointer;"
-                                        onClick="deleteEvent('<%= event.EventID %>')">Delete</a>
-                                </td>
-                            </tr>
-                            <% }) %>
-            </tbody>
-        </table>
+        <div class="stack">
+            <div id="noMatch" class="note center hidden">No matching events</div>
+            <div id="eventCards" class="movie-grid">
+                <% events.forEach(event=> { %>
+                    <article
+                        class="movie-card movie-grid-card manage-event-card"
+                        data-type="<%= event.categoryDetails.CategoryName.toLowerCase() %>"
+                        data-status="<%= event.Status==='active' ? 'open' : 'closed' %>"
+                        data-name="<%= event.EventName %>"
+                        data-capacity="<%= event.CurrentCapacity %>"
+                        data-date="<%= new Date(event.EndDateTime).toISOString() %>"
+                    >
+                        <div class="movie-poster">
+                            <% if (event.EventImage) { %>
+                                <img src="<%= event.EventImage %>" alt="<%= event.EventName %> poster">
+                            <% } else { %>
+                                <div class="event-thumb-placeholder">No Image</div>
+                            <% } %>
+                        </div>
+                        <div class="movie-body">
+                            <h3 class="movie-title"><%= event.EventName %></h3>
+                            <div class="movie-meta">
+                                <span class="pill">Type: <%= event.categoryDetails.CategoryName %></span>
+                                <span class="pill">Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></span>
+                                <span class="pill"><%= event.Status==='active' ? 'Open' : 'Closed' %></span>
+                            </div>
+                            <div class="movie-desc">
+                                <%= event.EventDescription %>
+                            </div>
+                            <div class="movie-actions">
+                                <a class="btn btn-primary btn-sm" href="/event/manage/<%= event.EventID %>">View</a>
+                                <button class="btn btn-danger btn-sm" type="button" onClick="deleteEvent('<%= event.EventID %>')">Delete</button>
+                            </div>
+                        </div>
+                    </article>
+                <% }) %>
+            </div>
+        </div>
 
-        <% } %>
-
-            <script>
-                const deleteEvent = async (eventid) => {
-                    if (confirm("Are you sure you want to delete this event?")) {
-                        try {
-                            const response = await fetch(`/event/delete/${eventid}`, { method: 'DELETE' });
-                            if (response.ok) {
-                                alert("Event deleted successfully.");
-                                window.location.href = "/event/manage"; // reload page
-                            } else {
-                                alert("Failed to delete event.");
-                            }
-                        } catch (error) {
-                            console.error("Error deleting event:", error);
-                            alert("An error occurred while deleting the event.");
-                        }
-                    }
-                };
-
-                const filterType = document.getElementById('filterType');
-                const filterStatus = document.getElementById('filterStatus');
-                const sortOption = document.getElementById('sortOption');
-                const tableBody = document.getElementById('eventTable').querySelector('tbody');
-                const noMatch = document.getElementById("noMatch");
-
-                function updateTable() {
-                    const typeVal = filterType.value.toLowerCase();
-                    const statusVal = filterStatus.value.toLowerCase();
-                    const sortVal = sortOption.value;
-
-                    let rows = Array.from(tableBody.rows);
-
-                    // 🔹 FILTER
-                    let visibleCount = 0;
-                    rows.forEach(row => {
-                        const typeText = row.cells[1].innerText.trim().toLowerCase();
-                        const statusText = row.cells[5].innerText.trim().toLowerCase();
-
-                        if ((typeVal && typeText !== typeVal) || (statusVal && statusText !== statusVal)) {
-                            row.style.display = 'none';
+        <script>
+            const deleteEvent = async (eventid) => {
+                if (confirm("Are you sure you want to delete this event?")) {
+                    try {
+                        const response = await fetch(`/event/delete/${eventid}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            alert("Event deleted successfully.");
+                            window.location.href = "/event/manage"; // reload page
                         } else {
-                            row.style.display = '';
-                            visibleCount++;
+                            alert("Failed to delete event.");
                         }
-                    });
-
-                    // 🔹 SORT
-                    rows.sort((a, b) => {
-                        if (sortVal === "nameAsc") return a.cells[0].innerText.localeCompare(b.cells[0].innerText);
-                        if (sortVal === "nameDesc") return b.cells[0].innerText.localeCompare(a.cells[0].innerText);
-                        if (sortVal === "capacityAsc") return parseInt(a.cells[3].innerText) - parseInt(b.cells[3].innerText);
-                        if (sortVal === "capacityDesc") return parseInt(b.cells[3].innerText) - parseInt(a.cells[3].innerText);
-                        if (sortVal === "dateAsc") return new Date(a.dataset.date) - new Date(b.dataset.date);
-                        if (sortVal === "dateDesc") return new Date(b.dataset.date) - new Date(a.dataset.date);
-                        return 0;
-                    });
-
-                    rows.forEach(row => tableBody.appendChild(row));
-
-                    // 🔹 Show/hide "No matching events"
-                    noMatch.style.display = visibleCount ? "none" : "block";
+                    } catch (error) {
+                        console.error("Error deleting event:", error);
+                        alert("An error occurred while deleting the event.");
+                    }
                 }
+            };
 
-                filterType.addEventListener("change", updateTable);
-                filterStatus.addEventListener("change", updateTable);
-                sortOption.addEventListener("change", updateTable);
+            const filterType = document.getElementById('filterType');
+            const filterStatus = document.getElementById('filterStatus');
+            const sortOption = document.getElementById('sortOption');
+            const noMatch = document.getElementById("noMatch");
+            const eventCards = document.getElementById("eventCards");
 
-                function clearFilters() {
-                    filterType.value = "";
-                    filterStatus.value = "";
-                    sortOption.value = "";
-                    updateTable();
-                }
-            </script>
+            const allCards = Array.from(eventCards.querySelectorAll('.manage-event-card'));
+
+            function updateCards() {
+                const typeVal = filterType.value.toLowerCase();
+                const statusVal = filterStatus.value.toLowerCase();
+                const sortVal = sortOption.value;
+
+                const cards = [...allCards];
+
+                let filtered = cards.filter(card => {
+                    const typeText = (card.dataset.type || '').toLowerCase();
+                    const statusText = (card.dataset.status || '').toLowerCase();
+                    const typeOk = !typeVal || typeText === typeVal;
+                    const statusOk = !statusVal || statusText === statusVal;
+                    return typeOk && statusOk;
+                });
+
+                // Sort
+                filtered.sort((a, b) => {
+                    const nameA = (a.dataset.name || '').toString();
+                    const nameB = (b.dataset.name || '').toString();
+                    const capA = parseInt(a.dataset.capacity || '0', 10);
+                    const capB = parseInt(b.dataset.capacity || '0', 10);
+                    const dateA = new Date(a.dataset.date || 0);
+                    const dateB = new Date(b.dataset.date || 0);
+
+                    if (sortVal === "nameAsc") return nameA.localeCompare(nameB);
+                    if (sortVal === "nameDesc") return nameB.localeCompare(nameA);
+                    if (sortVal === "capacityAsc") return capA - capB;
+                    if (sortVal === "capacityDesc") return capB - capA;
+                    if (sortVal === "dateAsc") return dateA - dateB;
+                    if (sortVal === "dateDesc") return dateB - dateA;
+                    return 0;
+                });
+
+                // Rebuild order
+                eventCards.innerHTML = '';
+                filtered.forEach(card => eventCards.appendChild(card));
+
+                noMatch.classList.toggle('hidden', filtered.length > 0);
+            }
+
+            filterType.addEventListener("change", updateCards);
+            filterStatus.addEventListener("change", updateCards);
+            sortOption.addEventListener("change", updateCards);
+
+            function clearFilters() {
+                filterType.value = "";
+                filterStatus.value = "";
+                sortOption.value = "";
+                updateCards();
+            }
+
+            // Initial render state
+            updateCards();
+        </script>
+</div>
+</div>
+</div>
 </body>
 
 </html>

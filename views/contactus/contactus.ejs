@@ -4,27 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us</title>
-    <style>
-        input {
-            background-color: white;
-        }
-    </style>
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
-    <h1>Contact Us</h1>
-    <p>Questions, bug reports, or feedback? We're here for it all!</p>
-    <p>Fill out the form below to get in touch with us:</p>
-
-    <div>
+    <main class="container stack">
+    <div class="panel">
+        <div class="panel-header">
+            <h1>Contact Us</h1>
+            <p class="subtle">Questions, bug reports, or feedback? Send it over — we’ll reply within 2–3 business days.</p>
+        </div>
+        <div class="panel-inner stack">
         <% if (submitted) { %>
-         <h3>Thank you for contacting us!</h3>
-         <p>We'll get back to you within 2 to 3 business days.</p>
-         <p>Click <a href="/contactus">here</a> to submit another report.</p>
+         <div class="note note-success">
+            <h3>Thank you for contacting us!</h3>
+            <p>We’ll get back to you within 2 to 3 business days.</p>
+            <p>Click <a class="link" href="/contactus">here</a> to submit another report.</p>
+         </div>
         <% } else { %>
         <form action="/contactus" method="POST">
             <label for="category">Category*:</label><br>
-            <select name="category" id="category" required>
+            <select name="category" id="category" required style="height:35px; font-size:15px">
                 <% reportTypes.forEach(type => { %>
                     <option value="<%= type %>"><%= type %></option>
                 <% }) %>
@@ -33,7 +32,7 @@
             <label for="report">Message*:</label><br>
             <textarea id="report" name="report" rows="5" cols="50" required></textarea><br><br>
 
-            <button type="submit">Submit</button>
+            <button class="btn btn-primary" type="submit">Submit</button>
         </form>
         <% } %>
 
@@ -42,7 +41,7 @@
             <% if (reports.length === 0) { %>
                 <p>No reports submitted yet.</p>
             <% } else { %>
-                <div style="border:1px solid grey; width: fit-content; padding: 4px;">
+                <div class="table-wrap">
                     <table>
                         <thead>
                             <tr>
@@ -56,13 +55,13 @@
                         <tbody>
                             <% reports.forEach(report => { %>
                                 <tr>
-                                    <td style="padding: 4px;"><%= report.Category %></td>
-                                    <td style="padding: 4px;"><%= report.Report %></td>
-                                    <td style="padding: 4px;"><%= report.CreatedAt.toLocaleString() %></td>
-                                    <td style="padding: 4px;"><%= report.Status === "Not Applicable" ? "" : report.Status %></td>
-                                    <td style="padding: 4px;">
-                                        <a href="/contactus/<%= report.ReportID %>">View</a>
-                                        <button class="delete-btn" data-id="<%= report.ReportID %>" style="margin-left: 4px; border: 0; background: none; font-size: 14px; text-decoration: underline; color: red; cursor: pointer;">Delete</button>
+                                    <td><%= report.Category %></td>
+                                    <td><%= report.Report %></td>
+                                    <td><%= report.CreatedAt.toLocaleString() %></td>
+                                    <td><%= report.Status === "Not Applicable" ? "" : report.Status %></td>
+                                    <td>
+                                        <a class="link" href="/contactus/<%= report.ReportID %>">View</a>
+                                        <button class="delete-btn btn-link text-danger" data-id="<%= report.ReportID %>" type="button">Delete</button>
                                     </td>
                                 </tr>
                             <% }) %>
@@ -71,7 +70,9 @@
                 </div>
             <% } %>
         <% } %>
+        </div>
     </div>
+    </main>
 </body>
 </html>
 

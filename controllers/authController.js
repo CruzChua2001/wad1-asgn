@@ -105,7 +105,7 @@ const patchForgotPassword = async (req, res) => {
 const getSignout = (req, res) => {
     req.session.destroy(() => {
         res.clearCookie("connect.sid");
-        return res.redirect("/index.html");
+        return res.redirect("/");
     });
 }; // end session if user signs out 
 

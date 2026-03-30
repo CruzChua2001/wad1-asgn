@@ -6,6 +6,7 @@ const userController = require("../controllers/userController");
 router.use(auth.requireAuth);
 
 router.get("/profile", userController.getProfile);
+router.post("/profile", userController.postProfile);
 
 router.get("/",            auth.requireAdmin, userController.getAllUsers);
 router.post("/admin",      auth.requireAdmin, userController.createAdmin);

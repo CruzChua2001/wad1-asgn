@@ -124,7 +124,7 @@ exports.retrieveByCategoryId = (categoryId) =>{
 }
 
 exports.retrieveByEventid = (eventId) =>{
-    return Event.findOne({EventID:eventId}).select("EventType")
+    return Event.findOne({ EventID: eventId, isDeleted: 0 }).select("EventType CurrentCapacity MaxCapacity")
 }
 
 exports.updateEventPax = (eventId,pax) =>{

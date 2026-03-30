@@ -8,16 +8,21 @@
 <body>
     <%- include("../partials/navbar.ejs") %>
 
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>Approval History</h1>
+          <p class="subtle">A log of reservations you’ve approved.</p>
+        </div>
+        <div class="panel-inner stack">
     <% if (reservationHistory.length ==0) { %>
-        <h2>Empty Reservation History</h2>
-        <p>You have not approved any reservations yet.</p>
+        <div class="note">Empty reservation history. You have not approved any reservations yet.</div>
     <% } else if (err) { %>
-         <p style="color: red;">Error retrieving approved reservations. Please try again later. </p>
+         <div class="note note-danger text-danger">Error retrieving approved reservations. Please try again later.</div>
     <% } else { %>
-         <h2><%= reservationHistory.length %> reservation(s) Approved</h2>
-         
-
-         <table border="1">
+         <h2><%= reservationHistory.length %> reservation(s) approved</h2>
+         <div class="table-wrap">
+         <table>
             <tr>
                 <th>Reservation ID</th>
                 <th>Event ID</th>
@@ -40,8 +45,12 @@
             </tr>
          <% }) %>
           </table>
+          </div>
     <% } %>
     <br>
-    <a href="/configuration">Back to Admin Dashboard</a>
+    <a class="btn btn-ghost" href="/configuration">Back to Admin Dashboard</a>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

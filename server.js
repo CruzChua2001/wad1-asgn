@@ -15,7 +15,7 @@ dotenv.config({ path: './config.env' });
 server.set("view engine", "ejs");
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
-// server.use(express.static(path.join(__dirname, "public")));
+server.use(express.static(path.join(__dirname, "public")));
 server.use(session({
     secret: process.env.SECRET || "campus-event-board-secret",
     resave: false, // dont resave the session to the server on every request if nothing changed 

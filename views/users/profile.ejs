@@ -7,14 +7,45 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header row-between">
+          <div>
+            <h1>My Profile</h1>
+            <p class="subtle">Update your details anytime.</p>
+          </div>
+          <span class="pill"><%= user.Role %></span>
+        </div>
 
-    <h1>My Profile</h1>
+        <div class="panel-inner stack">
+          <% if (error) { %>
+            <div class="note note-danger text-danger"><%= error %></div>
+          <% } %>
+          <% if (success) { %>
+            <div class="note note-success text-success"><%= success %></div>
+          <% } %>
 
-    <p><strong>First Name:</strong> <%= user.FirstName %></p>
-    <p><strong>Last Name:</strong> <%= user.LastName %></p>
-    <p><strong>Email:</strong> <%= user.Email %></p>
-    <p><strong>Role:</strong> <%= user.Role %></p>
+          <div class="form-card category-form">
+            <form method="POST" action="/user/profile" class="stack">
+              <label for="firstName">First Name</label>
+              <input id="firstName" name="firstName" type="text" value="<%= user.FirstName %>" required>
 
-    <a href="/">Back to Home</a>
+              <label for="lastName">Last Name</label>
+              <input id="lastName" name="lastName" type="text" value="<%= user.LastName %>" required>
+
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" value="<%= user.Email %>" required>
+
+              <!-- Add Password fields -->
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Save Changes</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

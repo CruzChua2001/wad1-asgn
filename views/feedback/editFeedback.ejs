@@ -7,70 +7,75 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
-    <h1>Edit Feedback</h1>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>Edit Feedback</h1>
+          <p class="subtle">Update your response for <%= feedback ? (feedback.EventName || "this event") : "this event" %>.</p>
+        </div>
+        <div class="panel-inner">
+          <% if (!feedback) { %>
+            <div class="note note-danger text-danger">Feedback not found.</div>
+          <% } else { %>
+            <form class="feedback-grid" action="/feedback/edit/<%= feedback.FeedbackID %>" method="POST">
+              <div class="feedback-question">
+                <p>Do you want your response to be anonymous?</p>
+                <div class="feedback-options">
+                  <label class="rating-pill"><input type="radio" name="isAnonymous" value="1" <%= feedback.isAnonymous == 1 ? "checked" : "" %>>Yes</label>
+                  <label class="rating-pill"><input type="radio" name="isAnonymous" value="0" <%= feedback.isAnonymous == 0 ? "checked" : "" %>>No</label>
+                </div>
+              </div>
 
-    <% if (!feedback) { %>
-        <p>Feedback not found.</p>
-    <% } else { %>
-        <form action="/feedback/edit/<%= feedback.FeedbackID %>" method="POST">
+              <div class="feedback-question">
+                <p>How would you rate your overall experience? (1-5)</p>
+                <div class="feedback-options">
+                  <% ratings.forEach((r) => { %>
+                    <label class="rating-pill"><input type="radio" id="rating-<%= r %>" name="rating" value="<%= r %>" <%= feedback.rating == r ? "checked" : "" %> required><%= r %></label>
+                  <% }) %>
+                </div>
+              </div>
 
-            <p>Event Name: <%= feedback.EventName %></p>
+              <div class="feedback-question">
+                <p>How likely are you to attend similar events in the future?</p>
+                <div class="feedback-options">
+                  <% ratings.forEach((r) => { %>
+                    <label class="rating-pill"><input type="radio" id="attend-<%= r %>" name="attend" value="<%= r %>" <%= feedback.attend == r ? "checked" : "" %> required><%= r %></label>
+                  <% }) %>
+                </div>
+              </div>
 
-            <label>Anonymous:</label>
-            <select name="isAnonymous">
-                <option value="0" <%= feedback.isAnonymous == 0 ? "selected" : "" %>>No</option>
-                <option value="1" <%= feedback.isAnonymous == 1 ? "selected" : "" %>>Yes</option>
-            </select>
+              <div class="feedback-question">
+                <p>How likely are you to recommend this event to a friend or colleague?</p>
+                <div class="feedback-options">
+                  <% ratings.forEach((r) => { %>
+                    <label class="rating-pill"><input type="radio" id="recommend-<%= r %>" name="recommend" value="<%= r %>" <%= feedback.recommend == r ? "checked" : "" %> required><%= r %></label>
+                  <% }) %>
+                </div>
+              </div>
 
-            <br><br>
+              <div class="feedback-question">
+                <p>Did this event help you achieve your goals (e.g., networking)?</p>
+                <div class="feedback-options">
+                  <% ratings.forEach((r) => { %>
+                    <label class="rating-pill"><input type="radio" id="goals-<%= r %>" name="goals" value="<%= r %>" <%= feedback.goals == r ? "checked" : "" %> required><%= r %></label>
+                  <% }) %>
+                </div>
+              </div>
 
-            <label>Rating:</label>
-            <select name="rating">
-                <% ratings.forEach(r => { %>
-                    <option value="<%= r %>" <%= feedback.rating == r ? "selected" : "" %>><%= r %></option>
-                <% }) %>
-            </select>
+              <div class="feedback-question">
+                <label for="feedback">Additional feedback</label>
+                <textarea id="feedback" name="feedback"><%= feedback.Feedback %></textarea>
+              </div>
 
-            <br><br>
-
-            <label>Attend Similar Events:</label>
-            <select name="attend">
-                <% ratings.forEach(r => { %>
-                    <option value="<%= r %>" <%= feedback.attend == r ? "selected" : "" %>><%= r %></option>
-                <% }) %>
-            </select>
-
-            <br><br>
-
-            <label>Recommend to Others:</label>
-            <select name="recommend">
-                <% ratings.forEach(r => { %>
-                    <option value="<%= r %>" <%= feedback.recommend == r ? "selected" : "" %>><%= r %></option>
-                <% }) %>
-            </select>
-
-            <br><br>
-
-            <label>Helped Achieve Goals:</label>
-            <select name="goals">
-                <% ratings.forEach(r => { %>
-                    <option value="<%= r %>" <%= feedback.goals == r ? "selected" : "" %>><%= r %></option>
-                <% }) %>
-            </select>
-
-            <br><br>
-
-            <label>Additional Feedback:</label><br>
-            <textarea name="feedback" rows="5" cols="40"><%= feedback.Feedback %></textarea>
-
-            <br><br>
-
-            <button type="submit">Save Changes</button>
-        </form>
-    <% } %>
-
-    <br>
-    <a href="/feedback/seefeedback/<%= feedback.FeedbackID %>">Cancel</a>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Save Changes</button>
+                <a class="btn btn-ghost" href="/feedback/seefeedback/<%= feedback.FeedbackID %>">Cancel</a>
+              </div>
+            </form>
+          <% } %>
+        </div>
+      </div>
+    </div>
 
 </body>
 </html>

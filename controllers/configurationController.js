@@ -10,7 +10,7 @@ const eventModel = require("../models/eventModel.js");
 
 const reserveModel = require("../models/reservationModel.js");
 const reserveData = {
-  "A":"accepted",
+  "A":"approved",
   "R":"rejected",
   "W":"waitlist",
 }
@@ -273,9 +273,6 @@ exports.displayApprovalHistory = async(req,res)=>{
   res.render("configuration/approvalHistory",{reservationHistory,err})
 }
 
-exports.displayReservationDashboard = (req,res)=>{
-  res.render("configuration/reservationDashboard");
-}
 //helper functions
 
 async function getAllAdmins(){
@@ -370,7 +367,7 @@ async function filterAllowedReservation(EventId,currentUser){
   } catch (error) {
     console.error("Error finding the corresponding category's approver",error)
   }
- 
+
   return (app.Approval=="ALL" ||app.Approval==currentUser) || false
 }
 
@@ -379,7 +376,16 @@ async function checkVacancy(eventId,pax){
   try {
     
     event = await eventModel.retrieveByEventid(eventId)
-    return {currentCapacity: event.CurrentCapacity,approvalStatus:(event.CurrentCapacity + pax <= event.MaxCapacity)?"A":"W"}
+
+    if (!event) {
+      return { currentCapacity: 0, approvalStatus: "W" }
+    }
+
+    const currentCapacity = Number(event.CurrentCapacity) || 0;
+    const maxCapacity = Number(event.MaxCapacity) || 0;
+    const requestedPax = Number(pax) || 0;
+
+    return {currentCapacity: event.CurrentCapacity,approvalStatus:(currentCapacity + requestedPax <= maxCapacity)?"A":"W"}
   } catch (error) {
     console.error(`Error retrieving Event Record: ${eventId}`,error)
     return "Error"

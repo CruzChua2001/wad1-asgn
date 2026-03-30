@@ -8,54 +8,86 @@
 <body>
     <%- include('../partials/navbar') %>
 
-    <h1>Manage Users</h1>
+    <div class="container stack">
+    <div class="panel">
+      <div class="panel-header">
+        <h1>Manage Users</h1>
+        <p class="subtle">Review users and create an admin account.</p>
+      </div>
+      <div class="panel-inner stack">
 
     <% if (error) { %>
-        <p style="color: red;"><%= error %></p>
+        <div class="note note-danger text-danger"><%= error %></div>
     <% } %>
 
-    <table border="1">
-        <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-        </tr>
-        <% users.forEach(user => { %>
-            <tr>
-                <td><%= user.FirstName %></td>
-                <td><%= user.LastName %></td>
-                <td><%= user.Email %></td>
-                <td><%= user.Role %></td>
-                <td>
-                    <a href="/user/<%= user.UserID %>">View</a>
-                    <form method="POST" action="/user/<%= user.UserID %>/delete" style="display:inline;">
-                        <button type="submit">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        <% }) %>
-    </table>
+    <div class="row-between">
+      <div class="stack">
+        <h3>Create Admin Account</h3>
+        <p class="subtle">Open the form to add an admin.</p>
+      </div>
+      <button id="openAdminForm" class="btn btn-primary btn-sm" type="button">Add Admin</button>
+    </div>
 
-    <hr>
+    <div id="adminFormWrap" class="form-card category-form hidden">
+      <form method="POST" action="/user/admin" class="stack">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" name="firstName" required>
 
-    <h2>Create Admin Account</h2>
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" name="lastName" required>
 
-    <form method="POST" action="/user/admin">
-        <label for="firstName">First Name</label><br>
-        <input type="text" id="firstName" name="firstName" required><br><br>
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
 
-        <label for="lastName">Last Name</label><br>
-        <input type="text" id="lastName" name="lastName" required><br><br>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
 
-        <label for="email">Email</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" type="submit">Create Admin</button>
+          <button id="closeAdminForm" class="btn btn-ghost btn-sm" type="button">Cancel</button>
+        </div>
+      </form>
+    </div>
 
-        <label for="password">Password</label><br>
-        <input type="password" id="password" name="password" required><br><br>
+    <div class="table-wrap">
+      <table>
+          <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+          </tr>
+          <% users.forEach(user => { %>
+              <tr>
+                  <td><%= user.FirstName %></td>
+                  <td><%= user.LastName %></td>
+                  <td><%= user.Email %></td>
+                  <td><%= user.Role %></td>
+                  <td>
+                      <a class="btn btn-ghost btn-sm" href="/user/<%= user.UserID %>">View</a>
+                      <form method="POST" action="/user/<%= user.UserID %>/delete" class="inline">
+                          <button class="btn btn-danger" type="submit">Delete</button>
+                      </form>
+                  </td>
+              </tr>
+          <% }) %>
+      </table>
+    </div>
+      </div>
+    </div>
+    </div>
 
-        <button type="submit">Create Admin</button>
-    </form>
+    <script>
+      (function () {
+        const openBtn = document.getElementById('openAdminForm');
+        const closeBtn = document.getElementById('closeAdminForm');
+        const wrap = document.getElementById('adminFormWrap');
+        if (!openBtn || !closeBtn || !wrap) return;
+
+        openBtn.addEventListener('click', () => wrap.classList.remove('hidden'));
+        closeBtn.addEventListener('click', () => wrap.classList.add('hidden'));
+      })();
+    </script>
 </body>
 </html>

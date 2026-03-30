@@ -7,34 +7,46 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
-    <h1>Update booking for: <%= reservation.EventDetails?.EventName || 'Unknown Event' %> <%= formatDateTime(reservation.CreatedDateTime) || 'Unknown Date' %></h1>
-    <p>Remaining Capacity: <%= reservation.EventDetails?.CurrentCapacity || 'Unknown Capacity' %></p>
-    <p>Currently Booked: <%= reservation.Status || 'Unknown Booked' %></p>
+    <div class="container stack">
+        <div class="panel">
+            <div class="panel-header">
+                <h1>Event Reservation</h1>
+                <p class="subtle"><%= reservation.EventDetails?.EventName || 'Unknown Event' %> · <%= formatDateTime(reservation.CreatedDateTime) || 'Unknown Date' %></p>
+            </div>
+            <div class="panel-inner stack">
+                <div class="row">
+                    <span class="pill">Remaining capacity: <%= reservation.EventDetails?.CurrentCapacity || 'Unknown Capacity' %></span>
+                    <span class="pill">Status: <%= reservation.Status || 'Unknown Booked' %></span>
+                </div>
 
-    <% if (reservation.EventDetails?.Booked >= reservation.EventDetails?.Capacity) { %>
-        <p style="color: red;"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</p>
-    <% } %>
+                <% if (reservation.EventDetails?.Booked >= reservation.EventDetails?.Capacity) { %>
+                    <div class="note note-danger text-danger"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</div>
+                <% } %>
 
-    <form id="updateReservationForm" data-reservation-id="<%= reservation.ReservationID %>">
-        <input type="hidden" name="EventId" value="<%= reservation.EventId %>">
-        <label for="numofppl">Number of people attending:</label>
-        <input 
-            type="number" 
-            id="numofppl" 
-            name="numofppl" 
-            min="1" 
-            step="1"
-            inputmode="numeric"
-            pattern="[0-9]+"
-            max="<%= reservation.EventDetails?.Capacity - reservation.EventDetails?.Booked %>" 
-            value="<%= reservation.numofppl || 1 %>"
-            required
-        >
-        <button type="submit">Confirm Reservation</button>
-    </form>
-    
-    <br>
-    <a href="/reserve/reservation">Back to My Reservations</a>
+                <form id="updateReservationForm" class="reserve-form" data-reservation-id="<%= reservation.ReservationID %>">
+                    <input type="hidden" name="EventId" value="<%= reservation.EventId %>">
+                    <label for="numofppl">Number of people attending:</label>
+                    <input 
+                    type="number" 
+                    id="numofppl" 
+                    class="reserve-input"
+                    name="numofppl" 
+                    min="1" 
+                    step="1"
+                    inputmode="numeric"
+                    pattern="[0-9]+"
+                    max="<%= reservation.EventDetails?.Capacity - reservation.EventDetails?.Booked %>" 
+                    value="<%= reservation.numofppl || 1 %>"
+                    required
+                    >
+                    <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
+                </form>
+
+                <br>
+                <a class="btn btn-ghost btn-sm" href="/reserve/reservation">Back</a>
+            </div>
+        </div>
+    </div>
 
     <script>
         const form = document.getElementById("updateReservationForm");
