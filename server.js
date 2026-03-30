@@ -7,10 +7,9 @@ const feedbackModel = require("./models/feedbackModel");
 
 const server = express();
 
-const HOSTNAME = "localhost";
-const PORT = 8000;
+const PORT = Number(process.env.PORT) || 8000;
 
-dotenv.config({ path: './.env' });
+dotenv.config();
 
 server.set("view engine", "ejs");
 server.use(express.json());
@@ -75,8 +74,8 @@ const connectDB = async () => {
 }
 
 const startServer = () => {
-    server.listen(PORT, HOSTNAME, () => {
-        console.log(`Hello! Server is currently running on http://${HOSTNAME}:${PORT}`);
+  server.listen(PORT, () => {
+    console.log(`Hello! Server is currently running on port ${PORT}`);
     })
 }
 
