@@ -48,91 +48,150 @@ exports.addfeedback = async(userId, eventId,  body) => {
     UserID: userId,
     Feedback: body.feedback || "",
     CreatedDateTime: formatDateTime(new Date().toISOString()),
-    isAnonymous: Number(body.isAnonymous),
+    isAnonymous: Number(body.isAnonymous) || 0,
     isDeleted: 0,
-    rating: Number(body.rating),
-    attend: Number(body.attend),
-    recommend: Number(body.recommend),
-    goals:Number(body.goals)
+    rating: Number(body.rating) || 0,
+    attend: Number(body.attend) || 0,
+    recommend: Number(body.recommend) || 0,
+    goals:Number(body.goals) || 0
     },
 )
 }
-exports.getTopEvents =  () => {
-    return Feedback.aggregate([
-      {
-        $addFields: {
-          totalScore: { $add: ["$rating", "$attend", "$recommend", "$goals"] }
-        }
-      },
-      {
-        $group: {
-          _id: "$EventId",
-          EventName: { $first: "$EventName" },
-          avgScore: { $avg: "$totalScore" }, 
-          numResponses: { $sum: 1 }          
-        }
-      },
-     {
-        $lookup: {
-            from: "events",             
-            localField: "_id",          
-            foreignField: "eventId",    
-            as: "eventDetails"
-        }
-    },
-        {
-            $unwind: "$eventDetails"
-        },
-        {
-            $project: {
-                _id: 1,
-                eventName: "$eventDetails.eventName",
-                avgScore: 1,
-                numResponses: 1
-            }
-        },
-      { $sort: { avgScore: -1 } },
+exports.getTopEvents = async () => {
+    const feedbacks = await Feedback.find({ isDeleted: 0 });
+    const topEvents = [];
 
-      { $limit: 10 }
-    ]);
+    const eventMap = {};
+
+    for (const feedback of feedbacks) {
+        const eventId = feedback.EventID;
+        const totalScore = feedback.rating + feedback.attend + feedback.recommend + feedback.goals;
+
+        if (!eventMap[eventId]) {
+            eventMap[eventId] = {
+                totalScore: 0,
+                numResponses: 0
+            };
+        }
+
+        eventMap[eventId].totalScore += totalScore;
+        eventMap[eventId].numResponses += 1;
+    }
+
+    for (const eventId in eventMap) {
+        const event = await Event.findOne({ eventId: eventId });
+
+        if (event) {
+            topEvents.push({
+                eventId: event.eventId,
+                eventName: event.eventName,
+                avgScore: eventMap[eventId].totalScore / eventMap[eventId].numResponses,
+                numResponses: eventMap[eventId].numResponses
+            });
+        }
+    }
+
+    topEvents.sort((a, b) => b.avgScore - a.avgScore);
+
+    return topEvents.slice(0, 10);
+};
+
+const Event = require("./event")
+
+exports.getHistory = async (userId) => {
+    const feedbacks = await Feedback.find({
+        UserID: userId,
+        isDeleted: 0
+    }).sort({ CreatedDateTime: -1 })
+
+    const history = []
+
+    for (const feedback of feedbacks) {
+        const event = await Event.findOne({ eventId: feedback.EventID })
+
+        history.push({
+            FeedbackID: feedback.FeedbackID,
+            EventID: feedback.EventID,
+            EventName: event ? event.eventName : "Unknown Event",
+            CreatedDateTime: feedback.CreatedDateTime
+        })
+    }
+
+    return history
 }
 
-exports.getHistory = (userId) => {
-    return Feedback.aggregate([
-        {
-            $match: {
-                UserID: userId,
-                isDeleted: 0
-            }
-        },
-        {
-            $lookup: {
-                from: "event", 
-                localField: "EventID",
-                foreignField: "eventId",
-                as: "eventDetails"
-            }
-        },
-        {
-            $unwind: "$eventDetails"
-        },
-        {
-            $project: {
-                _id: 0,
-                FeedbackID: 1,
-                EventID: 1,
-                EventName: "$eventDetails.eventName",
-                CreatedDateTime: 1
-            }
-        },
-        {
-            $sort: {
-                CreatedDateTime: -1
-            }
-        }
-    ])
+
+exports.getFeedbackByID = async (feedbackId, userId) => {
+    const feedback = await Feedback.findOne({
+        FeedbackID: feedbackId,
+        UserID: userId,
+        isDeleted: 0
+    })
+
+    if (!feedback) return null
+
+    const event = await Event.findOne({ eventId: feedback.EventID })
+
+    return {
+        FeedbackID: feedback.FeedbackID,
+        EventID: feedback.EventID,
+        EventName: event ? event.eventName : "Unknown Event",
+        Feedback: feedback.Feedback,
+        isAnonymous: feedback.isAnonymous,
+        rating: feedback.rating,
+        attend: feedback.attend,
+        recommend: feedback.recommend,
+        goals: feedback.goals,
+        CreatedDateTime: feedback.CreatedDateTime
+    }
 }
 
-exports.retrieveFeedbackByEventID = (eventID) => {
-    return Feedback.find({ EventID: eventID, isDeleted: 0 });
-}
+exports.updateFeedbackByID = async (feedbackId, userId, body) => {
+    const feedback = await Feedback.findOne({
+        FeedbackID: feedbackId,
+        UserID: userId,
+        isDeleted: 0
+    });
+
+    if (!feedback) {
+        return null;
+    }
+
+    await Feedback.updateOne(
+        {
+            FeedbackID: feedbackId,
+            UserID: userId,
+            isDeleted: 0
+        },
+        {
+            $set: {
+                Feedback: body.feedback || "",
+                isAnonymous: Number(body.isAnonymous) || 0,
+                rating: Number(body.rating) || 0,
+                attend: Number(body.attend) || 0,
+                recommend: Number(body.recommend) || 0,
+                goals: Number(body.goals) || 0
+            }
+        }
+    );
+
+    return await Feedback.findOne({
+        FeedbackID: feedbackId,
+        UserID: userId,
+        isDeleted: 0
+    });
+};
+
+exports.deleteFeedbackByID = async (feedbackId, userId) => {
+    return Feedback.findOneAndUpdate(
+        {
+            FeedbackID: feedbackId,
+            UserID: userId,
+            isDeleted: 0
+        },
+        {
+            isDeleted: 1
+        },
+        { new: true }
+    );
+};
