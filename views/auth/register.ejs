@@ -8,35 +8,45 @@
 <body>
     <%- include("../partials/navbar.ejs") %>
     
-    <h1>Create Account</h1>
+    <div class="container stack">
+        <div class="panel">
+            <div class="panel-header">
+                <h1>Create Account</h1>
+                <p class="subtle">Join the board and start booking events.</p>
+            </div>
+            
+            <div class="panel-inner stack">
 
-    <% if (error) { %>
-        <p style="color: red;"><%= error %></p>
-    <% } %>
+            <% if (error) { %>
+                <div class="note note-danger text-danger"><%= error %></div>
+            <% } %>
 
-    <% if (success) { %>
-        <p style="color: green;"><%= success %></p>
-    <% } %>
+            <% if (success) { %>
+                <div class="note note-success text-success"><%= success %></div>
+            <% } %>
 
-    <form method="POST" action="/register">
-        <label for="firstName">First Name</label><br>
-        <input type="text" id="firstName" name="firstName" required><br><br>
+            <form method="POST" action="/register">
+                <label for="firstName">First Name</label><br>
+                <input type="text" id="firstName" name="firstName" required><br><br>
 
-        <label for="lastName">Last Name</label><br>
-        <input type="text" id="lastName" name="lastName" required><br><br>
+                <label for="lastName">Last Name</label><br>
+                <input type="text" id="lastName" name="lastName" required><br><br>
 
-        <label for="email">Email</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+                <label for="email">Email</label><br>
+                <input type="email" id="email" name="email" required><br><br>
 
-        <label for="password">Password</label><br>
-        <input type="password" id="password" name="password" required><br><br>
+                <label for="password">Password</label><br>
+                <input type="password" id="password" name="password" required><br><br>
 
-        <label for="confirmPassword">Confirm Password</label><br>
-        <input type="password" id="confirmPassword" name="confirmPassword" required><br><br>
+                <label for="confirmPassword">Confirm Password</label><br>
+                <input type="password" id="confirmPassword" name="confirmPassword" required><br><br>
 
-        <button type="submit">Register</button>
-    </form>
+                <button class="btn btn-primary" type="submit">Register</button>
+            </form>
 
-    <p>Already have an account? <a href="/login">Login here</a></p>
+            <p class="subtle">Already have an account? <a class="link" href="/login">Login here</a></p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
