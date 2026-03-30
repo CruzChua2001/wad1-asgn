@@ -10,7 +10,7 @@ const server = express();
 const HOSTNAME = "localhost";
 const PORT = 8000;
 
-dotenv.config({ path: './config.env' });
+dotenv.config({ path: './.env' });
 
 server.set("view engine", "ejs");
 server.use(express.json());
