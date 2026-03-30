@@ -11,7 +11,7 @@ router.post("/register", authController.postRegister);
 router.get("/forgotpassword",  authController.getForgotPassword);
 router.post("/forgotpassword", authController.patchForgotPassword);
 
-router.post("/signout", authController.postSignout);
+router.get("/signout", authController.getSignout);
 
 router.get("/", (req, res) => res.redirect("/login"));
 

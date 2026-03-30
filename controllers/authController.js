@@ -102,11 +102,11 @@ const patchForgotPassword = async (req, res) => {
     }
 };
 
-const postSignout = (req, res) => {
+const getSignout = (req, res) => {
     req.session.destroy(() => {
         res.clearCookie("connect.sid");
         return res.redirect("/index.html");
     });
 }; // end session if user signs out 
 
-module.exports = { getLogin, postLogin, getRegister, postRegister, getForgotPassword, patchForgotPassword, postSignout };
+module.exports = { getLogin, postLogin, getRegister, postRegister, getForgotPassword, patchForgotPassword, getSignout };
