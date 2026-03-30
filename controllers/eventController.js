@@ -96,8 +96,7 @@ exports.postNewEvent = async (req, res) => {
         await eventModel.createEvent(newEvent);
         res.redirect("/event/manage");
     } catch (error) {
-        // Log your errors
-        // TODO: Replace the error message
+        console.error(error);
         newEventErrorMsg.push("Error creating new event, please try again");
         return res.redirect("/event/new");
     }
