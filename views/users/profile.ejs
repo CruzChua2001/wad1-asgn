@@ -36,7 +36,14 @@
               <label for="email">Email</label>
               <input id="email" name="email" type="email" value="<%= user.Email %>" required>
 
-              <!-- Add Password fields -->
+              <label for="currentPassword">Current Password</label>
+              <input id="currentPassword" name="currentPassword" type="password" placeholder="Enter current password">
+
+              <label for="newPassword">New Password</label>
+              <input id="newPassword" name="newPassword" type="password" placeholder="Enter new password (min 8 characters)">
+
+              <label for="confirmNewPassword">Confirm New Password</label>
+              <input id="confirmNewPassword" name="confirmNewPassword" type="password" placeholder="Re-enter new password">
 
               <div class="form-actions">
                 <button class="btn btn-primary" type="submit">Save Changes</button>
