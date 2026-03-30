@@ -61,8 +61,8 @@
                                     <td style="padding: 4px;"><%= report.CreatedAt.toLocaleString() %></td>
                                     <td style="padding: 4px;"><%= report.Status === "Not Applicable" ? "" : report.Status %></td>
                                     <td style="padding: 4px;">
-                                        <a href="/contactus/<%= report.ReportId %>">View</a>
-                                        <button class="delete-btn" data-id="<%= report.ReportId %>" style="margin-left: 4px; border: 0; background: none; font-size: 14px; text-decoration: underline; color: red; cursor: pointer;">Delete</button>
+                                        <a href="/contactus/<%= report.ReportID %>">View</a>
+                                        <button class="delete-btn" data-id="<%= report.ReportID %>" style="margin-left: 4px; border: 0; background: none; font-size: 14px; text-decoration: underline; color: red; cursor: pointer;">Delete</button>
                                     </td>
                                 </tr>
                             <% }) %>

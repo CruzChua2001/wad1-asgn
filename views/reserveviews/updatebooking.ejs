@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+    <h1>Update booking for: <%= reservation.EventDetails?.EventName || 'Unknown Event' %> <%= formatDateTime(reservation.CreatedDateTime) || 'Unknown Date' %></h1>
+    <p>Remaining Capacity: <%= reservation.EventDetails?.CurrentCapacity || 'Unknown Capacity' %></p>
+    <p>Currently Booked: <%= reservation.Status || 'Unknown Booked' %></p>
+
+    <% if (reservation.EventDetails?.Booked >= reservation.EventDetails?.Capacity) { %>
+        <p style="color: red;"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</p>
+    <% } %>
+
+    <form id="updateReservationForm" data-reservation-id="<%= reservation.ReservationID %>">
+        <input type="hidden" name="EventId" value="<%= reservation.EventId %>">
+        <label for="numofppl">Number of people attending:</label>
+        <input 
+            type="number" 
+            id="numofppl" 
+            name="numofppl" 
+            min="1" 
+            step="1"
+            inputmode="numeric"
+            pattern="[0-9]+"
+            max="<%= reservation.EventDetails?.Capacity - reservation.EventDetails?.Booked %>" 
+            value="<%= reservation.numofppl || 1 %>"
+            required
+        >
+        <button type="submit">Confirm Reservation</button>
+    </form>
+    
+    <br>
+    <a href="/reserve/reservation">Back to My Reservations</a>
+
+    <script>
+        const form = document.getElementById("updateReservationForm");
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const reservationId = form.dataset.reservationId;
+            const numofppl = document.getElementById("numofppl").value.trim();
+
+            if (!/^\d+$/.test(numofppl)) {
+                alert("Please enter numbers only.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/reserve/update/${reservationId}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams({ numofppl })
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    alert(result.message || "Failed to update booking.");
+                    return;
+                }
+                window.location.href = "/reserve/reservation";
+            } catch (err) {
+                alert("Failed to update booking.");
+            }
+        });
+    </script>
+</body>
+</html>

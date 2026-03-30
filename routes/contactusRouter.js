@@ -15,7 +15,7 @@ router.post("/", contactusController.addReport);
 
 router.get("/:id", contactusController.getReportById);
 
-router.put("/:id", contactusController.updateReportById);
+router.patch("/:id", contactusController.updateReportById);
 
 router.delete("/:id", contactusController.deleteReportById);
 
