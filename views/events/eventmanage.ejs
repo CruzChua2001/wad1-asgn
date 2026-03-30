@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management</title>
+</head>
+
+<body>
+    <%- include('../partials/navbar') %>
+
+        <h1>Event Management</h1>
+
+        <p>
+            <a href="/event/new">Create New Event</a>
+        </p>
+
+        <form action="/event/manage" method="GET">
+            <input type="text" name="search" placeholder="Search by Event Name..." value="<%= searchTerm %>">
+            <button type="submit">Search</button>
+            <a href="/event/manage"><button type="button">Clear</button></a><br><br>
+        </form>
+
+        <div class="filter-bar">
+            <!-- Type Filter -->
+            <select id="filterType" class="filter-dropdown">
+                <option value="">All Types</option>
+                <% categories.forEach(cat=> { %>
+                    <option value="<%= cat.CategoryName.toLowerCase() %>">
+                        <%= cat.CategoryName %>
+                    </option>
+                    <% }) %>
+            </select>
+
+            <!-- Status Filter -->
+            <select id="filterStatus" class="filter-dropdown">
+                <option value="">All Status</option>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+            </select>
+
+            <!-- Sort Dropdown -->
+            <select id="sortOption" class="filter-dropdown">
+                <option value="">Sort By</option>
+                <option value="nameAsc">Name (A → Z)</option>
+                <option value="nameDesc">Name (Z → A)</option>
+                <option value="capacityAsc">Capacity ↑</option>
+                <option value="capacityDesc">Capacity ↓</option>
+                <option value="dateAsc">Date ↑</option>
+                <option value="dateDesc">Date ↓</option>
+            </select>
+
+            <!-- Clear Filters Button -->
+            <button type="button" onclick="clearFilters()">Clear Filters</button>
+        </div>
+
+        <table id="eventTable" border="1">
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Event Type</th>
+                    <th>Current Capacity</th>
+                    <th>Max Capacity</th>
+                    <th>End Date and Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (events.length===0) { %>
+                    <tr class="no-match-row">
+                        <td colspan="7" style="text-align: center; color: grey; font-style: italic;">
+                            No matching events
+                        </td>
+                    </tr>
+                    <% } else { %>
+                        <% events.forEach(event=> { %>
+                            <tr data-date="<%= new Date(event.EndDateTime).toISOString() %>">
+                                <td>
+                                    <%= event.EventName %>
+                                </td>
+                                <td>
+                                    <%= event.categoryDetails.CategoryName %>
+                                </td>
+                                <td>
+                                    <%= event.CurrentCapacity %>
+                                </td>
+                                <td>
+                                    <%= event.MaxCapacity %>
+                                </td>
+                                <td>
+                                    <%= new Date(event.EndDateTime).toLocaleDateString() %>,
+                                        <%= new Date(event.EndDateTime).toLocaleTimeString([], { hour: '2-digit' ,
+                                            minute: '2-digit' }) %>
+                                </td>
+                                <td>
+                                    <%= event.Status==='active' ? 'Open' : 'Closed' %>
+                                </td>
+                                <td>
+                                    <a style="color: darkblue; margin-right: 5px;"
+                                        href="/event/manage/<%= event.EventID %>">View</a>
+                                    <a style="text-decoration: underline; color: darkblue; cursor: pointer;"
+                                        onClick="deleteEvent('<%= event.EventID %>')">Delete</a>
+                                </td>
+                            </tr>
+                            <% }) %>
+            </tbody>
+        </table>
+
+        <% } %>
+
+            <script>
+                const deleteEvent = async (eventid) => {
+                    if (confirm("Are you sure you want to delete this event?")) {
+                        try {
+                            const response = await fetch(`/event/delete/${eventid}`, { method: 'DELETE' });
+                            if (response.ok) {
+                                alert("Event deleted successfully.");
+                                window.location.href = "/event/manage"; // reload page
+                            } else {
+                                alert("Failed to delete event.");
+                            }
+                        } catch (error) {
+                            console.error("Error deleting event:", error);
+                            alert("An error occurred while deleting the event.");
+                        }
+                    }
+                };
+
+                const filterType = document.getElementById('filterType');
+                const filterStatus = document.getElementById('filterStatus');
+                const sortOption = document.getElementById('sortOption');
+                const tableBody = document.getElementById('eventTable').querySelector('tbody');
+                const noMatch = document.getElementById("noMatch");
+
+                function updateTable() {
+                    const typeVal = filterType.value.toLowerCase();
+                    const statusVal = filterStatus.value.toLowerCase();
+                    const sortVal = sortOption.value;
+
+                    let rows = Array.from(tableBody.rows);
+
+                    // 🔹 FILTER
+                    let visibleCount = 0;
+                    rows.forEach(row => {
+                        const typeText = row.cells[1].innerText.trim().toLowerCase();
+                        const statusText = row.cells[5].innerText.trim().toLowerCase();
+
+                        if ((typeVal && typeText !== typeVal) || (statusVal && statusText !== statusVal)) {
+                            row.style.display = 'none';
+                        } else {
+                            row.style.display = '';
+                            visibleCount++;
+                        }
+                    });
+
+                    // 🔹 SORT
+                    rows.sort((a, b) => {
+                        if (sortVal === "nameAsc") return a.cells[0].innerText.localeCompare(b.cells[0].innerText);
+                        if (sortVal === "nameDesc") return b.cells[0].innerText.localeCompare(a.cells[0].innerText);
+                        if (sortVal === "capacityAsc") return parseInt(a.cells[3].innerText) - parseInt(b.cells[3].innerText);
+                        if (sortVal === "capacityDesc") return parseInt(b.cells[3].innerText) - parseInt(a.cells[3].innerText);
+                        if (sortVal === "dateAsc") return new Date(a.dataset.date) - new Date(b.dataset.date);
+                        if (sortVal === "dateDesc") return new Date(b.dataset.date) - new Date(a.dataset.date);
+                        return 0;
+                    });
+
+                    rows.forEach(row => tableBody.appendChild(row));
+
+                    // 🔹 Show/hide "No matching events"
+                    noMatch.style.display = visibleCount ? "none" : "block";
+                }
+
+                filterType.addEventListener("change", updateTable);
+                filterStatus.addEventListener("change", updateTable);
+                sortOption.addEventListener("change", updateTable);
+
+                function clearFilters() {
+                    filterType.value = "";
+                    filterStatus.value = "";
+                    sortOption.value = "";
+                    updateTable();
+                }
+            </script>
+</body>
+
+</html>

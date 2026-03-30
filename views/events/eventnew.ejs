@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Event</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <h1>Create New Event</h1>
+
+    <% if (errors) { %>
+        <ul>
+            <% errors.forEach(error => { %>
+                <li style="color: red;"><%= error %></li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <form action="/event/new" method="POST">
+        <label for="EventName">Event Name:</label><br>
+        <input type="text" id="EventName" name="EventName"><br><br>
+
+        <label for="EventDescription">Event Description:</label><br>
+        <textarea id="EventDescription" name="EventDescription"></textarea><br><br>
+
+        <label for="EventType">Event Type:</label><br>
+        <select id="EventType" name="EventType" >
+            <option value="">Select Event Type</option>
+            <% categories.forEach(category => { %>
+                <option value="<%= category.CategoryID %>"><%= category.CategoryName %></option>
+            <% }) %>
+        </select><br><br>
+
+        <label for="MaxCapacity">Max Capacity:</label><br>
+        <input type="number" id="MaxCapacity" name="MaxCapacity"><br><br>
+
+        <label for="EndDateTime">End Date and Time:</label><br>
+        <input type="datetime-local" id="EndDateTime" name="EndDateTime"><br><br>
+
+        <button type="submit">Create Event</button>
+    </form>
+</body>
+</html>

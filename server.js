@@ -12,6 +12,7 @@ const PORT = 8000;
 dotenv.config({ path: './config.env' });
 
 server.set("view engine", "ejs");
+server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 server.use(express.static(path.join(__dirname, "public")));
 server.use(session({
@@ -40,7 +41,7 @@ const feedbackRouter = require("./routes/feedbackRouter");
 const contactusRouter = require("./routes/contactusRouter");
 
 server.use("/user", userRouter);                        // Anumitaa 
-server.use("/event", eventRouter)                       // Claudine
+server.use("/event", auth.requireAuth, eventRouter)     // Claudine
 server.use("/reserve",auth.requireAuth, reserveRouter);                  // Zhi Yang
 server.use("/configuration",auth.requireAuth,auth.requireAdmin, configurationRouter);      // Mahshuk
 server.use("/feedback", feedbackRouter);                // Keifer
