@@ -6,16 +6,25 @@
     <title>Category Outcome</title>
 </head>
 <body>
-    <h2>Category Update Dashboard</h2>
+    <%- include("../partials/navbar.ejs") %>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Category Update Dashboard</h2>
+        </div>
+        <div class="panel-inner stack">
     <% if (result) { %>
-     <p style="color:green">
+     <div class="note note-success text-success">
         <%- message %>
-     </p>
+     </div>
      <% } else { %>
-        <p style="color:red">
+        <div class="note note-danger text-danger">
             <%- message %>
-        </p>
+        </div>
     <% } %>
-    <a href="/configuration/category">Back to Category Dashboard</a>
+    <a class="btn btn-ghost" href="/configuration/category">Back to Category Dashboard</a>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

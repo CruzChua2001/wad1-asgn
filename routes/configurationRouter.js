@@ -35,8 +35,7 @@ router.get("/categoryDetail", configurationController.displayCategoryDetail);
 router.post("/categoryDetail",configurationController.updateCategoryDetail);
 
 router.get("/deleteCategory",configurationController.deleteCategory)
-//RESERVATION ROUTES
-router.get("/reservationDashboard",configurationController.displayReservationDashboard);
+
 router.get("/pending",configurationController.displayPendingReservations);
 
 router.post("/handle",configurationController.handleReservationApproval);

@@ -7,11 +7,20 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs")%>
-    <br>
-    <h2>Admin Dashboard</h2>
-    <ul>
-        <li><a href="/configuration/category" style="color: blue;">Manage Event Categories</a></li>
-        <li><a href="/configuration/reservationDashboard" style="color: green;">Manage Reservations</a></li>
-    <ul>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Admin Dashboard</h2>
+          <p class="subtle">Manage categories and reservation workflows.</p>
+        </div>
+        <div class="panel-inner">
+          <div class="form-actions">
+            <a class="btn btn-primary" href="/configuration/category">Manage Event Categories</a>
+            <a class="btn btn-primary" href="/configuration/pending">Pending Queue</a>
+            <a class="btn btn-ghost" href="/configuration/approvalHistory">Approval History</a>
+          </div>
+        </div>
+      </div>
+    </div>
 </body>
 </html>

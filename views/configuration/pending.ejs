@@ -7,24 +7,32 @@
 </head>
 <body>
     <%- include("../partials/navbar.ejs") %>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>Pending Reservations</h1>
+          <p class="subtle">Approve or reject queued reservations.</p>
+        </div>
+        <div class="panel-inner stack">
         <% if (reservationOutcome) { %>
              <% if (reservationOutcome.outcome !== "error") { %>
-            <p style="color: green;">Reservation status <b><%= reservationOutcome.id %></b>
-                <b><u>
+            <div class="note note-success text-success">
+                Reservation status <b><%= reservationOutcome.id %></b>
+                <b>
                     <%= reservationOutcome.outcome==="R"?"rejected":"" %>
-                    <%= reservationOutcome.outcome==="A"?"accepted":"" %>
+                    <%= reservationOutcome.outcome==="A"?"approved":"" %>
                     <%= reservationOutcome.outcome==="W"?"placed on waitlist":"" %>
-                </u></b>
+                </b>
                 successfully.
                 <% if (reservationOutcome.outcome==="W") { %>
-                    <p style="color: red;">This event has reached maximum capacity. </p>
+                    <div class="note note-danger text-danger">This event has reached maximum capacity.</div>
                 <% } %>
-            </p>
+            </div>
             <% } else if (reservationOutcome.outcome ==="error") { %>
-                    <p style="color: red;">
+                    <div class="note note-danger text-danger">
                         Database error in updating the reservation status <b><%= reservationOutcome.id %></b>
                         Please try again later.
-                    </p>
+                    </div>
             <% } %>
 
     <% } %>
@@ -37,12 +45,13 @@
 
     else { %>
 
-        <h2><%= pendingReservations.length %> reservation(s) Pending Approval</h2>
+        <h2><%= pendingReservations.length %> reservation(s) pending approval</h2>
 
         
         
 
-        <table border="2">
+        <div class="table-wrap">
+        <table>
         
             <tr>
                 <th>Event ID</th>
@@ -61,20 +70,20 @@
                             <td><%= r.EventName %></td>
                             <td><%= r.UserId %></td>
                             <td><%= r.formattedTime %></td>
-                            <td><%= r.nuwmofppl %></td>
+                            <td><%= r.numofppl %></td>
                             
                             <td>
                                 <form action="/configuration/handle" method="post">
-                                    <div style="background-color:green;color: white;">
+                                    <div class="note note-success">
                                         <label for="approve">Approve
-                                            <input type="radio" name="action" id="approve" value="A!<%= r.ReservationID%> %>">
+                                            <input type="radio" name="action" id="approve" value="A!<%= r.ReservationID %>">
                                         </label>
 
                                     </div>
                                     <div>
                                         &nbsp;
                                     </div>
-                                    <div style="background-color:red;color: white; ">
+                                    <div class="note note-danger">
                                         <label for="reject">Reject
                                             <input type="radio" name="action" id="reject" value="R!<%= r.ReservationID %>">
                                             
@@ -85,7 +94,7 @@
                                     <input type="hidden" name="EventId" value="<%= r.EventId %>">
                                     
                                     <br>
-                                    <input style="background-color: blue;color: white;"type="submit" value="Confirm Action">
+                                    <button class="btn btn-primary" type="submit">Confirm Action</button>
 
                                     
                                 </form>
@@ -103,16 +112,20 @@
 
                 </ol>
         </table>
+        </div>
         <% if (missingCategory) { %>
-            <p style="color: red;">Please click on an Action. Otherwise, please return to Admin Page.</p>
+            <div class="note note-danger text-danger">Please click on an Action. Otherwise, please return to Admin Page.</div>
 
         <% } %>
        <% if (missingCategory) { %>
-            <p style="color: red;">Please click on an Action. Otherwise, please return to Admin Page.</p>
+            <div class="note note-danger text-danger">Please click on an Action. Otherwise, please return to Admin Page.</div>
 
         <% } %>
     <% } %>
-        <a href="/configuration">Back to Admin Dashboard</a>
+        <a class="btn btn-ghost" href="/configuration">Back to Admin Dashboard</a>
+        </div>
+      </div>
+    </div>
 
 </body>
 </html>
