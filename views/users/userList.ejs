@@ -29,8 +29,8 @@
                 <td><%= user.Email %></td>
                 <td><%= user.Role %></td>
                 <td>
-                    <a href="/users/<%= user.UserID %>">View</a>
-                    <form method="POST" action="/users/<%= user.UserID %>/delete" style="display:inline;">
+                    <a href="/user/<%= user.UserID %>">View</a>
+                    <form method="POST" action="/user/<%= user.UserID %>/delete" style="display:inline;">
                         <button type="submit">Delete</button>
                     </form>
                 </td>
@@ -42,7 +42,7 @@
 
     <h2>Create Admin Account</h2>
 
-    <form method="POST" action="/users/admin">
+    <form method="POST" action="/user/admin">
         <label for="firstName">First Name</label><br>
         <input type="text" id="firstName" name="firstName" required><br><br>
 
