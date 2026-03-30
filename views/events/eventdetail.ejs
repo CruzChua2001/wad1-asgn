@@ -16,7 +16,7 @@
         <p>Type: <%= event.categoryDetails.CategoryName %></p>
         <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></p>
 
-        <form action="" method="GET">
+        <form action="/reserve/create/<%= event.EventID %>" method="GET">
             <button type="submit">Register</button>
         </form>
     </div>
