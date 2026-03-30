@@ -29,6 +29,8 @@ server.get("/health", (req, res) => {
 
 const auth = require("./auth/auth");
 
+server.use(auth.attachUserLocals);
+
 const authRouter = require("./routes/authRouter");
 const userRouter = require("./routes/userRouter");
 const eventRouter = require("./routes/eventRouter");

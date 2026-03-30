@@ -6,12 +6,17 @@ const isAdmin = (req) => {
     return req.user && req.user.role === "admin";
 };
 
-const requireAuth = (req, res, next) => {
-    if (!req.session || !req.session.user) {
-        return res.redirect("/login")};
-    req.user = req.session.user;
-    res.locals.isAdmin = isAdmin(req);
+const attachUserLocals = (req, res, next) => {
+    req.user = req.session && req.session.user ? req.session.user : null;
     res.locals.currentUser = req.user;
+    res.locals.isAdmin = isAdmin(req);
+    next();
+};
+
+const requireAuth = (req, res, next) => {
+    if (!req.user) {
+        return res.redirect("/login");
+    }
     next();
 };
 
@@ -27,6 +32,7 @@ const requireAdmin = (req, res, next) => {
 }
 
 module.exports = {
+    attachUserLocals,
     requireAuth,
     requireAdmin
 }
