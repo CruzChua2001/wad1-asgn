@@ -96,7 +96,7 @@ exports.getTopEvents = async () => {
     return topEvents.slice(0, 10);
 };
 
-const Event = require("./event")
+const Event = require("./eventModel")
 
 exports.getHistory = async (userId) => {
     const feedbacks = await Feedback.find({
