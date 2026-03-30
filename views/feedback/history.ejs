@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <%- include("../partials/navbar.ejs") %>
+
+        <h1>My Feedback History</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>Date / Time</th>
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (typeof history === "undefined" || history.length === 0) { %>
+                <tr>
+                    <td colspan="3">No feedback history found.</td>
+                </tr>
+            <% } else { %>
+                <% history.forEach((item) => { %>
+                    <tr>
+                        <td><%= item.EventName || "Unknown Event" %></td>
+                        <td><%= item.CreatedDateTime %></td>
+                        <td>
+                            <a href="/feedback/view/<%= item.FeedbackID %>">View</a>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } %>
+        </tbody>
+    </table>
+</body>
+</html>

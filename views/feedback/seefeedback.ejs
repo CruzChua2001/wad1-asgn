@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Feedback</title>
+</head>
+<body>
+    <%- include("../partials/navbar.ejs") %>
+    <h1>Feedback Details</h1>
+
+    <% if (!feedback) { %>
+        <p>Feedback not found.</p>
+    <% } else { %>
+        <p>Event Name: <%= feedback.EventName || "Unknown Event" %></p>
+        <p>Date / Time: <%= feedback.CreatedDateTime %></p>
+        <p>Anonymous: <%= feedback.isAnonymous == 1 ? "Yes" : "No" %></p>
+        <p>Rating: <%= feedback.rating %> / 5</p>
+        <p>Attend Similar Events: <%= feedback.attend %> / 5</p>
+        <p>Recommend to Others: <%= feedback.recommend %> / 5</p>
+        <p>Helped Achieve Goals: <%= feedback.goals %> / 5</p>
+        <p>Additional Feedback: <%= feedback.Feedback || "No additional feedback" %></p>
+
+        <br><br>
+
+        <a href="/feedback/edit/<%= feedback.FeedbackID %>">
+            <button>Edit Feedback</button>
+        </a>
+
+        <form action="/feedback/delete/<%= feedback.FeedbackID %>" method="POST">
+            <button type="submit">Delete</button>
+                Delete Feedback
+            </button>
+        </form>
+    <% } %>
+
+    <br><br>
+    <a href="/feedback/history">Back to History</a>
+
+</body>
+</html>

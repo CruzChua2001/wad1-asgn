@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Feedback</title>
+</head>
+<body>
+    <%- include("../partials/navbar.ejs") %>
+    <h1>Edit Feedback</h1>
+
+    <% if (!feedback) { %>
+        <p>Feedback not found.</p>
+    <% } else { %>
+        <form action="/feedback/edit/<%= feedback.FeedbackID %>" method="POST">
+
+            <p>Event Name: <%= feedback.EventName %></p>
+
+            <label>Anonymous:</label>
+            <select name="isAnonymous">
+                <option value="0" <%= feedback.isAnonymous == 0 ? "selected" : "" %>>No</option>
+                <option value="1" <%= feedback.isAnonymous == 1 ? "selected" : "" %>>Yes</option>
+            </select>
+
+            <br><br>
+
+            <label>Rating:</label>
+            <select name="rating">
+                <% ratings.forEach(r => { %>
+                    <option value="<%= r %>" <%= feedback.rating == r ? "selected" : "" %>><%= r %></option>
+                <% }) %>
+            </select>
+
+            <br><br>
+
+            <label>Attend Similar Events:</label>
+            <select name="attend">
+                <% ratings.forEach(r => { %>
+                    <option value="<%= r %>" <%= feedback.attend == r ? "selected" : "" %>><%= r %></option>
+                <% }) %>
+            </select>
+
+            <br><br>
+
+            <label>Recommend to Others:</label>
+            <select name="recommend">
+                <% ratings.forEach(r => { %>
+                    <option value="<%= r %>" <%= feedback.recommend == r ? "selected" : "" %>><%= r %></option>
+                <% }) %>
+            </select>
+
+            <br><br>
+
+            <label>Helped Achieve Goals:</label>
+            <select name="goals">
+                <% ratings.forEach(r => { %>
+                    <option value="<%= r %>" <%= feedback.goals == r ? "selected" : "" %>><%= r %></option>
+                <% }) %>
+            </select>
+
+            <br><br>
+
+            <label>Additional Feedback:</label><br>
+            <textarea name="feedback" rows="5" cols="40"><%= feedback.Feedback %></textarea>
+
+            <br><br>
+
+            <button type="submit">Save Changes</button>
+        </form>
+    <% } %>
+
+    <br>
+    <a href="/feedback/seefeedback/<%= feedback.FeedbackID %>">Cancel</a>
+
+</body>
+</html>
