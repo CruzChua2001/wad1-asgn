@@ -68,7 +68,7 @@ exports.createReservation = async (req, res) => {
 		// Check if already reserved
 		const alreadyReserved = await Reservation.retrieveByEventAndUser(eventId, userId );
 		if (alreadyReserved) {
-			return res.send('You have already reserved a slot for this event. <a href="/reserve/reservation">Go back</a>');
+            return res.render("reserveviews/repeatedevent");
 		}
 		// Check capacity
 		const reservationCount = await Reservation.countByEvent(eventId);
