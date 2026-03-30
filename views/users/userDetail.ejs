@@ -10,18 +10,29 @@
 <body>
     <%- include('../partials/navbar') %>
 
-    <h1>User Detail</h1>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>User Detail</h1>
+          <p class="subtle">Admin-only view of a user account.</p>
+        </div>
+        <div class="panel-inner stack">
 
-    <p><strong>First Name:</strong> <%= user.FirstName %></p>
-    <p><strong>Last Name:</strong> <%= user.LastName %></p>
-    <p><strong>Email:</strong> <%= user.Email %></p>
-    <p><strong>Role:</strong> <%= user.Role %></p>
-    <p><strong>User ID:</strong> <%= user.UserID %></p>
+          <p><strong>First Name:</strong> <%= user.FirstName %></p>
+          <p><strong>Last Name:</strong> <%= user.LastName %></p>
+          <p><strong>Email:</strong> <%= user.Email %></p>
+          <p><strong>Role:</strong> <%= user.Role %></p>
+          <p><strong>User ID:</strong> <%= user.UserID %></p>
 
-    <form method="POST" action="/users/<%= user.UserID %>/delete" style="display:inline;">
-        <button type="submit">Delete User</button>
-    </form>
+          <div class="form-actions">
+            <form method="POST" action="/user/<%= user.UserID %>/delete" class="inline">
+                <button class="btn btn-danger" type="submit">Delete User</button>
+            </form>
+            <a class="btn btn-ghost" href="/user">Back to User List</a>
+          </div>
 
-    <a href="/users">Back to User List</a>
+        </div>
+      </div>
+    </div>
 </body>
 </html>
