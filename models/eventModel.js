@@ -47,7 +47,7 @@ const eventSchema = new mongoose.Schema({
     Status: {
         type: String,
         required: [true, 'Event require a Status'],
-        enum: ['active', 'inactive']
+        enum: ['active', 'inactive'] // restricts to only these 2 values
     },
     isDeleted: {
         type: Number,
@@ -61,6 +61,56 @@ exports.retrieveAll = () => {
     return Event.find({ isDeleted: 0 });
 }
 
+// Retrieve all events with Category details using aggregation
+exports.retrieveAllWithCategory = () => {
+    return Event.aggregate([
+        { $match: { isDeleted: 0 } }, 
+        {
+            $lookup: {
+                from: "category",       // collection name of categories
+                localField: "EventType", // Event.EventType
+                foreignField: "CategoryID", // Category.CategoryID
+                as: "categoryDetails"
+            }
+        },
+        { $unwind: "$categoryDetails" } // convert array to object
+    ]);
+}
+
+exports.getEventByID = (eventID) => {
+    return Event.aggregate([
+        { $match: { EventID: eventID, isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "category",
+                localField: "EventType",
+                foreignField: "CategoryID",
+                as: "categoryDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$categoryDetails",
+                preserveNullAndEmptyArrays: true  // <-- allow event even if no matching category
+            }
+        }
+    ]);
+}
+
+exports.createEvent = (newEvent) => {
+    return Event.create(newEvent);
+}
+
+exports.updateEvent = (eventID, updatedEventData) => {
+    return Event.updateOne({ EventID: eventID }, updatedEventData);
+}
+
+exports.deleteEvent = (eventID) => {
+    return Event.deleteOne({ EventID: eventID });
+}
+exports.retrieveEventName = (EventId) =>{
+    return Event.findOne({EventID:EventId,isDeleted:0}).select('EventName')
+}
 exports.retrieveById = (id) => {
     return Event.findOne({ EventID: id, isDeleted: 0 });
 };
@@ -68,3 +118,15 @@ exports.retrieveById = (id) => {
 exports.updateCapacityById = (id, newCapacity) => {
     return Event.findOneAndUpdate({ EventID: id, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
 };
+
+exports.retrieveByCategoryId = (categoryId) =>{
+    return Event.find({EventType:categoryId,isDeleted:0})
+}
+
+exports.retrieveByEventid = (eventId) =>{
+    return Event.findOne({EventID:eventId}).select("EventType")
+}
+
+exports.updateEventPax = (eventId,pax) =>{
+    return Event.updateOne({EventID:eventId},{CurrentCapacity:pax});
+}

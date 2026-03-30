@@ -55,29 +55,35 @@
     <ul 
         class="nav-bar"
     >
+        <% if (!currentUser) { %>
+            <li><a href="/signin" class="nav-menu">Login</a></li>
+            <li><a href="/register" class="nav-menu">Register</a></li>
+        <% } else { %>
         <li><a href="/home" class="nav-menu">Home</a></li>
 
         <li class="dropdown">
             <a href="#" class="nav-menu">Events ▼</a>
             <div class="dropdown-menu">
-                <a href="">Upcoming Events</a>
+                <a href="/event">Upcoming Events</a>
                 <a href="/reserve/reservation">My Bookings</a>
+                <a href="/feedback/history" class="nav-menu">My Feedback</a>
                 <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
-                    <a href="" class="nav-menu">Manage Events</a>
-                    <a href="/feedback/history" class="nav-menu">My Feedback</a>
+                    <a href="/event/manage" class="nav-menu">Manage Events</a>
+                    <a href="/configuration" class="nav-menu">Event Settings</a>
                 <% } %>
             </div>
         </li>
 
         <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
-            <li><a href="" class="nav-menu">Manage Users</a></li>
+            <li><a href="/user" class="nav-menu">Manage Users</a></li>
         <% } %>
 
         <li><a href="/contactus" class="nav-menu">Contact Us</a></li>
 
-        <li><a href="" class="nav-menu">Profile</a></li>
+        <li><a href="/user/profile" class="nav-menu">Profile</a></li>
         
-        <li><a href="" class="nav-menu">Sign out</a></li>
+        <li><a href="/signout" class="nav-menu">Sign out</a></li>
+        <% } %>
     </ul>
 </nav>
 

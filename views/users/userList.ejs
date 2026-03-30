@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users – Campus Event Board</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <h1>Manage Users</h1>
+
+    <% if (error) { %>
+        <p style="color: red;"><%= error %></p>
+    <% } %>
+
+    <table border="1">
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+        <% users.forEach(user => { %>
+            <tr>
+                <td><%= user.FirstName %></td>
+                <td><%= user.LastName %></td>
+                <td><%= user.Email %></td>
+                <td><%= user.Role %></td>
+                <td>
+                    <a href="/user/<%= user.UserID %>">View</a>
+                    <form method="POST" action="/user/<%= user.UserID %>/delete" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        <% }) %>
+    </table>
+
+    <hr>
+
+    <h2>Create Admin Account</h2>
+
+    <form method="POST" action="/user/admin">
+        <label for="firstName">First Name</label><br>
+        <input type="text" id="firstName" name="firstName" required><br><br>
+
+        <label for="lastName">Last Name</label><br>
+        <input type="text" id="lastName" name="lastName" required><br><br>
+
+        <label for="email">Email</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="password">Password</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <button type="submit">Create Admin</button>
+    </form>
+</body>
+</html>
