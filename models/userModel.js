@@ -69,8 +69,8 @@ exports.deleteUser = (userID) => {
 // soft delete as a safety mechanism to prevent accidental deletions and potential data loss, also bc user data might be linked to other records
 
 exports.getAdminIdByName = (name) => {
-    return User.findOne({FirstName:name.split(" ")[0],LastName:name.split(" ")[1]})
+    return User.findOne({FirstName:name.split(" ")[0],LastName:name.split(" ")[1], isDeleted: 0})
 }
 exports.getAdminUsers = () =>{
-    return User.find({Role:"admin"});
+    return User.find({Role:"admin", isDeleted: 0});
 }
