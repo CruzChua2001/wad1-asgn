@@ -39,9 +39,9 @@ const getUserById = async (req, res) => { // when admin visits users/:id
 const deleteUser = async (req, res) => { // when admin submits delete form for a user
     try {
         if (req.params.id === req.user.userID) // check if admin is deleteting themselves
-            return res.redirect("/users?error=Cannot delete your own account.");
+            return res.redirect("/user?error=Cannot delete your own account.");
         await userModel.deleteUser(req.params.id);
-        return res.redirect("/users"); // show admin updated user list
+        return res.redirect("/user"); // show admin updated user list
     } catch (err) {
         console.error(err);
         return res.status(500).send("Error deleting user.");
@@ -70,7 +70,7 @@ const createAdmin = async (req, res) => {
             UserID: generateUUID(), FirstName: firstName, LastName: lastName,
             Email: email, Password: hashed, PasswordSalt: salt, Role: "admin"
         });
-        return res.redirect("/users"); // show admin updated user list
+        return res.redirect("/user"); // show admin updated user list
     } catch (err) {
         console.error(err);
         return res.status(500).send("Error creating admin.");
