@@ -7,17 +7,13 @@ const isAdmin = (req) => {
 };
 
 const requireAuth = (req, res, next) => {
-    // TODO: Check if user is authenticated via cookie
-
-    // return res.redirect("/index.html");
-    
-    // mock user
-    req.user = { userId: "aoisjdoiq", email: "testuser", role: "student" };
-
-    // set 
+    if (!req.session || !req.session.user) {
+        return res.redirect("/login")};
+    req.user = req.session.user;
     res.locals.isAdmin = isAdmin(req);
+    res.locals.currentUser = req.user;
     next();
-}
+};
 
 const requireAdmin = (req, res, next) => {
     // check if user role is admin

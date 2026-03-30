@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const dotenv = require('dotenv');
+const session = require("express-session");
 const mongoose = require('mongoose');
 
 const server = express();
@@ -12,7 +13,13 @@ dotenv.config({ path: './config.env' });
 
 server.set("view engine", "ejs");
 server.use(express.urlencoded({ extended: true }));
-server.use(express.static(path.join(__dirname, "public")))
+server.use(express.static(path.join(__dirname, "public")));
+server.use(session({
+    secret: process.env.SECRET || "campus-event-board-secret",
+    resave: false, // dont resave the session to the server on every request if nothing changed 
+    saveUninitialized: false, // dont create session for users who are not logged in yet
+    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 } // refers to how long the cookie lasts, meaning the session expires in 24 hours 
+}));
 
 server.get("/health", (req, res) => {
     res.send("Server is running");
@@ -23,7 +30,7 @@ server.get("/health", (req, res) => {
 const auth = require("./auth/auth");
 
 const authRouter = require("./routes/authRouter");
-const userRouter = require("./routes/authRouter");
+const userRouter = require("./routes/userRouter");
 const eventRouter = require("./routes/eventRouter");
 const reserveRouter = require("./routes/reserveRouter");
 const configurationRouter = require("./routes/configurationRouter");
