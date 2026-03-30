@@ -741,3 +741,158 @@ tr:hover td{ background: rgba(87,166,255,.06); }
 .event-detail-image{
   height: 280px;
 }
+
+/* =========================================================
+   Responsive Design
+   ========================================================= */
+@media (max-width: 1024px){
+  .container{
+    width: min(100%, calc(100% - 28px));
+  }
+  .nav-inner{
+    width: min(100%, calc(100% - 28px));
+  }
+  .movie-card{
+    width: 300px;
+  }
+  .event-thumb{
+    width: 150px;
+    height: 108px;
+  }
+}
+
+@media (max-width: 768px){
+  .container{
+    width: calc(100% - 22px);
+    margin: 16px auto 40px;
+  }
+
+  /* Navbar wraps into two rows */
+  .nav-inner{
+    width: calc(100% - 22px);
+    padding: 8px 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .nav-brand{
+    justify-content: center;
+  }
+  .nav-brand-link{
+    width: 100%;
+    text-align: center;
+  }
+  .nav-bar{
+    justify-content: center;
+    gap: .45rem;
+  }
+  .nav-menu{
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  .dropdown-menu{
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 220px;
+  }
+
+  /* Stack sections and controls on small screens */
+  .row,
+  .row-between,
+  .status-row{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-actions{
+    width: 100%;
+  }
+  .form-actions .btn,
+  .form-actions button{
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search-row{
+    align-items: stretch;
+  }
+  .search-row .search-input{
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+  .search-row .btn{
+    width: 100%;
+  }
+
+  .filter-bar{
+    align-items: stretch;
+  }
+  .filter-dropdown{
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  /* Cards become vertical for narrow screens */
+  .event-card{
+    flex-direction: column;
+  }
+  .event-thumb{
+    width: 100%;
+    height: 180px;
+  }
+  .movie-grid{
+    grid-template-columns: 1fr;
+  }
+  .movie-card{
+    width: 100%;
+  }
+  .event-detail-image{
+    height: 220px;
+  }
+
+  .metric-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Tables remain scrollable instead of squished */
+  .table-wrap{
+    overflow-x: auto;
+  }
+  table{
+    min-width: 680px;
+  }
+}
+
+@media (max-width: 480px){
+  h1{ font-size: clamp(24px, 8vw, 30px); }
+  h2{ font-size: clamp(20px, 6.5vw, 24px); }
+  h3{ font-size: 18px; }
+
+  .panel-header,
+  .panel-inner{
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .btn,
+  button{
+    min-height: 42px;
+  }
+  .btn-sm{
+    min-height: 38px;
+    font-size: 13px !important;
+  }
+
+  .feedback-options{
+    gap: 8px;
+  }
+  .rating-pill{
+    min-width: 38px;
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .metric-grid{
+    grid-template-columns: 1fr;
+  }
+}
