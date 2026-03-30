@@ -5,7 +5,7 @@ const feedbackController = require("../controllers/feedbackController");
 router.get("/", (req, res) => {
     res.send("testing")
 })
-router.get("/home", feedbackController.TopEvents)
+
 router.get("/history", feedbackController.getHistoryForm)
 router.get("/seefeedback/:feedbackId", feedbackController.seeFeedbackForm)
 

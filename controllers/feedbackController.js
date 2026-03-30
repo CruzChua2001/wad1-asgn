@@ -1,4 +1,4 @@
-const {addfeedback, getTopEvents, getHistory, getFeedbackByID, updateFeedbackByID, deleteFeedbackByID} = require("../models/feedbackModel")
+const {addfeedback, getHistory, getFeedbackByID, updateFeedbackByID, deleteFeedbackByID} = require("../models/feedbackModel")
 const Event = require("../models/eventModel")
 
 const ratings = [1,2,3,4,5]
@@ -20,21 +20,11 @@ exports.submitFeedback = async (req,res) => {
           res.send("Error fetching feedback")};
         }
 
-exports.TopEvents = async (req, res) => {
-  try {
-    const topEvents = await getTopEvents()
-    res.render("home", { topEvents });
-  } catch (error) {
-    console.error(error);
-    res.send("Error fetching top events");
-  }
-};
-
 exports.getHistoryForm = async(req,res) => {
   try{
     const userId = req.user.userId
     const history = await getHistory(userId)
-    res.render("history", {history})
+    res.render("feedback/history", {history})
   }
   catch(error) {
     console.log(error);
@@ -53,7 +43,7 @@ exports.seeFeedbackForm = async (req, res) => {
             return res.send("Feedback not found")
         }
 
-        res.render("seeFeedbackForm", { feedback })
+        res.render("feedback/seeFeedback", { feedback })
     } catch (error) {
         console.error(error)
         res.send("Error fetching feedback details")

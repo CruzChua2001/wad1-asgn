@@ -6,7 +6,7 @@ const SALT_ROUNDS = 10;
 
 const getLogin = (req, res) => {
     if (req.session && req.session.user) { //if session alr exists and user is logged in
-        return res.redirect("/home")};
+        return res.redirect("/")};
     return res.render("auth/login", { error: null });
 };
 
@@ -24,7 +24,7 @@ const postLogin = async (req, res) => {
 
         req.session.user = { userId: user.UserID, email: user.Email, role: user.Role }; // save user info in session
         
-        return res.redirect("/home");
+        return res.redirect("/");
     } catch (err) {
         console.error(err);
         return res.render("auth/login", { error: "An error occurred. Please try again." });
@@ -33,7 +33,7 @@ const postLogin = async (req, res) => {
 
 const getRegister = (req, res) => {
     if (req.session && req.session.user) 
-        {return res.redirect("/home");} // show home page if logged in already
+        {return res.redirect("/");} // show home page if logged in already
     return res.render("auth/register", { error: null, success: null });
 };
 

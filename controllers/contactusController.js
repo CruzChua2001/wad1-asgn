@@ -125,7 +125,7 @@ exports.getReportHistory = async (req, res) => {
         });
     } catch (error) {
         console.error("contactusController.getReportHistory: Error retrieving report history:", error);
-        return res.redirect("/home");
+        return res.redirect("/");
     }
 }
 
@@ -151,7 +151,7 @@ exports.getContactUs = async (req, res) => {
         });
     } catch (error) {
         console.error("Error retrieving user reports:", error);
-        res.redirect("/home");
+        res.redirect("/");
     }
 }
 

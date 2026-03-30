@@ -3,6 +3,7 @@ const path = require("path");
 const dotenv = require('dotenv');
 const session = require("express-session");
 const mongoose = require('mongoose');
+const feedbackModel = require("./models/feedbackModel");
 
 const server = express();
 
@@ -14,7 +15,7 @@ dotenv.config({ path: './config.env' });
 server.set("view engine", "ejs");
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
-server.use(express.static(path.join(__dirname, "public")));
+// server.use(express.static(path.join(__dirname, "public")));
 server.use(session({
     secret: process.env.SECRET || "campus-event-board-secret",
     resave: false, // dont resave the session to the server on every request if nothing changed 
@@ -32,6 +33,16 @@ const auth = require("./auth/auth");
 
 server.use(auth.attachUserLocals);
 
+server.get("/", async (req, res) => {
+    try {
+        const topEvents = await feedbackModel.getTopEvents()
+        res.render("home", { topEvents });
+      } catch (error) {
+        console.error(error);
+        res.send("Error fetching top events");
+      }
+})
+
 const authRouter = require("./routes/authRouter");
 const userRouter = require("./routes/userRouter");
 const eventRouter = require("./routes/eventRouter");
@@ -46,10 +57,6 @@ server.use("/reserve",auth.requireAuth, reserveRouter);                  // Zhi 
 server.use("/feedback", auth.requireAuth, feedbackRouter);                // Keifer
 server.use("/configuration",auth.requireAuth,auth.requireAdmin, configurationRouter);      // Mahshuk
 server.use("/contactus", auth.requireAuth, contactusRouter);            // Cruz
-
-server.get("/home", auth.requireAuth, (req, res) => {
-    return res.render("home");
-})
 
 server.use("/", authRouter);
 
