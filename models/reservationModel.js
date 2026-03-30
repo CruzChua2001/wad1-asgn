@@ -118,6 +118,7 @@ exports.getReservationsWithEventDetails = async (filter = {}) => {
     ]);
 };
 
+
 exports.retrieveAll = () => {
     return Reservation.find({ isDeleted: 0 });
 };

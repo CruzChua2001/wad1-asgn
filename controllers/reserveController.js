@@ -2,14 +2,17 @@ const { formatDateTime } = require("../utils/dateUtils");
 const { generateUUID } = require("../utils/uuidUtils");
 const Reservation = require("../models/reservationModel");
 const EventModel = require("../models/eventModel");
+const UserModel = require("../models/userModel");
 
 // GET all reservations for the current user
 exports.getAllReservations = async (req, res) => {
 	try {
 		const userId = req.user.userId;
+        const user = await UserModel.findByUserID(userId);
+        const userDisplayName = [user?.FirstName, user?.LastName].filter(Boolean).join(" ").trim() || userId;
 		// Use aggregation to get event details
 		const reservations = await Reservation.getReservationsWithEventDetails({ UserId: userId });
-		res.render("reserveviews/myreservation.ejs", { reservations, userId, formatDateTime });
+        res.render("reserveviews/myreservation.ejs", { reservations, userId, userDisplayName, formatDateTime });
 	} catch (error) {
 		res.render("reserveviews/unknownevent.ejs");
 	}
@@ -68,7 +71,7 @@ exports.createReservation = async (req, res) => {
 		// Check if already reserved
 		const alreadyReserved = await Reservation.retrieveByEventAndUser(eventId, userId );
 		if (alreadyReserved) {
-            return res.render("reserveviews/repeatedevent");
+			return res.send('You have already reserved a slot for this event. <a href="/reserve/reservation">Go back</a>');
 		}
 		// Check capacity
 		const reservationCount = await Reservation.countByEvent(eventId);
