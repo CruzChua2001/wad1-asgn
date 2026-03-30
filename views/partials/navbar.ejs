@@ -1,60 +1,11 @@
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        font-size: 14px;
-        background-color: #f0f0f0;
-    }
-    .nav-bar {
-        padding: 5px 10px;
-        list-style: none; 
-        display: flex; 
-        gap: 0.8rem; 
-        justify-content: flex-end;
-    }
-    .dropdown {
-        position: relative;
-    }
-    .nav-menu {
-        text-decoration: none;
-        color: #333;
-    }
-    .nav-menu:hover {
-        text-decoration: underline;
-    }
-    .dropdown > a {
-        color: inherit;
-        border-radius: 4px 4px 0 0;
-    }
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        left: 0;
-        top: 100%;
-        min-width: 140px;
-        z-index: 10;
-        background-color: white;
-        border-radius: 0 0 4px 4px;
-        box-shadow: 0 2px 8px rgba(28, 28, 28, 0.08);
-    }
-    .dropdown:hover .dropdown-menu {
-        display: block;
-    }
-    .dropdown-menu a {
-        display: block;
-        padding: 10px;
-        color: inherit;
-        text-decoration: none;
-        cursor: pointer;
-    }
-    .dropdown-menu a:hover {
-        background: #f0f0f0;
-    }
-</style>
+<link rel="stylesheet" href="/style.css">
 
-<nav>
-    <ul 
-        class="nav-bar"
-    >
+<nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <a class="nav-brand-link" href="/">CampusPulse</a>
+      </div>
+      <ul class="nav-bar">
         <% if (!currentUser) { %>
             <li><a href="/" class="nav-menu">Home</a></li>
             <li><a href="/login" class="nav-menu">Login</a></li>
@@ -85,6 +36,7 @@
         
         <li><a href="/signout" class="nav-menu">Sign out</a></li>
         <% } %>
-    </ul>
+      </ul>
+    </div>
 </nav>
 
