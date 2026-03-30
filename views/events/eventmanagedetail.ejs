@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View and Update Event</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <h1>View and Update Event</h1>
+
+    <div>
+        <input type="hidden" name="_method" value="PATCH">
+        <label for="EventName">Event Name:</label><br>
+        <input type="text" id="EventName" name="EventName" value="<%= event.EventName %>"><br><br>
+
+        <label for="EventDescription">Event Description:</label><br>
+        <textarea id="EventDescription" name="EventDescription"><%= event.EventDescription %></textarea><br><br>
+
+        <!-- change this to select and use ejs for each for categories -->
+        <label for="EventType">Event Type:</label><br>
+        <select id="EventType" name="EventType" >
+            <% categories.forEach(category => { %>
+                <option value="<%= category.CategoryID %>" <%= category.CategoryID === event.EventType ? "selected" : "" %>><%= category.CategoryName %></option>
+            <% }) %>
+        </select><br><br>
+
+        <label for="MaxCapacity">Max Capacity:</label><br>
+        <input type="number" id="MaxCapacity" name="MaxCapacity" value="<%= event.MaxCapacity %>"><br><br>
+
+        <label for="EndDateTime">End Date and Time:</label><br>
+        <input type="datetime-local" id="EndDateTime" name="EndDateTime" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>"><br><br>
+
+        <label for="Status">Status:</label><br>
+        <select id="Status" name="Status">
+            <option value="active" <%= event.Status === 'active' ? "selected" : "" %>>Active</option>
+            <option value="inactive" <%= event.Status === 'inactive' ? "selected" : "" %>>Inactive</option>
+        </select><br><br>
+
+        <button onClick="updateEvent('<%= event.EventID %>')">Update Event</button>
+    </div>
+</body>
+</html>
+
+<script>
+    // TODO: Fetch and call patch api to update the event details, then redirect back to the event manage page
+    function updateEvent(eventID) {
+        let updatedEvent = {
+            EventName: document.getElementById("EventName").value,
+            EventDescription: document.getElementById("EventDescription").value,
+            EventType: document.getElementById("EventType").value,
+            MaxCapacity: document.getElementById("MaxCapacity").value,
+            EndDateTime: document.getElementById("EndDateTime").value,
+            Status: document.getElementById("Status").value
+        };
+
+        fetch(`/event/edit/${eventID}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(updatedEvent)
+        })
+        .then(async response => {
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                window.location.href = "/event/manage";
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error updating event:", error);
+            alert("An error occurred while updating the event. Please try again.");
+        });
+    }
+</script>

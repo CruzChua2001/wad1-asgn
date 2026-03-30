@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Event</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <h1>View Event</h1>
+
+    <div>
+        <h2><%= event.EventName %></h2>
+        <p><%= event.EventDescription %></p>
+        <p>Type: <%= event.categoryDetails.CategoryName %></p>
+        <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></p>
+
+        <form action="" method="GET">
+            <button type="submit">Register</button>
+        </form>
+    </div>
+</body>
+</html>

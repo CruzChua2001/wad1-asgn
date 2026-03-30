@@ -47,7 +47,7 @@ const eventSchema = new mongoose.Schema({
     Status: {
         type: String,
         required: [true, 'Event require a Status'],
-        enum: ['active', 'inactive']
+        enum: ['active', 'inactive'] // restricts to only these 2 values
     },
     isDeleted: {
         type: Number,
@@ -59,6 +59,54 @@ const Event = mongoose.model('Event', eventSchema, 'event');
 
 exports.retrieveAll = () => {
     return Event.find({ isDeleted: 0 });
+}
+
+// Retrieve all events with Category details using aggregation
+exports.retrieveAllWithCategory = () => {
+    return Event.aggregate([
+        { $match: { isDeleted: 0 } }, 
+        {
+            $lookup: {
+                from: "category",       // collection name of categories
+                localField: "EventType", // Event.EventType
+                foreignField: "CategoryID", // Category.CategoryID
+                as: "categoryDetails"
+            }
+        },
+        { $unwind: "$categoryDetails" } // convert array to object
+    ]);
+}
+
+exports.getEventByID = (eventID) => {
+    return Event.aggregate([
+        { $match: { EventID: eventID, isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "category",
+                localField: "EventType",
+                foreignField: "CategoryID",
+                as: "categoryDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$categoryDetails",
+                preserveNullAndEmptyArrays: true  // <-- allow event even if no matching category
+            }
+        }
+    ]);
+}
+
+exports.createEvent = (newEvent) => {
+    return Event.create(newEvent);
+}
+
+exports.updateEvent = (eventID, updatedEventData) => {
+    return Event.updateOne({ EventID: eventID }, updatedEventData);
+}
+
+exports.deleteEvent = (eventID) => {
+    return Event.deleteOne({ EventID: eventID });
 }
 exports.retrieveEventName = (EventId) =>{
     return Event.findOne({EventID:EventId,isDeleted:0}).select('EventName')
