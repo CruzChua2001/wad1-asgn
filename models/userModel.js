@@ -65,8 +65,7 @@ const updatePasswordByEmail = (email, hashedPassword, salt) => {
 const deleteUser = (userID) => {
     return User.updateOne({ UserID: userID }, { $set: { isDeleted: 1 } });
 };
-// to check this function
 // doesnt actually delete the record from mongoDB, just sets isDeleted to 1 (other queries cal filter by isDeleted: 0)
-// soft delete as a safety mechanism to prevent accidental deletions and potential data loss, also bc user data might be linked to other records (?)
+// soft delete as a safety mechanism to prevent accidental deletions and potential data loss, also bc user data might be linked to other records
 
 module.exports = { retrieveAll, findByEmail, findByUserID, createUser, updatePasswordByEmail, deleteUser };

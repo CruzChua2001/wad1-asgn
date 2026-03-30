@@ -16,7 +16,7 @@ server.use(express.urlencoded({ extended: true }));
 server.use(express.static(path.join(__dirname, "public")));
 server.use(session({
     secret: process.env.SECRET || "campus-event-board-secret",
-    resave: false, // dont resave the session to thr server on every request if nothing changed 
+    resave: false, // dont resave the session to the server on every request if nothing changed 
     saveUninitialized: false, // dont create session for users who are not logged in yet
     cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 } // refers to how long the cookie lasts, meaning the session expires in 24 hours 
 }));

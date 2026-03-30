@@ -1,0 +1,27 @@
+<!-- admin view of someone else's account, only admins can access the page -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Detail – Campus Event Board</title>
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <h1>User Detail</h1>
+
+    <p><strong>First Name:</strong> <%= user.FirstName %></p>
+    <p><strong>Last Name:</strong> <%= user.LastName %></p>
+    <p><strong>Email:</strong> <%= user.Email %></p>
+    <p><strong>Role:</strong> <%= user.Role %></p>
+    <p><strong>User ID:</strong> <%= user.UserID %></p>
+
+    <form method="POST" action="/users/<%= user.UserID %>/delete" style="display:inline;">
+        <button type="submit">Delete User</button>
+    </form>
+
+    <a href="/users">Back to User List</a>
+</body>
+</html>

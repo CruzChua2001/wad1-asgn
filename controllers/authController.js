@@ -109,4 +109,4 @@ const postSignout = (req, res) => {
     });
 }; // end session if user signs out 
 
-module.exports = { getLogin, postLogin, getRegister, postRegister, getForgotPassword, putForgotPassword, postSignout };
+module.exports = { getLogin, postLogin, getRegister, postRegister, getForgotPassword, patchForgotPassword, postSignout };
