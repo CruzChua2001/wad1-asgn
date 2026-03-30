@@ -10,7 +10,7 @@ const configurationController = require ("../controllers/configurationController
 const reserveModel = require("../models/reservationModel.js");
 const { config } = require("dotenv");
 const reserveData = {
-  "A":"accepted",
+  "A":"approved",
   "R":"rejected",
   "W":"waitlist",
 }

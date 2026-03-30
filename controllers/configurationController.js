@@ -10,7 +10,7 @@ const eventModel = require("../models/eventModel.js");
 
 const reserveModel = require("../models/reservationModel.js");
 const reserveData = {
-  "A":"accepted",
+  "A":"approved",
   "R":"rejected",
   "W":"waitlist",
 }
