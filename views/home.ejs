@@ -3,28 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Campus Event Board</title>
 </head>
 <body>
     <%- include('partials/navbar') %>
-    <h1>Top events</h1>
-    <table border="1">
-        <th>Rank</th>
-        <th>Event Name</th>
-        <th>Average Score</th>
-        <% if ( topEvents === undefined || topEvents.length === 0 ) { %>
-                <tr>
-                    <td colspan="4">No feedback available yet.</td>
-                </tr>
-            <% } else { %>
-                <% topEvents.forEach((event, index) => { %>
-                    <tr>
-                        <td><%= index + 1 %></td>
-                        <td><%= event.eventName %></td>
-                        <td><%= event.avgScore.toFixed(2) %></td>
-                    </tr>
-                <% }) %>
-            <% } %>
-    </table>
+
+    <div class="container stack">
+        <section class="hero">
+            <div class="hero-card">
+                <div class="kicker">Outer-space vibes · Real campus energy</div>
+                <div class="spacer"></div>
+                <h1>Discover the best events on campus.</h1>
+                <p>
+                    Explore what’s trending, save your spot, and leave feedback to power the leaderboard.
+                    The list below is based on ratings from real attendees.
+                </p>
+                <div class="form-actions">
+                    <a class="btn btn-primary" href="/event">Browse upcoming events</a>
+                    <a class="btn btn-ghost" href="/register">Create an account</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header carousel-head">
+                <div>
+                    <h2>Top-rated events</h2>
+                    <p class="subtle">A “movie list” of the current top 10, ranked by feedback score.</p>
+                </div>
+                <div class="carousel-controls">
+                    <button class="btn btn-ghost" type="button" data-carousel-left aria-label="Scroll left">←</button>
+                    <button class="btn btn-ghost" type="button" data-carousel-right aria-label="Scroll right">→</button>
+                </div>
+            </div>
+
+            <div class="panel-inner carousel">
+                <% if (!topEvents || topEvents.length === 0) { %>
+                    <div class="note center">
+                        No feedback available yet. Be the first to attend and rate an event.
+                    </div>
+                <% } else { %>
+                    <div class="carousel-rail" data-carousel-rail>
+                        <% topEvents.forEach((event, index) => { %>
+                            <article class="movie-card">
+                                <div class="movie-poster">
+                                    <% if (event.eventImage) { %>
+                                        <img src="<%= event.eventImage %>" alt="<%= event.eventName %> poster">
+                                    <% } %>
+                                </div>
+                                <div class="movie-body">
+                                    <h3 class="movie-title"><%= index + 1 %>. <%= event.eventName %></h3>
+                                    <div class="movie-meta">
+                                        <span class="pill">Score: <%= event.avgScore.toFixed(2) %></span>
+                                        <span class="pill"><%= event.numResponses %> reviews</span>
+                                    </div>
+                                    <div class="movie-desc">
+                                        <%= event.eventDescription || "No description yet — click through to see details." %>
+                                    </div>
+                                    <div class="movie-actions">
+                                        <a class="btn btn-primary" href="/event/<%= event.eventId %>">View details</a>
+                                        <a class="btn btn-ghost" href="/event">More events</a>
+                                    </div>
+                                </div>
+                            </article>
+                        <% }) %>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        (function() {
+            const rail = document.querySelector('[data-carousel-rail]');
+            if (!rail) return;
+
+            function scrollByCard(dir) {
+                const card = rail.querySelector('.movie-card');
+                const amount = card ? (card.getBoundingClientRect().width + 14) : 320;
+                rail.scrollBy({ left: dir * amount, behavior: 'smooth' });
+            }
+
+            document.querySelector('[data-carousel-left]')?.addEventListener('click', () => scrollByCard(-1));
+            document.querySelector('[data-carousel-right]')?.addEventListener('click', () => scrollByCard(1));
+        })();
+    </script>
 </body>
 </html>
