@@ -7,18 +7,44 @@
 </head>
 <body>
     <%- include('../partials/navbar') %>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header row-between">
+          <div>
+            <h1>Event Details</h1>
+            <p class="subtle">Jump in before the doors close.</p>
+          </div>
+          <div class="row">
+            <span class="pill">Type: <%= event.categoryDetails.CategoryName %></span>
+          </div>
+        </div>
 
-    <h1>View Event</h1>
+        <div class="panel-inner grid-2">
+          <div class="movie-poster event-detail-image">
+            <% if (event.EventImage) { %>
+              <img src="<%= event.EventImage %>" alt="<%= event.EventName %> poster">
+            <% } else { %>
+              <div class="event-thumb-placeholder">No Image</div>
+            <% } %>
+          </div>
 
-    <div>
-        <h2><%= event.EventName %></h2>
-        <p><%= event.EventDescription %></p>
-        <p>Type: <%= event.categoryDetails.CategoryName %></p>
-        <p>Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></p>
+          <div class="stack">
+            <h2><%= event.EventName %></h2>
+            <div class="movie-meta">
+              <span class="pill">Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></span>
+              <span class="pill">Status: <%= event.Status === 'active' ? 'Open' : 'Closed' %></span>
+            </div>
+            <p><%= event.EventDescription %></p>
 
-        <form action="/reserve/create/<%= event.EventID %>" method="GET">
-            <button type="submit">Register</button>
-        </form>
+            <div class="form-actions">
+              <form action="/reserve/create/<%= event.EventID %>" method="GET">
+                <button class="btn btn-primary" type="submit">Register</button>
+              </form>
+              <a class="btn btn-ghost" href="/event">Back to Events</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 </body>
 </html>

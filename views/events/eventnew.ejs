@@ -8,14 +8,22 @@
 <body>
     <%- include('../partials/navbar') %>
 
-    <h1>Create New Event</h1>
+    <div class="container stack">
+      <div class="panel">
+        <div class="panel-header">
+          <h1>Create New Event</h1>
+          <p class="subtle">Add a new event to the board.</p>
+        </div>
+        <div class="panel-inner stack">
 
-    <% if (errors) { %>
+    <% if (errors && errors.length > 0) { %>
+        <div class="note note-danger">
         <ul>
             <% errors.forEach(error => { %>
-                <li style="color: red;"><%= error %></li>
+                <li class="text-danger"><%= error %></li>
             <% }) %>
         </ul>
+        </div>
     <% } %>
 
     <form action="/event/new" method="POST">
@@ -26,7 +34,7 @@
         <textarea id="EventDescription" name="EventDescription"></textarea><br><br>
 
         <label for="EventType">Event Type:</label><br>
-        <select id="EventType" name="EventType" >
+        <select id="EventType" name="EventType" style="height:35px; font-size:15px">
             <option value="">Select Event Type</option>
             <% categories.forEach(category => { %>
                 <option value="<%= category.CategoryID %>"><%= category.CategoryName %></option>
@@ -39,7 +47,18 @@
         <label for="EndDateTime">End Date and Time:</label><br>
         <input type="datetime-local" id="EndDateTime" name="EndDateTime"><br><br>
 
-        <button type="submit">Create Event</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button class="btn btn-primary" type="submit">Create Event</button>
+
+            <span class="form-actions">
+                <a class="btn btn-ghost" href="/event/manage">Cancel</a>
+            </span>
+        </div>
+        
     </form>
+    
+        </div>
+      </div>
+    </div>
 </body>
 </html>
