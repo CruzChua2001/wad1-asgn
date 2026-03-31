@@ -429,7 +429,7 @@ tr:hover td{ background: rgba(87,166,255,.06); }
 }
 .pill{
   display:inline-flex;
-  padding: 4px 8px;
+  padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid rgba(130,170,255,.16);
   background: rgba(5,7,18,.35);
