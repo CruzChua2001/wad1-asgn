@@ -19,14 +19,23 @@
         </div>
 
         <div class="panel-inner grid-2">
-          <div class="movie-poster event-detail-image">
-            <% if (event.EventImage) { %>
-              <img src="<%= event.EventImage %>" alt="<%= event.EventName %> poster">
-            <% } else { %>
-              <div class="event-thumb-placeholder">No Image</div>
-            <% } %>
-          </div>
+          <div>
+            <div class="movie-poster event-detail-image">
+              <% if (event.EventImage) { %>
+                <img src="<%= event.EventImage %>" alt="<%= event.EventName %> poster">
+              <% } else { %>
+                <div class="event-thumb-placeholder">No Image</div>
+              <% } %>
+            </div>
+            <div>
+              <label for="EventImage">Event Image:</label><br>
+              <input type="file" id="EventImage" name="EventImage" accept="image/*" value=""><br><br>
+            </div>
+            <div id="errorMsg">
 
+            </div>
+          </div>
+            
           <div class="form-card stack">
             <div class="stack">
               <label for="EventName">Event Name</label>
@@ -73,36 +82,43 @@
 
 <script>
     // TODO: Fetch and call patch api to update the event details, then redirect back to the event manage page
-    function updateEvent(eventID) {
-        let updatedEvent = {
-            EventName: document.getElementById("EventName").value,
-            EventDescription: document.getElementById("EventDescription").value,
-            EventType: document.getElementById("EventType").value,
-            MaxCapacity: document.getElementById("MaxCapacity").value,
-            EndDateTime: document.getElementById("EndDateTime").value,
-            Status: document.getElementById("Status").value
-        };
+    async function updateEvent(eventID) {
+        const formData = new FormData();
+        formData.append("EventName", document.getElementById("EventName").value);
+        formData.append("EventDescription", document.getElementById("EventDescription").value);
+        formData.append("EventType", document.getElementById("EventType").value);
+        formData.append("MaxCapacity", document.getElementById("MaxCapacity").value);
+        formData.append("EndDateTime", document.getElementById("EndDateTime").value);
+        formData.append("Status", document.getElementById("Status").value);
 
-        fetch(`/event/edit/${eventID}`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(updatedEvent)
-        })
-        .then(async response => {
+        const fileInput = document.getElementById("EventImage");
+        if (fileInput.files[0]) {
+            formData.append("EventImage", fileInput.files[0]);
+        }
+
+        //convert fetch to use await and try catch
+        try {
+            const response = await fetch(`/event/edit/${eventID}`, {
+                method: "PATCH",
+                body: formData
+            });
+
             const data = await response.json();
 
             if (response.ok) {
                 alert(data.message);
                 window.location.href = "/event/manage";
             } else {
-                alert(data.message);
+                let errorHtml = `<div class="note note-danger"><b>Errors</b><ul>`;
+                data.message.forEach(error => {
+                    errorHtml += `<li>${error}</li>`;
+                });
+                errorHtml += `</ul></div>`;
+                document.getElementById("errorMsg").innerHTML = errorHtml;  
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Error updating event:", error);
             alert("An error occurred while updating the event. Please try again.");
-        });
+        }
     }
 </script>
