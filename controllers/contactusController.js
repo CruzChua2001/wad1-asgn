@@ -2,7 +2,7 @@ const { formatDateTime } = require("../utils/dateUtils");
 const { generateUUID } = require("../utils/uuidUtils");
 
 const reportModel = require("../models/reportModel");
-const userModel = require("../models/userModel");
+const logModel = require("../models/logModel");
 
 const REPORTTYPES = ["General Inquiry", "Feedback", "Report a Problem"];
 const STATUSOPTIONS = ['Pending', 'In-Progress', 'Solved'];
@@ -255,3 +255,21 @@ exports.deleteReplyById = async (req, res) => {
 
 
 }
+
+exports.getUserLogs = async (req, res) => {
+    const userId = req.params.userId;
+    const reportId = req.query.reportId || null;
+
+    try {
+        const logs = await logModel.retrieveLogsByUserId(userId);
+
+        res.render("contactus/logs", {
+            logs: logs,
+            userId: userId,
+            reportId: reportId
+        });
+    } catch (error) {
+        console.error("contactusController.getUserLogs: Error retrieving user logs:", error);
+        return res.redirect("/contactus/history");
+    }
+}  
