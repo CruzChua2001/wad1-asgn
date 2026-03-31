@@ -117,7 +117,6 @@ exports.getReportById = async (req, res) => {
 
         res.render("contactus/reportDetail", {
             report: report,
-            username: "",
             currentUserId: req.user.userId,
             isAdmin: res.locals.isAdmin,
             errorMsg
