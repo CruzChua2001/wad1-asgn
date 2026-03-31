@@ -76,6 +76,14 @@ exports.retrieveReportByReportId = (reportID) => {
         {
             $lookup: {
                 from: "user",
+                localField: "UserID",
+                foreignField: "UserID",
+                as: "ReportUser"
+            }
+        },
+        {
+            $lookup: {
+                from: "user",
                 localField: "Reply.UserID",
                 foreignField: "UserID",
                 as: "ReplyUser"
@@ -101,15 +109,29 @@ exports.retrieveReportByReportId = (reportID) => {
                         },
                         else: "$$REMOVE"
                     }
+                },
+                "CurrReport.FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$ReportUser"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$ReportUser.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$ReportUser.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
                 }
             }
         },
-        { $project: {ReplyUser: 0 }},
+        { $project: {ReplyUser: 0, ReportUser: 0} },
         {
             $group: {
                 _id: "$_id",
                 ReportID: { $first: "$ReportID" },
                 UserID: { $first: "$UserID" },
+                FullName: { $first: "$CurrReport.FullName" },
                 CaseNo: { $first: "$CaseNo" },
                 Category: { $first: "$Category" },
                 Report: { $first: "$Report" },

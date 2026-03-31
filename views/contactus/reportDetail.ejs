@@ -17,7 +17,7 @@
 
         <div class="row">
             <span class="pill">Category: <%= report.Category %></span>
-            <span class="pill">Submitted by: <%= username %></span>
+            <span class="pill">Submitted by: <%= report.FullName %></span>
             <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
             <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
         </div>
@@ -89,6 +89,11 @@
         <h3>Submit a Reply</h3>
         <form action="/contactus/<%= report.ReportID %>/reply" method="POST">
             <textarea style="font-size:15px;" name="message" rows="4" cols="50" required></textarea><br><br>
+            
+            <% if (errorMsg) { %>
+                <p class="text-danger"><%= errorMsg %></p>
+            <% } %>
+
             <button class="btn btn-primary" type="submit">Submit Reply</button>
         </form>
     </div>
@@ -131,27 +136,30 @@
         document.getElementById("saveBtn").classList.add("hidden");
     };
 
-    const saveReport = (reportId) => {
+    const saveReport = async (reportId) => {
         const updatedContent = document.getElementById("reportContent").value;
-        fetch(`/contactus/${reportId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ report: updatedContent })
-        })
-        .then(response => {
+        try {
+            const response = await fetch(`/contactus/${reportId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ report: updatedContent })
+            });
+
+            const data = await response.json();
+
             if (response.ok) {
-                alert("Report updated successfully.");
+                alert(data.message);
                 window.location.reload();
             } else {
-                alert("Failed to update report.");
+                alert(data.message);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Error updating report:", error);
-            alert("An error occurred while updating the report.");
-        });
+            alert("An error occurred while updating the report. Please try again.");
+            return;
+        }
     };
 
     const deleteReply = (reportId, replyId) => {
@@ -186,26 +194,30 @@
         document.getElementById(`saveReplyBtn-${replyId}`).classList.add("hidden");
     };
 
-    const saveReply = (reportId, replyId) => {
+    const saveReply = async (reportId, replyId) => {
         const updatedMessage = document.getElementById(`replyContent-${replyId}`).value;
-        fetch(`/contactus/${reportId}/${replyId}/reply`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: updatedMessage })
-        })
-        .then(response => {
+
+        try {
+            let response = await fetch(`/contactus/${reportId}/${replyId}/reply`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: updatedMessage })
+            });
+
+            const data = await response.json();
+
             if (response.ok) {
-                alert("Reply updated successfully.");
+                alert(data.message);
                 window.location.reload();
             } else {
-                alert("Failed to update reply.");
+                alert(data.message);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Error updating reply:", error);
-            alert("An error occurred while updating the reply.");
-        });
+            alert("An error occurred while updating the reply. Please try again.");
+            return;
+        }
     };
 </script>
