@@ -5,6 +5,7 @@ const reportModel = require("../models/reportModel");
 const userModel = require("../models/userModel");
 
 const REPORTTYPES = ["General Inquiry", "Feedback", "Report a Problem"];
+const STATUSOPTIONS = ['Pending', 'In-Progress', 'Solved'];
 
 exports.getReportHistory = async (req, res) => {
     try {
@@ -40,6 +41,7 @@ exports.getContactUs = async (req, res) => {
         res.render("contactus/contactus", {
             submitted,
             reportTypes: REPORTTYPES,
+            statusOptions: STATUSOPTIONS,
             reports: userReports,
             errors
         });
