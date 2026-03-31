@@ -26,7 +26,10 @@
         </div>
     <% } %>
 
-    <form action="/event/new" method="POST">
+    <form action="/event/new" method="POST" enctype="multipart/form-data">
+        <label for="EventImage">Event Image:</label><br>
+        <input type="file" id="EventImage" name="EventImage" accept="image/*"><br><br>
+
         <label for="EventName">Event Name:</label><br>
         <input type="text" id="EventName" name="EventName"><br><br>
 
