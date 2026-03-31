@@ -27,7 +27,7 @@ exports.getAllEvents = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.send("Error loading events");
+        res.status(500).send("Error loading events");
     }
 };
 
@@ -45,7 +45,7 @@ exports.getManageEvents = async (req, res) => {
         res.render("events/eventmanage", { events, searchTerm, categories });
     } catch (err) {
         console.log(err);
-        res.send("Error loading events");
+        res.status(500).send("Error loading events");
     }
 }
 
