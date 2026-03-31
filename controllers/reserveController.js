@@ -8,11 +8,9 @@ const UserModel = require("../models/userModel");
 exports.getAllReservations = async (req, res) => {
 	try {
 		const userId = req.user.userId;
-        const user = await UserModel.findByUserID(userId);
-        const userDisplayName = [user?.FirstName, user?.LastName].filter(Boolean).join(" ").trim() || userId;
-		// Use aggregation to get event details
-		const reservations = await Reservation.getReservationsWithEventDetails({ UserId: userId });
-        res.render("reserveviews/myreservation.ejs", { reservations, userId, userDisplayName, formatDateTime });
+        const reservations = await Reservation.getReservationsWithEventDetails({ UserId: userId });
+        const { firstName: userFirstName, lastName: userLastName } = await Reservation.getUserName({ UserId: userId });
+        res.render("reserveviews/myreservation.ejs", { reservations, userFirstName, userLastName, formatDateTime });
 	} catch (error) {
 		res.render("reserveviews/unknownevent.ejs");
 	}

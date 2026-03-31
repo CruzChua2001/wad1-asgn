@@ -118,6 +118,33 @@ exports.getReservationsWithEventDetails = async (filter = {}) => {
     ]);
 };
 
+exports.getUserName = async (filter = {}) => {
+    // Use pipeline to get user's first and last name from user collection based on UserId in reservation
+    const result = await Reservation.aggregate([
+        { $match: { ...filter, isDeleted: 0 } },
+        { $limit: 1 },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        { $unwind: { path: "$UserDetails", preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                _id: 0,
+                firstName: "$UserDetails.FirstName",
+                lastName: "$UserDetails.LastName"
+            }
+        }
+    ]);
+    if (result.length > 0) {
+        return { firstName: result[0].firstName || "", lastName: result[0].lastName || "" };
+    }
+    return { firstName: "", lastName: "" };
+};
 
 exports.retrieveAll = () => {
     return Reservation.find({ isDeleted: 0 });
