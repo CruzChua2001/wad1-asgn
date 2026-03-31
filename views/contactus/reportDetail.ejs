@@ -15,21 +15,25 @@
         </div>
         <div class="panel-inner stack">
 
-    <div class="row">
-        <span class="pill">Category: <%= report.Category %></span>
-        <span class="pill">Submitted by: <%= username %></span>
-        <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
-        <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
-    </div>
+            <div style="margin-block: 15px;">
+                <a href="/contactus" class="btn" style="margin-right:5px">Return</a>
+                <% if (currentUserId === report.UserID) { %>
+                    <button class="text-danger" style="width:200px" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</button>
+                <% } %>
+            </div>
 
-        <% if (currentUserId === report.UserID) { %>
-            <button class="btn-link text-danger" type="button" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</button>
-        <% } %>
+            <div class="row">
+                <span class="pill">Category: <%= report.Category %></span>
+                <span class="pill">Submitted by: <%= report.FullName %></span>
+                <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
+                <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
+            </div>
+        
         <% if (isAdmin && report.Status !== "Not Applicable") { %>
             <h3>Update Report Status</h3>
             <form action="/contactus/<%= report.ReportID %>/status" method="POST">
-                <div class="status-row">
-                    <select name="status" required>
+                <div class="status-row" style="margin-top:-15px">
+                    <select name="status" required style="height:35px; font-size:14px;">
                         <option value="">Select Status</option>
                         <option value="Pending" <%= report.Status === "Pending" ? "selected" : "" %>>Pending</option>
                         <option value="In-Progress" <%= report.Status === "In-Progress" ? "selected" : "" %>>In-Progress</option>
@@ -42,32 +46,32 @@
     </div>
     <hr>
 
-    <div>
+    <div class="panel-inner">
         <b>Comment / Feedback:</b>
         <% if (currentUserId === report.UserID) { %>
             <button class="btn-link" type="button" onclick="displayEdit()">Edit</button>
         <% } %>
         <p><%= report.Report %></p>
-        <textarea id="reportContent" class="hidden" cols="80" rows="4"><%= report.Report %></textarea>
+        <textarea style="font-size:15px;" id="reportContent" class="hidden" cols="80" rows="4"><%= report.Report %></textarea>
         <button class="btn btn-ghost hidden" id="cancelBtn" onclick="cancelEdit()" type="button">Cancel</button>
         <button class="btn btn-primary hidden" id="saveBtn" onclick="saveReport('<%= report.ReportID %>')" type="button">Save</button>
     </div>
 
     <hr>
 
-    <div>
+    <div class="panel-inner">
         <h2>Reply</h2>
         <% if (report.Reply && report.Reply.length > 0) { %>
             <% report.Reply.forEach(reply => { %>
                 <div class="panel mb-10">
                   <div class="panel-inner row-top">
                     <section>
-                        <b><%= reply.UserID %></b> <br>
+                        <b><%= reply.FullName %></b> <br>
                         <%= reply.CreatedAt.toLocaleString() %>
                         <p><%= reply.Message %></p>
 
                         <!-- Editable reply -->
-                        <textarea id="replyContent-<%= reply.ReplyID %>" class="hidden" cols="80" rows="4"><%= reply.Message %></textarea>
+                        <textarea style="font-size:15px;" id="replyContent-<%= reply.ReplyID %>" class="hidden" cols="80" rows="4"><%= reply.Message %></textarea>
                         <button class="btn btn-ghost hidden" id="cancelReplyBtn-<%= reply.ReplyID %>" onclick="cancelEditReply('<%= reply.ReplyID %>')" type="button">Cancel</button>
                         <button class="btn btn-primary hidden" id="saveReplyBtn-<%= reply.ReplyID %>" onclick="saveReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')" type="button">Save</button>
                     </section>
@@ -86,7 +90,12 @@
             
         <h3>Submit a Reply</h3>
         <form action="/contactus/<%= report.ReportID %>/reply" method="POST">
-            <textarea name="message" rows="4" cols="50" required></textarea><br><br>
+            <textarea style="font-size:15px;" name="message" rows="4" cols="50" required></textarea><br><br>
+            
+            <% if (errorMsg) { %>
+                <p class="text-danger"><%= errorMsg %></p>
+            <% } %>
+
             <button class="btn btn-primary" type="submit">Submit Reply</button>
         </form>
     </div>
@@ -129,27 +138,30 @@
         document.getElementById("saveBtn").classList.add("hidden");
     };
 
-    const saveReport = (reportId) => {
+    const saveReport = async (reportId) => {
         const updatedContent = document.getElementById("reportContent").value;
-        fetch(`/contactus/${reportId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ report: updatedContent })
-        })
-        .then(response => {
+        try {
+            const response = await fetch(`/contactus/${reportId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ report: updatedContent })
+            });
+
+            const data = await response.json();
+
             if (response.ok) {
-                alert("Report updated successfully.");
+                alert(data.message);
                 window.location.reload();
             } else {
-                alert("Failed to update report.");
+                alert(data.message);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Error updating report:", error);
-            alert("An error occurred while updating the report.");
-        });
+            alert("An error occurred while updating the report. Please try again.");
+            return;
+        }
     };
 
     const deleteReply = (reportId, replyId) => {
@@ -184,26 +196,30 @@
         document.getElementById(`saveReplyBtn-${replyId}`).classList.add("hidden");
     };
 
-    const saveReply = (reportId, replyId) => {
+    const saveReply = async (reportId, replyId) => {
         const updatedMessage = document.getElementById(`replyContent-${replyId}`).value;
-        fetch(`/contactus/${reportId}/${replyId}/reply`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: updatedMessage })
-        })
-        .then(response => {
+
+        try {
+            let response = await fetch(`/contactus/${reportId}/${replyId}/reply`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: updatedMessage })
+            });
+
+            const data = await response.json();
+
             if (response.ok) {
-                alert("Reply updated successfully.");
+                alert(data.message);
                 window.location.reload();
             } else {
-                alert("Failed to update reply.");
+                alert(data.message);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Error updating reply:", error);
-            alert("An error occurred while updating the reply.");
-        });
+            alert("An error occurred while updating the reply. Please try again.");
+            return;
+        }
     };
 </script>

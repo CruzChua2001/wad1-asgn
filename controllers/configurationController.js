@@ -1,6 +1,4 @@
 const express = require("express");
-const auth = require("../auth/auth.js")
-const router = express.Router();
 const uuidUtil = require("../utils/uuidUtils.js")
 const dateUtil = require("../utils/dateUtils.js")
 

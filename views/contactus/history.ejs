@@ -17,28 +17,61 @@
           <% if (reports.length === 0) { %>
               <div class="note">No reports submitted yet.</div>
           <% } else { %>
-            <div class="event-list">
-              <% reports.forEach(report => { %>
-                <div class="event-card">
-                  <div class="event-thumb">
-                    <div class="event-thumb-placeholder">Report</div>
-                  </div>
-                  <div class="event-info stack">
-                    <h2><%= report.Category %></h2>
-                    <div class="meta">
-                      <span class="pill">User: <%= report.UserID %></span>
-                      <span class="pill">Status: <%= report.Status %></span>
-                      <span class="pill">Submitted: <%= report.CreatedAt %></span>
-                    </div>
-                    <div class="movie-desc">
-                      <%= report.Report %>
-                    </div>
-                    <div class="movie-actions">
-                      <a class="btn btn-ghost btn-sm" href="/contactus/<%= report.ReportID %>">View</a>
-                    </div>
-                  </div>
-                </div>
-              <% }) %>
+            <div>
+              <div class="search-row">
+                  <input type="text" id="searchInput" placeholder="Search reports..." class="search-input">
+                  <button class="btn btn-ghost btn-sm" id="searchBtn" type="button">Search</button>
+                  <button class="btn btn-ghost btn-sm" id="clearSearchBtn" type="button">Clear Search</button>
+              </div>
+              
+              <div class="row" style="margin-top:15px">
+                  <select id="categoryFilter" style="padding: 8px; width: 150px; height: 30px; font-size:13px">
+                      <option value="">All Categories</option>
+                      <% reportTypes.forEach(type => { %>
+                          <option value="<%= type %>"><%= type %></option>
+                      <% }) %>
+                  </select>
+
+                  <select id="statusFilter" style="padding: 8px; margin-left: 10px; width: 150px; height: 30px; font-size:13px">
+                      <option value="">All Statuses</option>
+                      <% statusOptions.forEach(status => { %>
+                          <option value="<%= status %>"><%= status %></option>
+                      <% }) %>
+                  </select>
+
+                  <button class="btn btn-ghost btn-sm" id="filterBtn" type="button" style="margin-left: 10px;">Clear Filters</button>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>User</th>
+                    <th>Message</th>
+                    <th>Submitted On</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% reports.forEach(report => { %>
+                    <tr>
+                      <td><%= report.Category %></td>
+                      <td><%= report.FullName %></td>
+                      <td><%= report.Report %></td>
+                      <td><%= report.CreatedAt.toLocaleString() %></td>
+                      <td><%= report.Status === "Not Applicable" ? "" : report.Status %></td>
+                      <td>
+                        <div class="actions-col">
+                          <a class="btn btn-primary btn-sm" href="/contactus/<%= report.ReportID %>">View</a>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
             </div>
         <% } %>
       </div>
@@ -46,3 +79,80 @@
     </main>
 </body>
 </html>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    const searchBtn = document.getElementById('searchBtn');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const searchInput = document.getElementById('searchInput');
+
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const clearFilterBtn = document.getElementById('filterBtn');
+
+    const searchFn = () => {
+        const query = searchInput.value.toLowerCase();
+        const categoryValue = categoryFilter.value;
+        const statusValue = statusFilter.value;
+
+        const rows = document.querySelectorAll('table tbody tr');
+        rows.forEach(row => {
+            const reportText = row.cells[2].textContent.toLowerCase();
+            const categoryText = row.cells[0].textContent;
+            const statusText = row.cells[4].textContent;
+
+            const matchesSearch = reportText.includes(query);
+            const matchesCategory = categoryValue === '' || categoryText === categoryValue;
+            const matchesStatus = statusValue === '' || statusText === statusValue;
+
+            if (matchesSearch && matchesCategory && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    };
+
+    searchBtn.addEventListener('click', searchFn);
+
+    searchInput.addEventListener('keypress', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            searchFn();
+        }
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchFn();
+    });
+
+    const filterFn = () => {
+        const query = searchInput.value.toLowerCase();
+        const categoryValue = categoryFilter.value;
+        const statusValue = statusFilter.value;
+        const rows = document.querySelectorAll('table tbody tr');
+        rows.forEach(row => {
+            const reportText = row.cells[2].textContent.toLowerCase();
+            const categoryText = row.cells[0].textContent;
+            const statusText = row.cells[4].textContent;    
+            const matchesSearch = reportText.includes(query);
+            const matchesCategory = categoryValue === '' || categoryText === categoryValue;
+            const matchesStatus = statusValue === '' || statusText === statusValue;
+            if (matchesSearch && matchesCategory && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    };
+
+    categoryFilter.addEventListener('change', filterFn);
+    statusFilter.addEventListener('change', filterFn);
+
+    clearFilterBtn.addEventListener('click', () => {
+        categoryFilter.value = '';
+        statusFilter.value = '';
+        filterFn();
+    });
+});
+</script>

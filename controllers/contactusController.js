@@ -2,126 +2,22 @@ const { formatDateTime } = require("../utils/dateUtils");
 const { generateUUID } = require("../utils/uuidUtils");
 
 const reportModel = require("../models/reportModel");
-
-// TODO: To be removed
-// Report Column Structure:
-// ReportId (uuid, primary key) - Format (GE-2024-0001, FE-2024-0002, RP-2024-0003, etc. where prefix indicates category and number is auto-incremented)
-// UserId (int, foreign key to Users table)
-// CaseNo (string, unique)
-// Category (string)
-// Report (text)
-// Reply (Array of objects with fields: ReplyId (uuid), UserId (int), Message (text), CreatedAt (datetime))
-// CreatedAt (datetime)
-// Status (string, e.g., "Pending", "In-Progress", "Solved", "Not Applicable")
-// isDeleted (boolean)
-
-// Mock data with all the columns for testing purposes, to be replaced with actual database retrieval logic
-// Mock 5 data points with different categories, some with attachments and some without, and different createdAt timestamps
-const mockReports = [
-    {
-        ReportId: "123123-12323-123123-123123",
-        UserId: "aoisjdoiq",
-        CaseNo: "GE-2024-0001",
-        Category: "General Inquiry",
-        Report: "I have a question about the course schedule.",
-        SupportingDocuments: [],
-        Reply: [
-            {
-                ReplyId: "reply-001",
-                UserId: "admin123",
-                Message: "The course schedule is available on the course homepage.",
-                CreatedAt: formatDateTime(new Date(Date.now() - 86400000 * 4).toISOString()) // 4 days ago
-            },
-            {
-                ReplyId: "reply-002",
-                UserId: "aoisjdoiq",
-                Message: "Thank you for the information!",
-                CreatedAt: formatDateTime(new Date(Date.now() - 86400000 * 3).toISOString()) // 3 days ago
-            }
-        ],
-        CreatedAt: formatDateTime(new Date(Date.now() - 86400000 * 5).toISOString()), // 5 days ago
-        Status: "Pending",
-        isDeleted: 1
-    },
-    {
-        ReportId: "456456-456456-456456-456456",
-        UserId: "aoisjdoiq",
-        CaseNo: "FE-2024-0002",
-        Category: "Feedback",
-        Report: "The new online portal is very user-friendly!",
-        SupportingDocuments: ["/report_attachments/report_2_screenshot.png"],
-        Reply: [],
-        CreatedAt: formatDateTime(new Date(Date.now() - 86400000 * 3).toISOString()), // 3 days ago
-        Status: "Not Applicable",
-        isDeleted: 0
-    },
-    {
-        ReportId: "789789-789789-789789-789789",
-        UserId: "aoisjdoiq",
-        CaseNo: "RP-2024-0003",
-        Category: "Report a Problem",
-        Report: "I'm experiencing issues with the login page.",
-        SupportingDocuments: ["/report_attachments/report_3_errorlog.txt"],
-        Reply: [
-            {
-                ReplyId: "reply-003",
-                UserId: "admin123",
-                Message: "We are looking into the login issue and will update you soon.",
-                CreatedAt: formatDateTime(new Date(Date.now() - 86400000 * 2).toISOString()) // 2 days ago
-            },
-            {
-                ReplyId: "reply-004",
-                UserId: "aoisjdoiq",
-                Message: "I'm still experiencing the issue.",
-                CreatedAt: formatDateTime(new Date(Date.now() - 86400000).toISOString()) // 1 day ago
-            },
-            {
-                ReplyId: "reply-005",
-                UserId: "admin123",
-                Message: "The login issue has been resolved. Please try again and let us know if you still face any problems.",
-                CreatedAt: formatDateTime(new Date().toISOString()) // now
-            }
-        ],
-        CreatedAt: formatDateTime(new Date(Date.now() - 86400000).toISOString()), // 1 day ago
-        Status: "In Progress",
-        isDeleted: 0
-    },
-    {
-        ReportId: "456456-456456-456456-456456",
-        UserId: "aoikjdsnfiun",
-        CaseNo: "GE-2024-0004",
-        Category: "General Inquiry",
-        Report: "Can I get an extension on the assignment deadline?",
-        SupportingDocuments: [],
-        Reply: [],
-        CreatedAt: formatDateTime(new Date(Date.now() - 86400000 * 7).toISOString()) // 7 days ago
-    },
-    {
-        ReportId: "234234-234234-234234-234234",
-        UserId: "12u3h809jdda",
-        CaseNo: "FE-2024-0005",
-        Category: "Feedback",
-        Report: "The lecture recordings are very helpful for revision.",
-        SupportingDocuments: ["/report_attachments/report_5_feedback.pdf"],
-        Reply: [],
-        CreatedAt: formatDateTime(new Date(Date.now() - 86400000 * 2).toISOString()) // 2 days ago
-    }
-];  
+const userModel = require("../models/userModel");
 
 const REPORTTYPES = ["General Inquiry", "Feedback", "Report a Problem"];
+const STATUSOPTIONS = ['Pending', 'In-Progress', 'Solved'];
 
 exports.getReportHistory = async (req, res) => {
-    // TODO: Retrieve all reports from the database
     try {
         const allReports = await reportModel.retrieveAllReport();
 
         // Sort reports by CreatedAt in descending order (most recent first)
         allReports.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
 
-        // For now, we will just return all mock reports
-        // In actual implementation, replace mockReports with filteredReports
         res.render("contactus/history", {
-            reports: allReports
+            reports: allReports,
+            reportTypes: REPORTTYPES,
+            statusOptions: STATUSOPTIONS
         });
     } catch (error) {
         console.error("contactusController.getReportHistory: Error retrieving report history:", error);
@@ -130,24 +26,26 @@ exports.getReportHistory = async (req, res) => {
 }
 
 exports.getContactUs = async (req, res) => {
-    // TODO: Retrieve the reports necessary from the database
-    // Retreive all reports where UserId matches logged in User
-    // Retrieve reports that isDeleted is not 1 (true)
-
     if (req.user.role === "admin") {
         return res.redirect("/contactus/history");
     }
 
     const currUserId = req.user.userId;
-    // For now, we will just return all mock reports
-    // const userReports = mockReports.filter(report => report.UserId === currUserId && !report.isDeleted);
+
     try {
         const userReports = await reportModel.retrieveReportByUserId(currUserId);
+        
+        let errors = req.session.contactus ? req.session.contactus.errorMsg : null;
+        delete req.session.contactus;
+
+        let submitted = req.session.contactus ? req.session.contactus.submitted : false;
 
         res.render("contactus/contactus", {
-            submitted: false,
+            submitted,
             reportTypes: REPORTTYPES,
-            reports: userReports
+            statusOptions: STATUSOPTIONS,
+            reports: userReports,
+            errors
         });
     } catch (error) {
         console.error("Error retrieving user reports:", error);
@@ -158,14 +56,19 @@ exports.getContactUs = async (req, res) => {
 exports.addReport = async (req, res) => {
     const { category, report } = req.body;
 
-    if (!category || !report) {
-        let htmlResponse = `
-        <h2>Failed to submit report</h2>
-        <p>Please ensure all required fields are filled out.</p>
-        <a href="/contactus">Back to Contact Us</a>
-        `
+    let errorMsg = [];
 
-        return res.send(htmlResponse);
+    if (!category) {
+        errorMsg.push("Category is required.");
+    }
+
+    if (!report) {
+        errorMsg.push("Message is required.");
+    }
+
+    if (errorMsg.length > 0) {
+        req.session.contactus = { errorMsg };
+        return res.redirect("/contactus");
     }
 
     const generateCaseNo = () => {
@@ -190,22 +93,16 @@ exports.addReport = async (req, res) => {
         let response = await reportModel.createReport(newReport);
 
         if (response) {
-            return res.render("contactus/contactus", {
-                submitted: true,
-                reportTypes: REPORTTYPES,
-                reports: mockReports
-            });
+            req.session.contactus = { submitted: true };
+            return res.redirect("/contactus");
         }
     } catch (error) {
         console.error("Error adding new report:", error);
 
-        let htmlResponse = `
-        <h2>Failed to submit report</h2>
-        <p>There was an error while submitting your report. Please try again later.</p>
-        <a href="/contactus">Back to Contact Us</a>
-        `
+        let errorMsg = ["An error occurred while submitting your report. Please try again later."];
+        req.session.contactus = { errorMsg };
 
-        return res.send(htmlResponse);
+        return res.redirect("/contactus");
     }
 }
 
@@ -216,16 +113,17 @@ exports.getReportById = async (req, res) => {
         const report = await reportModel.retrieveReportByReportId(reportId);
 
         if (!report) {
-            return res.status(404).json({ message: "Report not found." });
+            return res.redirect("/contactus");
         }
 
-        const username = "Cruz Chua"; // TODO: Replace with actual username retrieval logic based on report.UserId
+        let errorMsg = req.session.reportDetail ? req.session.reportDetail.errorMsg : null;
+        delete req.session.reportDetail;
 
         res.render("contactus/reportDetail", {
             report: report,
-            username,
             currentUserId: req.user.userId,
-            isAdmin: res.locals.isAdmin
+            isAdmin: res.locals.isAdmin,
+            errorMsg
         });
     } catch (error) {
         console.error("contactusController.getReportById: Error retrieving report by ID:", error);
@@ -237,7 +135,9 @@ exports.updateReportById = async (req, res) => {
     const reportId = req.params.id;
     const { report: updatedReport } = req.body;
 
-    console.log("Received updateReportById request with reportId:", reportId, "and updatedReport:", updatedReport);
+    if (!updatedReport) {
+        return res.status(400).json({ message: "Updated report content is required." });
+    }
 
     try {
         let response = await reportModel.updateReportByReportId(reportId, updatedReport);
@@ -256,7 +156,6 @@ exports.updateReportById = async (req, res) => {
 exports.deleteReportById = async (req, res) => {
     const reportId = req.params.id;
 
-    // TODO: Implement report deletion logic from the database
     try {
         let response = await reportModel.deleteReportByReportId(reportId);
 
@@ -292,8 +191,12 @@ exports.updateStatusById = async (req, res) => {
 exports.addReplyById = async (req, res) => {
     const reportId = req.params.id;
         const { message } = req.body;
-    
-        // TODO: Implement reply submission logic to the database
+
+        if (!message) {
+            req.session.reportDetail = { errorMsg: "Reply message is required." };
+            return res.redirect(`/contactus/${reportId}`);
+        }
+
         try {
             let response = await reportModel.addReplyByReportId(reportId, {
                 ReplyID: generateUUID(),
@@ -317,10 +220,14 @@ exports.updateReplyById = async (req, res) => {
     const replyId = req.params.replyId;
     const { message: updatedMessage } = req.body;
 
+    if (!updatedMessage) {
+        return res.status(400).json({ message: "Updated reply message is required." });
+    }
+
     try {
         let response = await reportModel.updateReplyByReplyId(reportId, replyId, updatedMessage);
         if (!response) {
-            return res.status(404).json({ message: "Report or reply not found." });
+            return res.status(404).json({ message: "An error occurred while updating the reply." });
         } else {
             return res.status(200).json({ message: "Reply updated successfully." });
         }

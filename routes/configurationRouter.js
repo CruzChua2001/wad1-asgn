@@ -1,26 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const uuidUtil = require("../utils/uuidUtils.js")
-const dateUtil = require("../utils/dateUtils.js")
-
-const userModel = require("../models/userModel.js");
-const categoryModel = require("../models/categoryModel.js");
-const eventModel = require("../models/eventModel.js");
 const configurationController = require ("../controllers/configurationController.js");
-const reserveModel = require("../models/reservationModel.js");
-const { config } = require("dotenv");
-const reserveData = {
-  "A":"approved",
-  "R":"rejected",
-  "W":"waitlist",
-}
 
 module.exports = router;  
 
 //BASIC ADMIN INTERFACE
 router.get("/", configurationController.displayDashboard);
-
-
 
 //CATEGORY ROUTES
 router.get("/category",configurationController.displayCategories)
