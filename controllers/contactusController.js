@@ -118,8 +118,6 @@ exports.getReportHistory = async (req, res) => {
         // Sort reports by CreatedAt in descending order (most recent first)
         allReports.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
 
-        // For now, we will just return all mock reports
-        // In actual implementation, replace mockReports with filteredReports
         res.render("contactus/history", {
             reports: allReports
         });
@@ -139,15 +137,20 @@ exports.getContactUs = async (req, res) => {
     }
 
     const currUserId = req.user.userId;
-    // For now, we will just return all mock reports
-    // const userReports = mockReports.filter(report => report.UserId === currUserId && !report.isDeleted);
+
     try {
         const userReports = await reportModel.retrieveReportByUserId(currUserId);
+        
+        let errors = req.session.contactus ? req.session.contactus.errorMsg : null;
+        delete req.session.contactus;
+
+        let submitted = req.session.contactus ? req.session.contactus.submitted : false;
 
         res.render("contactus/contactus", {
-            submitted: false,
+            submitted,
             reportTypes: REPORTTYPES,
-            reports: userReports
+            reports: userReports,
+            errors
         });
     } catch (error) {
         console.error("Error retrieving user reports:", error);
@@ -158,14 +161,19 @@ exports.getContactUs = async (req, res) => {
 exports.addReport = async (req, res) => {
     const { category, report } = req.body;
 
-    if (!category || !report) {
-        let htmlResponse = `
-        <h2>Failed to submit report</h2>
-        <p>Please ensure all required fields are filled out.</p>
-        <a href="/contactus">Back to Contact Us</a>
-        `
+    let errorMsg = [];
 
-        return res.send(htmlResponse);
+    if (!category) {
+        errorMsg.push("Category is required.");
+    }
+
+    if (!report) {
+        errorMsg.push("Message is required.");
+    }
+
+    if (errorMsg.length > 0) {
+        req.session.contactus = { errorMsg };
+        return res.redirect("/contactus");
     }
 
     const generateCaseNo = () => {
@@ -190,22 +198,16 @@ exports.addReport = async (req, res) => {
         let response = await reportModel.createReport(newReport);
 
         if (response) {
-            return res.render("contactus/contactus", {
-                submitted: true,
-                reportTypes: REPORTTYPES,
-                reports: mockReports
-            });
+            req.session.contactus = { submitted: true };
+            return res.redirect("/contactus");
         }
     } catch (error) {
         console.error("Error adding new report:", error);
 
-        let htmlResponse = `
-        <h2>Failed to submit report</h2>
-        <p>There was an error while submitting your report. Please try again later.</p>
-        <a href="/contactus">Back to Contact Us</a>
-        `
+        let errorMsg = ["An error occurred while submitting your report. Please try again later."];
+        req.session.contactus = { errorMsg };
 
-        return res.send(htmlResponse);
+        return res.redirect("/contactus");
     }
 }
 

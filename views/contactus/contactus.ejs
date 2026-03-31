@@ -32,6 +32,17 @@
             <label for="report">Message*:</label><br>
             <textarea id="report" name="report" rows="5" cols="50" required></textarea><br><br>
 
+            <% if (errors && errors.length > 0) { %>
+                <div class="note note-error" style="margin-bottom: 15px;">
+                    <b>Errors</b>
+                    <ul>
+                        <% errors.forEach(error => { %>
+                            <li><%= error %></li>
+                        <% }) %>
+                    </ul>
+                </div>
+            <% } %>
+
             <button class="btn btn-primary" type="submit">Submit</button>
         </form>
         <% } %>
@@ -60,8 +71,10 @@
                                     <td><%= report.CreatedAt.toLocaleString() %></td>
                                     <td><%= report.Status === "Not Applicable" ? "" : report.Status %></td>
                                     <td>
-                                        <a class="link" href="/contactus/<%= report.ReportID %>">View</a>
-                                        <button class="delete-btn btn-link text-danger" data-id="<%= report.ReportID %>" type="button">Delete</button>
+                                        <div class="actions-col">
+                                            <a class="btn btn-primary btn-sm" href="/contactus/<%= report.ReportID %>">View</a>
+                                            <button class="btn btn-danger btn-sm delete-btn" data-id="<%= report.ReportID %>" type="button">Delete</button>
+                                        </div>
                                     </td>
                                 </tr>
                             <% }) %>
