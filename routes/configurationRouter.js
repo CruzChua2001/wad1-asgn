@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const { logger } = require("../middleware/logger");
 const configurationController = require ("../controllers/configurationController.js");
+
+router.use(logger);
 
 module.exports = router;  
 

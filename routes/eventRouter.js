@@ -1,10 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../auth/auth");
+const { logger } = require("../middleware/logger");
 const multer = require("multer");
 const path = require("path");
 
 const eventController = require("../controllers/eventController");
+
+router.use(logger);
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {

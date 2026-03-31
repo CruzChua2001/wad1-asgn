@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../auth/auth");
+const { logger } = require("../middleware/logger");
 const userController = require("../controllers/userController");
 
 router.use(auth.requireAuth);
+router.use(logger);
 
 router.get("/profile", userController.getProfile);
 router.post("/profile", userController.postProfile);

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs</title>
+</head>
+<body>
+    <%- include("../partials/navbar.ejs") %>
+    <main class="container stack">
+    <div class="panel">
+        <div class="panel-header">
+            <h1>Activity Logs</h1>
+            <p class="subtle">Viewing activity for: <%= logs.length > 0 ? logs[0].FullName : "Unknown User" %></p>
+        </div>
+        <div class="panel-inner stack">
+
+            <% if (reportId) { %>
+            <div>
+                <a href="/contactus/<%= reportId %>" class="btn btn-ghost btn-sm">Return to Report</a>
+            </div>
+            <% } %>
+
+            <div>
+                <div class="search-row">
+                    <input type="text" id="searchInput" placeholder="Search by URL..." class="search-input">
+                    <button class="btn btn-ghost btn-sm" id="searchBtn" type="button">Search</button>
+                    <button class="btn btn-ghost btn-sm" id="clearSearchBtn" type="button">Clear Search</button>
+                </div>
+
+                <div class="row" style="margin-top:15px">
+                    <select id="methodFilter" style="padding: 8px; width: 150px; height: 30px; font-size:13px">
+                        <option value="">All Methods</option>
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+
+                    <select id="statusFilter" style="padding: 8px; margin-left: 10px; width: 150px; height: 30px; font-size:13px">
+                        <option value="">All Status Codes</option>
+                        <option value="2">2xx Success</option>
+                        <option value="3">3xx Redirect</option>
+                        <option value="4">4xx Client Error</option>
+                        <option value="5">5xx Server Error</option>
+                    </select>
+
+                    <button class="btn btn-ghost btn-sm" id="clearFilterBtn" type="button" style="margin-left: 10px;">Clear Filters</button>
+                </div>
+            </div>
+
+            <% if (logs.length === 0) { %>
+                <p>No activity logs found for this user.</p>
+            <% } else { %>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Method</th>
+                                <th>URL</th>
+                                <th>Status</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% logs.forEach(log => { %>
+                                <tr class="log-row" data-logid="<%= log.LogID %>">
+                                    <td><%= log.CreatedAt.toLocaleString() %></td>
+                                    <td><span class="pill method-<%= log.Method.toLowerCase() %>"><%= log.Method %></span></td>
+                                    <td><%= log.URL %></td>
+                                    <td>
+                                        <span class="<%= log.StatusCode < 300 ? 'status-ok' : log.StatusCode < 400 ? 'status-redirect' : 'status-error' %>">
+                                            <%= log.StatusCode %>
+                                        </span>
+                                    </td>
+                                    <td><%= log.IP %></td>
+                                </tr>
+                                <% if (log.Body) { %>
+                                    <tr class="log-body" id="body-<%= log.LogID %>" style="display: none;">
+                                        <td colspan="5">
+                                            <div class="log-body-content"><%= JSON.stringify(log.Body, null, 2) %></div>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    </main>
+</body>
+</html>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    const searchBtn = document.getElementById('searchBtn');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const searchInput = document.getElementById('searchInput');
+    const methodFilter = document.getElementById('methodFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+
+    // Toggle request body visibility on row click
+    document.querySelectorAll('.log-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const logId = row.getAttribute('data-logid');
+            const bodyRow = document.getElementById('body-' + logId);
+            if (bodyRow) {
+                bodyRow.style.display = bodyRow.style.display === 'none' ? '' : 'none';
+            }
+        });
+    });
+
+    const filterFn = () => {
+        const query = searchInput.value.toLowerCase();
+        const methodValue = methodFilter.value;
+        const statusValue = statusFilter.value;
+
+        document.querySelectorAll('.log-row').forEach(row => {
+            const url = row.cells[2].textContent.toLowerCase();
+            const method = row.cells[1].textContent.trim();
+            const status = row.cells[3].textContent.trim();
+
+            const matchesSearch = url.includes(query);
+            const matchesMethod = methodValue === '' || method === methodValue;
+            const matchesStatus = statusValue === '' || status.startsWith(statusValue);
+
+            const logId = row.getAttribute('data-logid');
+            const bodyRow = document.getElementById('body-' + logId);
+
+            if (matchesSearch && matchesMethod && matchesStatus) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+                if (bodyRow) bodyRow.style.display = 'none';
+            }
+        });
+    };
+
+    searchBtn.addEventListener('click', filterFn);
+    searchInput.addEventListener('keypress', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            filterFn();
+        }
+    });
+    clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        filterFn();
+    });
+
+    methodFilter.addEventListener('change', filterFn);
+    statusFilter.addEventListener('change', filterFn);
+
+    clearFilterBtn.addEventListener('click', () => {
+        methodFilter.value = '';
+        statusFilter.value = '';
+        filterFn();
+    });
+});
+</script>
