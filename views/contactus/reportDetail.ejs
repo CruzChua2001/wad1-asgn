@@ -15,23 +15,25 @@
         </div>
         <div class="panel-inner stack">
 
-        <div class="row">
-            <span class="pill">Category: <%= report.Category %></span>
-            <span class="pill">Submitted by: <%= report.FullName %></span>
-            <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
-            <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
-        </div>
-        <div>
-            <a href="/contactus" class="btn" style="margin-right:5px">Return</a>
-            <% if (currentUserId === report.UserID) { %>
-                <button class="text-danger" style="width:200px" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</button>
-            <% } %>
-        </div>
+            <div style="margin-block: 15px;">
+                <a href="/contactus" class="btn" style="margin-right:5px">Return</a>
+                <% if (currentUserId === report.UserID) { %>
+                    <button class="text-danger" style="width:200px" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</button>
+                <% } %>
+            </div>
+
+            <div class="row">
+                <span class="pill">Category: <%= report.Category %></span>
+                <span class="pill">Submitted by: <%= report.FullName %></span>
+                <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
+                <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
+            </div>
+        
         <% if (isAdmin && report.Status !== "Not Applicable") { %>
             <h3>Update Report Status</h3>
             <form action="/contactus/<%= report.ReportID %>/status" method="POST">
-                <div class="status-row">
-                    <select name="status" required>
+                <div class="status-row" style="margin-top:-15px">
+                    <select name="status" required style="height:35px; font-size:14px;">
                         <option value="">Select Status</option>
                         <option value="Pending" <%= report.Status === "Pending" ? "selected" : "" %>>Pending</option>
                         <option value="In-Progress" <%= report.Status === "In-Progress" ? "selected" : "" %>>In-Progress</option>

@@ -58,7 +58,35 @@ const reportSchema = new mongoose.Schema({
 const Report = mongoose.model('Report', reportSchema, 'report');
 
 exports.retrieveAllReport = () => {
-    return Report.find({ isDeleted: 0 });
+    return Report.aggregate([
+        { $match: { isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserID",
+                foreignField: "UserID",
+                as: "ReportUser"
+            }
+        },
+        {
+            $addFields: {
+                "FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$ReportUser"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$ReportUser.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$ReportUser.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
+                }
+            }
+        },
+        { $project: {ReportUser: 0} },
+    ]);
 }
 
 exports.retrieveReportByUserId = (userID) => {

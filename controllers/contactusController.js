@@ -15,7 +15,9 @@ exports.getReportHistory = async (req, res) => {
         allReports.sort((a, b) => new Date(b.CreatedAt) - new Date(a.CreatedAt));
 
         res.render("contactus/history", {
-            reports: allReports
+            reports: allReports,
+            reportTypes: REPORTTYPES,
+            statusOptions: STATUSOPTIONS
         });
     } catch (error) {
         console.error("contactusController.getReportHistory: Error retrieving report history:", error);
