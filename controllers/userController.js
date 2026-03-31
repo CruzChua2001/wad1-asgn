@@ -64,6 +64,19 @@ const postProfile = async (req, res) => {
     }
 };
 
+const deleteSelf = async (req, res) => { // only for students
+    try {
+        await userModel.deleteUser(req.user.userId);
+        req.session.destroy(() => {
+            res.clearCookie("connect.sid");
+            return res.redirect("/");
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error deleting account.");
+    }
+};
+
 const getUserById = async (req, res) => { // when admin visits users/:id
     try {
         const user = await userModel.findByUserID(req.params.id);
@@ -117,4 +130,4 @@ const createAdmin = async (req, res) => {
     }
 };
 
-module.exports = { getAllUsers, getProfile, postProfile, getUserById, deleteUser, createAdmin };
+module.exports = { getAllUsers, getProfile, postProfile, deleteSelf, getUserById, deleteUser, createAdmin };

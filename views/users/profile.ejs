@@ -46,7 +46,12 @@
               <input id="confirmNewPassword" name="confirmNewPassword" type="password" placeholder="Re-enter new password">
 
               <div class="form-actions">
-                <button class="btn btn-primary" type="submit">Save Changes</button>
+                  <button class="btn btn-primary" type="submit">Save Changes</button>
+                  <% if (!isAdmin) { %>
+                      <button class="btn btn-danger" type="button" onclick="document.getElementById('deleteModal').style.display='flex'">
+                          Delete Account
+                      </button>
+                  <% } %>
               </div>
 
             </form>
@@ -54,5 +59,17 @@
         </div>
       </div>
     </div>
+
+<!-- Confirmation Popup -->
+<div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+    <div style="background:white; padding:2rem; border-radius:8px; text-align:center;">
+        <p style="color: black;">Are you sure you want to delete your account? This cannot be undone.</p>
+        <br>
+        <form method="POST" action="/user/delete" style="display:inline;">
+            <button type="submit">Yes, delete my account</button>
+        </form>
+        <button onclick="document.getElementById('deleteModal').style.display='none'">Cancel</button>
+    </div>
+</div>
 </body>
 </html>

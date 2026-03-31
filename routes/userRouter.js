@@ -7,6 +7,7 @@ router.use(auth.requireAuth);
 
 router.get("/profile", userController.getProfile);
 router.post("/profile", userController.postProfile);
+router.post("/delete", userController.deleteSelf);
 
 router.get("/",            auth.requireAdmin, userController.getAllUsers);
 router.post("/admin",      auth.requireAdmin, userController.createAdmin);
