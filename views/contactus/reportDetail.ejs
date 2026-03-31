@@ -15,16 +15,18 @@
         </div>
         <div class="panel-inner stack">
 
-    <div class="row">
-        <span class="pill">Category: <%= report.Category %></span>
-        <span class="pill">Submitted by: <%= username %></span>
-        <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
-        <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
-    </div>
-
-        <% if (currentUserId === report.UserID) { %>
-            <button class="btn-link text-danger" type="button" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</button>
-        <% } %>
+        <div class="row">
+            <span class="pill">Category: <%= report.Category %></span>
+            <span class="pill">Submitted by: <%= username %></span>
+            <span class="pill">Status: <%= report.Status === "Not Applicable" ? "" : report.Status %></span>
+            <span class="pill">Submitted: <%= report.CreatedAt.toLocaleString() %></span>
+        </div>
+        <div>
+            <a href="/contactus" class="btn" style="margin-right:5px">Return</a>
+            <% if (currentUserId === report.UserID) { %>
+                <button class="text-danger" style="width:200px" onclick="deleteReport('<%= report.ReportID %>')">Delete Report</button>
+            <% } %>
+        </div>
         <% if (isAdmin && report.Status !== "Not Applicable") { %>
             <h3>Update Report Status</h3>
             <form action="/contactus/<%= report.ReportID %>/status" method="POST">
@@ -42,32 +44,32 @@
     </div>
     <hr>
 
-    <div>
+    <div class="panel-inner">
         <b>Comment / Feedback:</b>
         <% if (currentUserId === report.UserID) { %>
             <button class="btn-link" type="button" onclick="displayEdit()">Edit</button>
         <% } %>
         <p><%= report.Report %></p>
-        <textarea id="reportContent" class="hidden" cols="80" rows="4"><%= report.Report %></textarea>
+        <textarea style="font-size:15px;" id="reportContent" class="hidden" cols="80" rows="4"><%= report.Report %></textarea>
         <button class="btn btn-ghost hidden" id="cancelBtn" onclick="cancelEdit()" type="button">Cancel</button>
         <button class="btn btn-primary hidden" id="saveBtn" onclick="saveReport('<%= report.ReportID %>')" type="button">Save</button>
     </div>
 
     <hr>
 
-    <div>
+    <div class="panel-inner">
         <h2>Reply</h2>
         <% if (report.Reply && report.Reply.length > 0) { %>
             <% report.Reply.forEach(reply => { %>
                 <div class="panel mb-10">
                   <div class="panel-inner row-top">
                     <section>
-                        <b><%= reply.UserID %></b> <br>
+                        <b><%= reply.FullName %></b> <br>
                         <%= reply.CreatedAt.toLocaleString() %>
                         <p><%= reply.Message %></p>
 
                         <!-- Editable reply -->
-                        <textarea id="replyContent-<%= reply.ReplyID %>" class="hidden" cols="80" rows="4"><%= reply.Message %></textarea>
+                        <textarea style="font-size:15px;" id="replyContent-<%= reply.ReplyID %>" class="hidden" cols="80" rows="4"><%= reply.Message %></textarea>
                         <button class="btn btn-ghost hidden" id="cancelReplyBtn-<%= reply.ReplyID %>" onclick="cancelEditReply('<%= reply.ReplyID %>')" type="button">Cancel</button>
                         <button class="btn btn-primary hidden" id="saveReplyBtn-<%= reply.ReplyID %>" onclick="saveReply('<%= report.ReportID %>', '<%= reply.ReplyID %>')" type="button">Save</button>
                     </section>
@@ -86,7 +88,7 @@
             
         <h3>Submit a Reply</h3>
         <form action="/contactus/<%= report.ReportID %>/reply" method="POST">
-            <textarea name="message" rows="4" cols="50" required></textarea><br><br>
+            <textarea style="font-size:15px;" name="message" rows="4" cols="50" required></textarea><br><br>
             <button class="btn btn-primary" type="submit">Submit Reply</button>
         </form>
     </div>

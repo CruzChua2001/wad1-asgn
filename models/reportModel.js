@@ -70,7 +70,64 @@ exports.createReport = (reportData) => {
 }
 
 exports.retrieveReportByReportId = (reportID) => {
-    return Report.findOne({ ReportID: reportID, isDeleted: 0 });
+    return Report.aggregate([
+        { $match: { ReportID: reportID, isDeleted: 0 } },
+        { $unwind: { path: "$Reply", preserveNullAndEmptyArrays: true}},
+        {
+            $lookup: {
+                from: "user",
+                localField: "Reply.UserID",
+                foreignField: "UserID",
+                as: "ReplyUser"
+            }
+        },
+        {
+            $addFields: {
+                "Reply.FullName": {
+                    $cond: {
+                        if: { $ifNull: ["$Reply.ReplyID", false] },
+                        then: {
+                            $cond: {
+                                if: { $gt: [{$size: "$ReplyUser"}, 0]},
+                                then: {
+                                    $concat: [
+                                        {$arrayElemAt: ["$ReplyUser.FirstName", 0]},
+                                        " ",
+                                        {$arrayElemAt: ["$ReplyUser.LastName", 0]}
+                                    ]
+                                },
+                                else: "Unknown User"
+                            }
+                        },
+                        else: "$$REMOVE"
+                    }
+                }
+            }
+        },
+        { $project: {ReplyUser: 0 }},
+        {
+            $group: {
+                _id: "$_id",
+                ReportID: { $first: "$ReportID" },
+                UserID: { $first: "$UserID" },
+                CaseNo: { $first: "$CaseNo" },
+                Category: { $first: "$Category" },
+                Report: { $first: "$Report" },
+                CreatedAt: { $first: "$CreatedAt" },
+                Status: { $first: "$Status" },
+                isDeleted: { $first: "$isDeleted" },
+                Reply: {
+                    $push: {
+                        $cond: {
+                            if: { $ifNull: ["$Reply.ReplyID", false] },
+                            then: "$Reply",
+                            else: "$$REMOVE"
+                        }
+                    }
+                }
+            }
+        }
+    ]).then(results => results[0] || null);
 }
 
 exports.updateReportByReportId = (reportID, updatedReport) => {
