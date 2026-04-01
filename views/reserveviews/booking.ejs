@@ -19,32 +19,46 @@
         <div class="panel-inner stack">
 
           <div class="row">
-            <span class="pill">Capacity: <%= reservation.EventDetails?.CurrentCapacity || 'Unknown Capacity' %></span>
+            
+            <span class="pill">Remaining capacity: <%= reservation.EventDetails && typeof reservation.EventDetails.MaxCapacity === 'number' && typeof reservation.EventDetails.CurrentCapacity === 'number' ? (reservation.EventDetails.MaxCapacity - reservation.EventDetails.CurrentCapacity) : 'Unknown Capacity' %></span>
             <span class="pill">Status: <%= reservation.Status || 'Unknown Booked' %></span>
           </div>
 
-          <% if (reservation.EventDetails?.Booked >= reservation.EventDetails?.Capacity) { %>
-              <div class="note note-danger text-danger"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</div>
+          <% 
+            let remaining = reservation.EventDetails && typeof reservation.EventDetails.MaxCapacity === 'number' && typeof reservation.EventDetails.CurrentCapacity === 'number' 
+              ? (reservation.EventDetails.MaxCapacity - reservation.EventDetails.CurrentCapacity) 
+              : null;
+            if (remaining !== null && remaining <= 0) { %>
+              <div class="note note-danger text-danger"><strong>Notice:</strong> This event is full or does not have enough space for your request. If you book now, you will be placed on the waitlist.</div>
           <% } %>
 
-          <form id="createReservationForm" class="reserve-form" action="" method="POST">
-        
+            <form id="createReservationForm" class="reserve-form" action="" method="POST">
               <label for="numofppl">Number of people attending:</label>
               <input 
-                  type="number" 
-                  id="numofppl" 
-                  class="reserve-input"
-                  name="numofppl" 
-                  min="1" 
-                  step="1"
-                  inputmode="numeric"
-                  pattern="[0-9]+"
-                  max="<%= reservation.EventDetails?.Capacity - reservation.EventDetails?.Booked %>" 
-                  value="1"
-                  required
+                type="number" 
+                id="numofppl" 
+                class="reserve-input"
+                name="numofppl" 
+                min="1" 
+                step="1"
+                inputmode="numeric"
+                pattern="[0-9]+"
+                value="1"
+                required
               >
               <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
-          </form>
+            </form>
+            <script>
+            document.getElementById('createReservationForm').addEventListener('submit', function(e) {
+              const input = document.getElementById('numofppl');
+              const value = parseInt(input.value, 10);
+              if (isNaN(value) || value < 1) {
+                alert('Please enter a valid number greater than 0.');
+                e.preventDefault();
+                return;
+              }
+            });
+            </script>
     
           <br>
 
