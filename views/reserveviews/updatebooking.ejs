@@ -15,13 +15,17 @@
             </div>
             <div class="panel-inner stack">
                 <div class="row">
-                    <span class="pill">Remaining capacity: <%= reservation.EventDetails?.CurrentCapacity || 'Unknown Capacity' %></span>
+                    <span class="pill">Remaining capacity: <%= reservation.EventDetails && typeof reservation.EventDetails.MaxCapacity === 'number' && typeof reservation.EventDetails.CurrentCapacity === 'number' ? (reservation.EventDetails.MaxCapacity - reservation.EventDetails.CurrentCapacity) : 'Unknown Capacity' %></span>
                     <span class="pill">Status: <%= reservation.Status || 'Unknown Booked' %></span>
                 </div>
 
-                <% if (reservation.EventDetails?.Booked >= reservation.EventDetails?.Capacity) { %>
-                    <div class="note note-danger text-danger"><strong>Notice:</strong> This event is full. If you book now, you will be placed on the waitlist.</div>
-                <% } %>
+                                <% 
+                                    let remaining = reservation.EventDetails && typeof reservation.EventDetails.MaxCapacity === 'number' && typeof reservation.EventDetails.CurrentCapacity === 'number' 
+                                        ? (reservation.EventDetails.MaxCapacity - reservation.EventDetails.CurrentCapacity) 
+                                        : null;
+                                    if (remaining !== null && remaining <= 0) { %>
+                                        <div class="note note-danger text-danger"><strong>Notice:</strong> This event is full or does not have enough space for your request. If you update now, you may be placed on the waitlist.</div>
+                                <% } %>
 
                 <form id="updateReservationForm" class="reserve-form" data-reservation-id="<%= reservation.ReservationID %>">
                     <input type="hidden" name="EventId" value="<%= reservation.EventId %>">
@@ -35,7 +39,6 @@
                     step="1"
                     inputmode="numeric"
                     pattern="[0-9]+"
-                    max="<%= reservation.EventDetails?.Capacity - reservation.EventDetails?.Booked %>" 
                     value="<%= reservation.numofppl || 1 %>"
                     required
                     >
@@ -51,15 +54,21 @@
     <script>
         const form = document.getElementById("updateReservationForm");
         form.addEventListener("submit", async (e) => {
+            const input = document.getElementById('numofppl');
+            const value = parseInt(input.value, 10);
+            if (isNaN(value) || value < 1) {
+                alert('Please enter a valid number greater than 0.');
+                e.preventDefault();
+                return;
+            }
+            // ...existing code...
             e.preventDefault();
             const reservationId = form.dataset.reservationId;
-            const numofppl = document.getElementById("numofppl").value.trim();
-
+            const numofppl = input.value.trim();
             if (!/^\d+$/.test(numofppl)) {
                 alert("Please enter numbers only.");
                 return;
             }
-
             try {
                 const response = await fetch(`/reserve/update/${reservationId}`, {
                     method: "PATCH",
@@ -69,7 +78,6 @@
                     body: new URLSearchParams({ numofppl })
                 });
                 const result = await response.json();
-
                 if (!response.ok) {
                     alert(result.message || "Failed to update booking.");
                     return;

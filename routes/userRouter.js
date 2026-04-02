@@ -1,12 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../auth/auth");
+const { logger } = require("../middleware/logger");
 const userController = require("../controllers/userController");
 
 router.use(auth.requireAuth);
+router.use(logger);
 
 router.get("/profile", userController.getProfile);
 router.post("/profile", userController.postProfile);
+router.post("/delete", userController.deleteSelf);
 
 router.get("/",            auth.requireAdmin, userController.getAllUsers);
 router.post("/admin",      auth.requireAdmin, userController.createAdmin);

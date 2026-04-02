@@ -16,7 +16,7 @@ exports.submitFeedback = async (req,res) => {
         res.redirect("/")
     } catch (error) {
         console.log(error)
-        res.send("Error fetching feedback")
+        res.status(500).send("Error fetching feedback")
     };
 }
 
@@ -28,7 +28,7 @@ exports.getHistoryForm = async(req,res) => {
   }
   catch(error) {
     console.log(error);
-    res.send("Error fetching history");
+    res.status(500).send("Error fetching history");
   }
 }
 
@@ -40,13 +40,13 @@ exports.seeFeedbackForm = async (req, res) => {
         const feedback = await getFeedbackByID(feedbackId, userId)
 
         if (!feedback) {
-            return res.send("Feedback not found")
+            return res.status(404).send("Feedback not found")
         }
 
         res.render("feedback/seeFeedback", { feedback })
     } catch (error) {
         console.error(error)
-        res.send("Error fetching feedback details")
+        res.status(500).send("Error fetching feedback details")
     }
 }
 
@@ -58,13 +58,13 @@ exports.getEditFeedbackForm = async (req, res) => {
         const feedback = await getFeedbackByID(feedbackId, userId);
 
         if (!feedback) {
-            return res.send("Feedback not found");
+            return res.status(404).send("Feedback not found");
         }
 
         res.render("feedback/editFeedback", { feedback, ratings: [1, 2, 3, 4, 5] });
     } catch (error) {
         console.error(error);
-        res.send("Error loading edit feedback form");
+        res.status(500).send("Error loading edit feedback form");
     }
 };
 
@@ -76,13 +76,13 @@ exports.postEditFeedbackForm = async (req, res) => {
         const updatedFeedback = await updateFeedbackByID(feedbackId, userId, req.body);
 
         if (!updatedFeedback) {
-            return res.send("Feedback not found or could not be updated");
+            return res.status(404).send("Feedback not found or could not be updated");
         }
 
         res.redirect(`/feedback/seefeedback/${feedbackId}`);
     } catch (error) {
         console.error(error);
-        res.send("Error updating feedback");
+        res.status(500).send("Error updating feedback");
     }
 };
 
@@ -94,12 +94,12 @@ exports.deleteFeedback = async (req, res) => {
         const deletedFeedback = await deleteFeedbackByID(feedbackId, userId);
 
         if (!deletedFeedback) {
-            return res.send("Feedback not found or already deleted");
+            return res.status(404).send("Feedback not found or already deleted");
         }
 
         res.redirect("/feedback/history");
     } catch (error) {
         console.error(error);
-        res.send("Error deleting feedback");
+        res.status(500).send("Error deleting feedback");
     }
 };

@@ -2,10 +2,12 @@
 const express = require("express");
 const router = express.Router();
 const { requireAdmin } = require("../auth/auth");
+const { logger } = require("../middleware/logger");
 
 const contactusController = require("../controllers/contactusController");
 
 router.use(express.json());
+router.use(logger);
 
 router.get("/history", requireAdmin, contactusController.getReportHistory);
 
@@ -26,5 +28,7 @@ router.post("/:id/reply", contactusController.addReplyById);
 router.put("/:id/:replyId/reply", contactusController.updateReplyById);
 
 router.delete("/:id/:replyId/reply", contactusController.deleteReplyById);
+
+router.get("/logs/:userId", requireAdmin, contactusController.getUserLogs);
 
 module.exports = router;  

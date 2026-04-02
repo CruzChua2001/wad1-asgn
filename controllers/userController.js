@@ -25,7 +25,56 @@ const getProfile = async (req, res) => { // when admin visits /users
 };
 
 const postProfile = async (req, res) => {
-    // Update profile info
+    const { firstName, lastName, email, currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    try {
+        const user = await userModel.findByUserID(req.user.userId);
+        if (!user) return res.redirect("/login");
+
+        // if user is trying to change password
+        if (currentPassword || newPassword || confirmNewPassword) {
+            if (!currentPassword || !newPassword || !confirmNewPassword)
+                return res.render("users/profile", { user, error: "Fill in all password fields to change password.", success: null });
+
+            const match = await bcrypt.compare(currentPassword, user.Password);
+            if (!match)
+                return res.render("users/profile", { user, error: "Current password is incorrect.", success: null });
+
+            if (newPassword !== confirmNewPassword)
+                return res.render("users/profile", { user, error: "New passwords do not match.", success: null });
+
+            if (newPassword.length < 8)
+                return res.render("users/profile", { user, error: "New password must be at least 8 characters.", success: null });
+
+            const salt = await bcrypt.genSalt(10);
+            const hashed = await bcrypt.hash(newPassword, salt);
+            await userModel.updatePasswordByEmail(user.Email, hashed, salt);
+        }
+
+        // update first name, last name and email
+        await userModel.updateProfile(req.user.userId, firstName, lastName, email);
+
+        const updatedUser = await userModel.findByUserID(req.user.userId);
+        return res.render("users/profile", { user: updatedUser, error: null, success: "Profile updated successfully." });
+
+    } catch (err) {
+        console.error(err);
+        const user = await userModel.findByUserID(req.user.userId);
+        return res.render("users/profile", { user, error: "An error occurred. Please try again.", success: null });
+    }
+};
+
+const deleteSelf = async (req, res) => { // only for students
+    try {
+        await userModel.deleteUser(req.user.userId);
+        req.session.destroy(() => {
+            res.clearCookie("connect.sid");
+            return res.redirect("/");
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error deleting account.");
+    }
 };
 
 const getUserById = async (req, res) => { // when admin visits users/:id
@@ -81,4 +130,4 @@ const createAdmin = async (req, res) => {
     }
 };
 
-module.exports = { getAllUsers, getProfile, postProfile, getUserById, deleteUser, createAdmin };
+module.exports = { getAllUsers, getProfile, postProfile, deleteSelf, getUserById, deleteUser, createAdmin };

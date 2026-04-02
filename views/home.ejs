@@ -20,7 +20,9 @@
                 </p>
                 <div class="form-actions">
                     <a class="btn btn-primary" href="/event">Browse upcoming events</a>
-                    <a class="btn btn-ghost" href="/register">Create an account</a>
+                        <% if (!currentUser) { %>
+                            <a class="btn btn-ghost" href="/register">Create an account</a>
+                        <% } %>
                 </div>
             </div>
         </section>

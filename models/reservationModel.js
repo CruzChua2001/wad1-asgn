@@ -1,3 +1,9 @@
+// Update event's CurrentCapacity by EventID (for use in reserveController)
+exports.updateEventCapacityById = (eventId, newCapacity) => {
+    const mongoose = require('mongoose');
+    const Event = mongoose.model('Event');
+    return Event.findOneAndUpdate({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
+};
 // Get event details for a single event
 const mongoose = require('mongoose');
 const { retrieveById } = require('./eventModel');
@@ -118,6 +124,34 @@ exports.getReservationsWithEventDetails = async (filter = {}) => {
     ]);
 };
 
+exports.getUserName = async (filter = {}) => {
+    // Use pipeline to get user's first and last name from user collection based on UserId in reservation
+    const result = await Reservation.aggregate([
+        { $match: { ...filter, isDeleted: 0 } },
+        { $limit: 1 },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        { $unwind: { path: "$UserDetails", preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                _id: 0,
+                firstName: "$UserDetails.FirstName",
+                lastName: "$UserDetails.LastName"
+            }
+        }
+    ]);
+    if (result.length > 0) {
+        return { firstName: result[0].firstName || "", lastName: result[0].lastName || "" };
+    }
+    return { firstName: "", lastName: "" };
+};
+
 exports.retrieveAll = () => {
     return Reservation.find({ isDeleted: 0 });
 };
@@ -143,11 +177,69 @@ exports.retrieveWaitlistByEvent = (eventId) => {
         .sort({ WaitlistNo: 1, CreatedDateTime: 1 });
 };
 exports.retrievePending = () => {
-    return Reservation.find({Status:"pending", isDeleted: 0});
+    // Add FullName field from user collection based on UserId in reservation
+    return Reservation.aggregate([
+        { $match: { Status: "pending", isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        {
+            $addFields: {
+                "FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$UserDetails"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$UserDetails.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$UserDetails.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
+                }
+            }
+        },
+    ]);
 }
+
 exports.retrieveApprovedByAdminId = (adminId) => {
-    return Reservation.find({Status:"approved","ApprovedBy":adminId})
+    // Add FullName field from user collection based on UserId in reservation
+    return Reservation.aggregate([
+        { $match: { Status: "approved", ApprovedBy: adminId, isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        {
+            $addFields: {
+                "FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$UserDetails"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$UserDetails.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$UserDetails.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
+                }
+            }
+        },
+    ]);
 }
+
 exports.create = (reservationData) => {
     const reservation = new Reservation(reservationData);
     return reservation.save();

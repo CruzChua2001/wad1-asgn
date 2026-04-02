@@ -68,6 +68,13 @@ exports.deleteUser = (userID) => {
 // doesnt actually delete the record from mongoDB, just sets isDeleted to 1 (other queries cal filter by isDeleted: 0)
 // soft delete as a safety mechanism to prevent accidental deletions and potential data loss, also bc user data might be linked to other records
 
+exports.updateProfile = (userID, firstName, lastName, email) => {
+    return User.updateOne(
+        { UserID: userID },
+        { $set: { FirstName: firstName, LastName: lastName, Email: email } }
+    );
+};
+
 exports.getAdminIdByName = (name) => {
     return User.findOne({FirstName:name.split(" ")[0],LastName:name.split(" ")[1], isDeleted: 0})
 }

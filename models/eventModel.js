@@ -89,9 +89,39 @@ exports.getEventByID = (eventID) => {
             }
         },
         {
+            $lookup: {
+                from: "feedback",
+                localField: "EventID",
+                foreignField: "EventID",
+                as: "feedbackDetails"
+            }
+        },
+        {
             $unwind: {
                 path: "$categoryDetails",
                 preserveNullAndEmptyArrays: true  // <-- allow event even if no matching category
+            }
+        },
+        {
+            $addFields: {
+                averageScore: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$feedbackDetails" }, 0] },
+                        then: {
+                            $divide: [
+                                { $sum: {
+                                    $map: {
+                                        input: "$feedbackDetails",
+                                        as: "fb",
+                                        in: { $add: ["$$fb.rating", "$$fb.attend", "$$fb.recommend", "$$fb.goals"] }
+                                    }
+                                }},
+                                { $size: "$feedbackDetails" }
+                            ]
+                        },
+                        else: 0
+                    }
+                }
             }
         }
     ]);

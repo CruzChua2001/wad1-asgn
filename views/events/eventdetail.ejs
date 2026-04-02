@@ -30,6 +30,9 @@
 
           <div class="stack">
             <h2><%= event.EventName %></h2>
+            <div class="movie-meta" style="margin-bottom:-10px">
+              <span class="pill">Review: <%= event.averageScore %> / 20</span>
+            </div>
             <div class="movie-meta">
               <span class="pill">Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></span>
               <span class="pill">Status: <%= event.Status === 'active' ? 'Open' : 'Closed' %></span>
@@ -44,7 +47,298 @@
             </div>
           </div>
         </div>
+
+        <!-- Comments Section -->
+
+        <div class="panel-inner">
+          <h2>Comments</h2>
+
+          <!-- Comment Form -->
+
+          <div class="stack">
+            <textarea id="new-comment" style="font-size:14px" rows="4" placeholder="Share your thoughts..." required></textarea>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <div style="display: flex; align-items: center; margin: 0;">
+                <input type="checkbox" id="new-isAnonymous" style="width: 20px"> <label for="new-isAnonymous">Post as Anonymous</label>
+              </div>
+              <button class="btn-sm btn-primary" style="width:200px;" onclick="addComment('<%= event.EventID %>')">Submit Comment</button>
+            </div>
+
+            <p id="commentErrMsg" style="color: red;"></p>
+          </div>
+
+          <!-- Display Comments -->
+
+          <% if (comments.length > 0) { %>
+            <ul class="comment-list" style="margin-top:30px">
+              <% comments.forEach(comment => { %>
+                <li class="comment-item">
+                  <div class="comment-header">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <strong>
+                        <% if (comment.isAnonymous) { %>
+                        Anonymous
+                        <% } else { %>
+                          <%= comment.FullName %>
+                      <% } %> 
+                      </strong>
+                      <% if (comment.UserID === currentUser.userId) { %>
+                        <a style="cursor: pointer;" onclick="editComment('<%= comment.CommentID %>')">Edit</a>
+                        <a style="cursor: pointer; color: red;" onclick="deleteComment('<%= comment.CommentID %>')">Delete</a>
+                      <% } %>
+                      
+                    </div>
+                    
+                    <span class="comment-date"><%= comment.CreatedAt.toLocaleString() %></span>
+                  </div>
+                  <p id="commentMsg-<%= comment.CommentID %>"><%= comment.Comment %></p>
+
+                  <!-- Edit Comment Form -->
+                  
+                  <div id="editCommentDiv-<%= comment.CommentID %>" style="display: none; align-items: center; justify-content: space-between; width: 100%;">
+                    <textarea style="margin-top:10px; font-size: 13px;" rows="3" id="edit-comment-<%= comment.CommentID %>"><%= comment.Comment %></textarea>
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                      <div style="display: flex; align-items: center; margin: 0;">
+                        <input type="checkbox" name="isAnonymous" id="edit-isAnonymous-<%= comment.CommentID %>" style="width: 20px" <%= comment.isAnonymous ? "checked" : "" %>> <label for="edit-isAnonymous-<%= comment.CommentID %>">Post as Anonymous</label>
+                      </div>
+                      <button class="btn-sm btn-primary" style="width:200px;" onclick="submitEditComment('<%= comment.CommentID %>')">Edit</button>
+                    </div>
+
+                    <p id="editCommentErrMsg-<%= comment.CommentID %>" style="color: red; text-align: left; margin: 5px 0;"></p>
+                  </div>
+
+                  <!-- Reply Form -->
+
+                  <a onclick="showReplyForm('<%= comment.CommentID %>')" style="cursor: pointer; font-size: 12px; color: gray">Reply</a>
+                  <textarea id="replyForm-<%= comment.CommentID %>" style="display:none; margin-top:10px; font-size: 13px;" rows="2" placeholder="Write a reply..."></textarea>
+                  <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <div style="display: none; align-items: center; margin: 0;" id="replyCheckbox-<%= comment.CommentID %>">
+                      <input type="checkbox" name="isAnonymousReply" id="edit-isAnonymousReply-<%= comment.CommentID %>" style="width: 20px"> <label for="edit-isAnonymousReply-<%= comment.CommentID %>">Post as Anonymous</label>
+                    </div>
+                    <button id="replyBtn-<%= comment.CommentID %>" style="display:none; margin-top:5px;" class="btn-sm btn-primary" onclick="addReply('<%= comment.CommentID %>')">Reply</button>
+                  </div>
+
+                  <p id="replyErrMsg-<%= comment.CommentID %>" style="color: red; text-align: left; margin: 5px 0;"></p>
+
+                  <!-- Display Replies -->
+
+                  <div class="reply-item">
+                    <% comment.Reply.forEach(reply => { %>
+                      <div class="reply-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <strong>
+                            <% if (reply.isAnonymous) { %>
+                              Anonymous
+                            <% } else { %>
+                              <%= reply.FullName %>
+                            <% } %> 
+                          </strong>
+
+                          <% if (reply.UserID === currentUser.userId) { %>
+                            <a style="cursor: pointer;" onclick="editReply('<%= comment.CommentID %>', '<%= reply.ReplyID %>')">Edit</a>
+                            <a style="cursor: pointer; color: red;" onclick="deleteReply('<%= comment.CommentID %>', '<%= reply.ReplyID %>')">Delete</a>
+                          <% } %>
+                        </div>
+                        <span class="reply-date"><%= reply.CreatedAt.toLocaleString() %></span>
+                      </div>
+
+                      <!-- Edit Reply Form -->
+
+                      <p id="reply-comment-<%= reply.ReplyID %>"><%= reply.Comment %></p>
+                      <div id="editReplyDiv-<%= reply.ReplyID %>" style="display: none; align-items: center; justify-content: space-between; width: 100%;">
+                        <textarea style="margin-top:10px; font-size: 13px;" rows="3" id="edit-reply-<%= reply.ReplyID %>"><%= reply.Comment %></textarea>
+                        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                          <div style="display: flex; align-items: center; margin: 0;">
+                            <input type="checkbox" name="isAnonymous" id="edit-isAnonymousReply-<%= reply.ReplyID %>" style="width: 20px" <%= reply.isAnonymous ? "checked" : "" %>> <label for="edit-isAnonymousReply-<%= reply.ReplyID %>">Post as Anonymous</label>
+                          </div>
+                          <button class="btn-sm btn-primary" style="width:200px;" onclick="submitEditReply('<%= comment.CommentID %>', '<%= reply.ReplyID %>')">Edit</button>
+                        </div>
+
+                        <p id="editReplyErrMsg-<%= reply.ReplyID %>" style="color: red; text-align: left; margin: 5px 0;"></p>
+                      </div>
+
+                    <% }) %>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p style="margin-top:30px">No comments yet. Be the first to share your thoughts!</p>
+          <% } %>
+        </div>
       </div>
     </div>
 </body>
 </html>
+
+<script>
+  const addComment = async (eventId) => {
+    try {
+      let response = await fetch(`/comment/${eventId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          commentText: document.querySelector('#new-comment').value,
+          isAnonymous: document.querySelector('#new-isAnonymous').checked
+        })
+      });
+      let result = await response.json();
+      if (!response.ok) {
+        document.getElementById("commentErrMsg").textContent = result.message;
+      } else {
+        document.querySelector('#new-comment').value = '';
+        location.reload();
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      document.getElementById("commentErrMsg").textContent = "There was a problem adding the comment. Please try again.";
+    }
+  }
+
+  const editComment = (commentId) => {
+    const commentMsg = document.getElementById(`commentMsg-${commentId}`);
+    const editDiv = document.getElementById(`editCommentDiv-${commentId}`);
+    if (editDiv.style.display === "none") {
+      editDiv.style.display = "block";
+      commentMsg.style.display = "none";
+    } else {
+      editDiv.style.display = "none";
+      commentMsg.style.display = "block";
+    }
+  }
+
+  const submitEditComment = async (commentId) => {
+    try {
+      let response = await fetch(`/comment/${commentId}`, {
+        method: 'Patch',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          commentText: document.querySelector(`#edit-comment-${commentId}`).value,
+          isAnonymous: document.querySelector(`#edit-isAnonymous-${commentId}`).checked
+        })
+      });
+      let result = await response.json();
+      if (!response.ok) {
+        document.getElementById(`editCommentErrMsg-${commentId}`).textContent = result.message;
+      } else {
+        location.reload();
+      }
+    } catch (error) {
+      console.error("Error editing comment:", error);
+      document.getElementById(`editCommentErrMsg-${commentId}`).textContent = "There was a problem editing the comment. Please try again.";
+    }
+  }
+
+  const deleteComment = async (commentId) => {
+    try {
+      let response = await fetch(`/comment/delete/${commentId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        location.reload();
+      } else {
+        alert("Failed to delete comment. Please try again.");
+      }
+    } catch (error) {
+      alert("There was a problem deleting the comment. Please try again.");
+      console.error("Error deleting comment:", error);
+    }
+  }
+
+  const showReplyForm = (commentId) => {
+    const replyForm = document.getElementById(`replyForm-${commentId}`);
+    const replyBtn = document.getElementById(`replyBtn-${commentId}`);
+    const replyCheckbox = document.getElementById(`replyCheckbox-${commentId}`);
+    if (replyForm.style.display === "none") {
+      replyForm.style.display = "block";
+      replyBtn.style.display = "block";
+      replyCheckbox.style.display = "flex";
+    } else {
+      replyForm.style.display = "none";
+      replyBtn.style.display = "none";
+      replyCheckbox.style.display = "none";
+    }
+  }
+
+  const addReply = async (commentId) => {
+    try {
+      let response = await fetch(`/comment/reply/${commentId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          replyText: document.getElementById(`replyForm-${commentId}`).value,
+          isAnonymous: document.querySelector(`input[name="isAnonymousReply"]`).checked
+        })
+      });
+      let result = await response.json();
+      if (!response.ok) {
+        document.getElementById(`replyErrMsg-${commentId}`).textContent = result.message;
+      } else {
+        document.getElementById(`replyForm-${commentId}`).value = '';
+        location.reload();
+      }
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      document.getElementById(`replyErrMsg-${commentId}`).textContent = "There was a problem adding the reply. Please try again.";
+    }
+  }
+
+  const editReply = (commentId, replyId) => {
+    const replyComment = document.getElementById(`reply-comment-${replyId}`);
+    const editDiv = document.getElementById(`editReplyDiv-${replyId}`);
+    if (editDiv.style.display === "none") {
+      editDiv.style.display = "block";
+      replyComment.style.display = "none";
+    } else {
+      editDiv.style.display = "none";
+      replyComment.style.display = "block";
+    }
+  }
+
+  const submitEditReply = async (commentId, replyId) => {
+    try {
+      let response = await fetch(`/comment/reply/${commentId}/${replyId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          replyText: document.getElementById(`edit-reply-${replyId}`).value,
+          isAnonymous: document.querySelector(`#edit-isAnonymousReply-${replyId}`).checked
+        })
+      });
+      let result = await response.json();
+      if (!response.ok) {
+        document.getElementById(`editReplyErrMsg-${replyId}`).textContent = result.message;
+      } else {
+        location.reload();
+      }
+    } catch (error) {
+      console.error("Error editing reply:", error);
+      document.getElementById(`editReplyErrMsg-${replyId}`).textContent = "There was a problem editing the reply. Please try again.";
+    }
+  }
+
+  const deleteReply = async (commentId, replyId) => {
+    try {
+      let response = await fetch(`/comment/reply/${commentId}/${replyId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        location.reload();
+      } else {
+        alert("Failed to delete reply. Please try again.");
+      }
+    } catch (error) {
+      alert("There was a problem deleting the reply. Please try again.");
+      console.error("Error deleting reply:", error);
+    }
+  }
+</script>
