@@ -42,4 +42,6 @@ Database: campus_event
 | ChatGPT | Assisted in model pipeline aggregation for joining collections |
 | ChatGPT | Convert text into README syntax |
 | Claude | CSS styling for the website |
+| Claude | Multer for image upload middleware for events |
 | Claude | Minor bug fixes (e.g. fixing syntax errors) |
+| Claude | Assisted in components (Search, Carousel, Cards) |
