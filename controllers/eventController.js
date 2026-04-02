@@ -3,6 +3,7 @@ const path = require("path");
 
 const eventModel = require("../models/eventModel");
 const categoryModel = require("../models/categoryModel");
+const commentModel = require("../models/commentModel");
 
 const generateUUID = require('../utils/uuidUtils').generateUUID;
 
@@ -112,10 +113,12 @@ exports.getEventByID = async (req, res) => {
         let events = await eventModel.getEventByID(eventID); // returns array
         let event = events[0]; // pick the first (and only) event
 
+        let comments = await commentModel.retrieveCommentByEventId(eventID);
+
         if (!event) {
             return res.status(404).send("Event not found");
         }
-        res.render("events/eventdetail", { event });
+        res.render("events/eventdetail", { event, comments });
     } catch (error) {
         // Log your errors
         res.redirect("/event");
