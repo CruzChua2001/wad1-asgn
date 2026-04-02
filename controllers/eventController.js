@@ -56,15 +56,13 @@ exports.getNewEvent = async (req, res) => {
         // get category list
         let categories = await categoryModel.retrieveAll();
 
-        // TODO: uncomment this when mahshuk is done with category.
-        // if (category.length === 0) {
-        //     newEventErrorMsg.push("No category available, please contact admin");
-        //     return res.render("events/eventnew", { error: newEventErrorMsg });
-        // } else {
-        //     return res.render("events/eventnew", { error: newEventErrorMsg, categories: category });
-        // }
+        if (categories.length === 0) {
+            newEventErrorMsg.push("No category available, please contact admin");
+            return res.render("events/eventnew", { errors: newEventErrorMsg, formData: {} });
+        } else {
+            return res.render("events/eventnew", { errors: newEventErrorMsg, categories: categories, formData: {} });
+        }
 
-        return res.render("events/eventnew", { errors: newEventErrorMsg, categories });
     } catch (error) {
         // Log your errors
         newEventErrorMsg.push("Error loading page, please try again");
@@ -78,9 +76,21 @@ exports.postNewEvent = async (req, res) => {
     if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime) {
         newEventErrorMsg.push("Please fill in all the fields");
     }
+    if (req.body.MaxCapacity) {
+        const maxCapacity = Number(req.body.MaxCapacity);
 
+        if (maxCapacity <= 0 || !Number.isInteger(maxCapacity)) {
+            newEventErrorMsg.push("Maximum capacity must be a positive integer");
+        }
+    }
     if (newEventErrorMsg.length > 0) {
-        return res.redirect("/event/new");
+        let categories = await categoryModel.retrieveAll();
+
+        return res.render("events/eventnew", {
+            errors: newEventErrorMsg,
+            categories,
+            formData: req.body
+        });
     }
 
     let newEvent = {
@@ -100,9 +110,13 @@ exports.postNewEvent = async (req, res) => {
         res.redirect("/event/manage");
     } catch (error) {
         console.error(error);
-        newEventErrorMsg.push("Error creating new event, please try again");
-        return res.redirect("/event/new");
-    }
+        let categories = await categoryModel.retrieveAll();
+        return res.render("events/eventnew", {
+            newEventErrorMsg: ["Error creating new event, please try again"],
+            categories,
+            formData: req.body
+        });
+    }       
 }
 
 exports.getEventByID = async (req, res) => {
@@ -165,6 +179,11 @@ exports.editEvent = async (req, res) => {
     }
     if (!req.body.MaxCapacity) {
         errors.push("Max Capacity is required");
+    } else {
+    const maxCapacity = Number(req.body.MaxCapacity);
+    if (maxCapacity <= 0 || !Number.isInteger(maxCapacity)) {
+        errors.push("Max Capacity must be a positive integer");
+        }
     }
     if (!req.body.EndDateTime) {
         errors.push("End Date & Time is required");
@@ -204,7 +223,7 @@ exports.editEvent = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Error updating event" });
+        res.status(500).json({ message: ["Error updating event, please try again"] });
     }
 };
 

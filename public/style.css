@@ -261,6 +261,9 @@ input:focus, select:focus, textarea:focus{
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+input[type="datetime-local"] {
+  cursor: pointer;
+}
 @media (max-width: 720px){ .form-row{ grid-template-columns:1fr; } }
 .form-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 

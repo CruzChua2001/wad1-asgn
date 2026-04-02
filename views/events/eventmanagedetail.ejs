@@ -58,7 +58,7 @@
                 </div>
                 <div>
                   <label for="EndDateTime">End Date & Time</label>
-                  <input type="datetime-local" id="EndDateTime" name="EndDateTime" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>">
+                  <input type="datetime-local" id="EndDateTime" name="EndDateTime" onclick="if (this.showPicker) this.showPicker()" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>">
                 </div>
               </div>
 
@@ -106,12 +106,13 @@
             const data = await response.json();
 
             if (response.ok) {
-                alert(data.message);
-                window.location.href = "/event/manage";
+              document.getElementById("errorMsg").innerHTML = ""; // clear old errors
+              alert(data.message);
+              window.location.href = "/event/manage";
             } else {
                 let errorHtml = `<div class="note note-danger"><b>Errors</b><ul>`;
                 data.message.forEach(error => {
-                    errorHtml += `<li>${error}</li>`;
+                  errorHtml += `<li>${error}</li>`;
                 });
                 errorHtml += `</ul></div>`;
                 document.getElementById("errorMsg").innerHTML = errorHtml;  
