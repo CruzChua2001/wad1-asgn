@@ -176,10 +176,39 @@ exports.retrieveWaitlistByEvent = (eventId) => {
     return Reservation.find({ EventId: eventId, Status: "waitlist", isDeleted: 0 })
         .sort({ WaitlistNo: 1, CreatedDateTime: 1 });
 };
-exports.retrievePending = () => {
-    // Add FullName field from user collection based on UserId in reservation
+exports.retrievePending = (adminName) => {
     return Reservation.aggregate([
         { $match: { Status: "pending", isDeleted: 0 } },
+        // Join to event to get EventType (CategoryID)
+        {
+            $lookup: {
+                from: "event",
+                localField: "EventId",
+                foreignField: "EventID",
+                as: "EventDetails"
+            }
+        },
+        { $unwind: { path: "$EventDetails", preserveNullAndEmptyArrays: true } },
+        // Join to category to get Approval field
+        {
+            $lookup: {
+                from: "category",
+                localField: "EventDetails.EventType",
+                foreignField: "CategoryID",
+                as: "CategoryDetails"
+            }
+        },
+        { $unwind: { path: "$CategoryDetails", preserveNullAndEmptyArrays: true } },
+        // Filter: only where Approval is "ALL" or matches the admin name
+        {
+            $match: {
+                $or: [
+                    { "CategoryDetails.Approval": "ALL" },
+                    { "CategoryDetails.Approval": adminName }
+                ]
+            }
+        },
+        // Join to user for FullName
         {
             $lookup: {
                 from: "user",
