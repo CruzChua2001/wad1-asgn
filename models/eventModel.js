@@ -57,6 +57,8 @@ const eventSchema = new mongoose.Schema({
 
 const Event = mongoose.model('Event', eventSchema, 'event');
 
+
+
 exports.retrieveAll = () => {
     return Event.find({ isDeleted: 0 });
 }
@@ -94,6 +96,38 @@ exports.getEventByID = (eventID) => {
                 localField: "EventID",
                 foreignField: "EventID",
                 as: "feedbackDetails"
+            }
+        },
+        {
+            $lookup: {
+                from: "reservation",
+                let: { eventId: "$EventID" },
+                pipeline: [
+                    { $match: { $expr: { $and: [
+                        { $eq: ["$EventId", "$$eventId"] },
+                        { $eq: ["$Status", "approved"] },
+                        { $eq: ["$isDeleted", 0] }
+                    ] } } },
+                    {
+                        $lookup: {
+                            from: "user",
+                            localField: "UserId",
+                            foreignField: "UserID",
+                            as: "userInfo"
+                        }
+                    },
+                    { $unwind: { path: "$userInfo", preserveNullAndEmptyArrays: true } },
+                    {
+                        $project: {
+                            _id: 0,
+                            UserID: "$UserId",
+                            UserName: { $concat: ["$userInfo.FirstName", " ", "$userInfo.LastName"] },
+                            numofppl: "$numofppl",
+                            ReservationID: "$ReservationID"
+                        }
+                    }
+                ],
+                as: "approvedParticipants"
             }
         },
         {
@@ -160,3 +194,48 @@ exports.retrieveByEventid = (eventId) =>{
 exports.updateEventPax = (eventId,pax) =>{
     return Event.updateOne({EventID:eventId},{CurrentCapacity:pax});
 }
+// Cancel a reservation, update event capacity, and promote waitlist users if possible (pipeline/aggregation style)
+exports.cancelReservationAndPromoteWaitlist = async function(eventId, reservationId, numofppl) {
+    const db = mongoose.connection;
+    const reservationCol = db.collection('reservation');
+    const eventCol = db.collection('event');
+
+    // 1. Cancel the reservation (set isDeleted=1, Status="cancelled")
+    const cancelled = await reservationCol.updateOne(
+        { ReservationID: reservationId, EventId: eventId, isDeleted: 0 },
+        { $set: { isDeleted: 1, Status: "cancelled" } }
+    );
+    if (!cancelled.matchedCount) return { success: false, message: "Reservation not found or already cancelled." };
+
+    // 2. Get event and update current capacity (decrement by numofppl)
+    const eventArr = await eventCol.aggregate([
+        { $match: { EventID: eventId, isDeleted: 0 } },
+        { $limit: 1 }
+    ]).toArray();
+    if (!eventArr.length) return { success: false, message: "Event not found." };
+    let event = eventArr[0];
+    let newCapacity = Math.max(0, (event.CurrentCapacity || 0) - (numofppl || 1));
+    await eventCol.updateOne({ EventID: eventId, isDeleted: 0 }, { $set: { CurrentCapacity: newCapacity } });
+
+    // 3. Promote waitlist users if possible (aggregation pipeline style)
+    const waitlist = await reservationCol.aggregate([
+        { $match: { EventId: eventId, Status: "waitlist", isDeleted: 0 } },
+        { $sort: { WaitlistNo: 1, CreatedDateTime: 1 } },
+        { $project: { ReservationID: 1, numofppl: 1 } }
+    ]).toArray();
+    let promoted = [];
+    for (let w of waitlist) {
+        if (newCapacity + w.numofppl <= event.MaxCapacity) {
+            await reservationCol.updateOne(
+                { ReservationID: w.ReservationID },
+                { $set: { Status: "approved", WaitlistNo: null } }
+            );
+            newCapacity += w.numofppl;
+            promoted.push(w.ReservationID);
+            await eventCol.updateOne({ EventID: eventId, isDeleted: 0 }, { $set: { CurrentCapacity: newCapacity } });
+        } else {
+            break;
+        }
+    }
+    return { success: true, promoted, newCapacity };
+};

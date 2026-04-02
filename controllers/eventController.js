@@ -157,7 +157,12 @@ exports.getManageEventByID = async (req, res) => {
             event.EndDateTime = new Date(event.EndDateTime);
         }
 
-        res.render("events/eventmanagedetail", { event, categories: await categoryModel.retrieveAll(), errors: editEventErrorMsg });
+        res.render("events/eventmanagedetail", {
+            event,
+            categories: await categoryModel.retrieveAll(),
+            errors: editEventErrorMsg,
+            approvedParticipants: event.approvedParticipants || []
+        });
     } catch (error) {
         console.error(error);
         res.redirect("/event/manage");
@@ -264,3 +269,37 @@ exports.deleteEvent = async (req, res) => {
         res.status(500).json({ message: "Error deleting event, please try again" });
     }
 }
+
+
+exports.eventCancelReservation = async (req, res) => {
+    const { eventId, reservationId } = req.params;
+    // Accept numofppl from body (sent as JSON from frontend)
+    let numofppl = 1;
+    if (req.body && req.body.numofppl) {
+        numofppl = Number(req.body.numofppl) || 1;
+    }
+    try {
+        const result = await eventModel.cancelReservationAndPromoteWaitlist(eventId, reservationId, numofppl);
+        if (result.success) {
+            res.status(200).json({
+                success: true,
+                message: "Reservation cancelled and waitlist promoted successfully.",
+                promoted: result.promoted || [],
+                newCapacity: result.newCapacity
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: result.message || "Could not cancel reservation."
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Error cancelling reservation, please try again."
+        });
+    }
+};
+
+// Additional helper functions for event details retrieval (used in reservation flow)

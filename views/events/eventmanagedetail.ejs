@@ -32,8 +32,59 @@
               <input type="file" id="EventImage" name="EventImage" accept="image/*" value=""><br><br>
             </div>
             <div id="errorMsg">
-
             </div>
+
+            <div class="approved-participants-section">
+              <h3>Approved Participants</h3>
+              <% if (typeof approvedParticipants !== 'undefined' && approvedParticipants.length === 0) { %>
+                <p>No approved participants.</p>
+              <% } else if (typeof approvedParticipants !== 'undefined') { %>
+                <table style="width:100%;margin-top:1em;">
+                  <thead>
+                    <tr>
+                      <th>User ID</th>
+                      <th>User Name</th>
+                      <th>Number of People Booked</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% approvedParticipants.forEach(function(p) { %>
+                      <tr>
+                        <td><%= p.UserID %></td>
+                        <td><%= p.UserName %></td>
+                        <td><%= p.numofppl %></td>
+                        <td>
+                          <button class="btn btn-danger" onclick="cancelReservation('<%= event.EventID %>', '<%= p.ReservationID || p.reservationId %>', '<%= p.numofppl %>')">Cancel</button>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              <% } %>
+            </div>
+            <script>
+              async function cancelReservation(eventId, reservationId, numofppl) {
+                if (!reservationId) { alert('Reservation ID missing.'); return; }
+                if (!confirm('Are you sure you want to cancel this reservation?')) return;
+                try {
+                  const response = await fetch(`/event/cancel-reservation/${eventId}/${reservationId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numofppl })
+                  });
+                  const data = await response.json();
+                  if (data.success) {
+                    alert('Reservation cancelled. Waitlist (if any) promoted.');
+                    location.reload();
+                  } else {
+                    alert('Error: ' + (data.message || 'Could not cancel.'));
+                  }
+                } catch (e) {
+                  alert('Server error.');
+                }
+              }
+            </script>
           </div>
             
           <div class="form-card stack">
