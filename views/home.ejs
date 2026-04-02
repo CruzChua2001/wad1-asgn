@@ -56,14 +56,14 @@
                                 <div class="movie-body">
                                     <h3 class="movie-title"><%= index + 1 %>. <%= event.eventName %></h3>
                                     <div class="movie-meta">
-                                        <span class="pill">Score: <%= event.avgScore.toFixed(2) %></span>
+                                        <span class="pill">Review: <%= event.avgScore.toFixed(2) %>/20</span>
                                         <span class="pill"><%= event.numResponses %> reviews</span>
                                     </div>
                                     <div class="movie-desc">
                                         <%= event.eventDescription || "No description yet — click through to see details." %>
                                     </div>
                                     <div class="movie-actions">
-                                        <a class="btn btn-primary" href="/event/<%= event.EventID %>">View details</a>
+                                        <a class="btn btn-primary" href="/event/<%= event.eventId %>">View details</a>
                                         <a class="btn btn-ghost" href="/event">More events</a>
                                     </div>
                                 </div>

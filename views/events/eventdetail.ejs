@@ -114,7 +114,7 @@
                   <textarea id="replyForm-<%= comment.CommentID %>" style="display:none; margin-top:10px; font-size: 13px;" rows="2" placeholder="Write a reply..."></textarea>
                   <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                     <div style="display: none; align-items: center; margin: 0;" id="replyCheckbox-<%= comment.CommentID %>">
-                      <input type="checkbox" name="isAnonymousReply" id="edit-isAnonymousReply-<%= comment.CommentID %>" style="width: 20px"> <label for="edit-isAnonymousReply-<%= comment.CommentID %>">Post as Anonymous</label>
+                      <input type="checkbox" name="isAnonymousReply" id="add-isAnonymousReply-<%= comment.CommentID %>" style="width: 20px"> <label for="add-isAnonymousReply-<%= comment.CommentID %>">Post as Anonymous</label>
                     </div>
                     <button id="replyBtn-<%= comment.CommentID %>" style="display:none; margin-top:5px;" class="btn-sm btn-primary" onclick="addReply('<%= comment.CommentID %>')">Reply</button>
                   </div>
@@ -274,7 +274,7 @@
         },
         body: JSON.stringify({
           replyText: document.getElementById(`replyForm-${commentId}`).value,
-          isAnonymous: document.querySelector(`input[name="isAnonymousReply"]`).checked
+          isAnonymous: document.getElementById(`add-isAnonymousReply-${commentId}`).checked
         })
       });
       let result = await response.json();

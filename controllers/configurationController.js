@@ -178,12 +178,13 @@ exports.displayPendingReservations = async(req,res)=>{
     }
   }
   try {
-    raw=await reserveModel.retrievePending()
-    
-        
-
-    
-    
+    let user = await userModel.findByUserID(req.user.userId)
+    if (user) {
+      raw = await reserveModel.retrievePending(user.FirstName + " " + user.LastName)
+    } else {
+      console.error(`User with ID ${req.user.userId} not found.`)
+      return res.redirect("/configuration");
+    }
   } catch (error) {
     console.error("Error retrieving pending reservations",error)
   }
@@ -196,17 +197,7 @@ exports.displayPendingReservations = async(req,res)=>{
       } catch (error) {
         r.EventName = 'Event Name Not Found';
       }
-     
-      try {
-        let isAllowed = await filterAllowedReservation(r.EventId,req.user.userId)
-        
-        if (isAllowed){
-          pendingReservations.push(r)
-        }
-      }catch (error) {
-        console.error("Error filtering allowed reservations",error)
-      }
-      
+      pendingReservations.push(r)
     }
   }
   

@@ -48,4 +48,7 @@ router.patch("/edit/:id", auth.requireAdmin, upload.single("EventImage"), eventC
 
 router.delete("/delete/:id", auth.requireAdmin, eventController.deleteEvent);
 
+// Cancel a reservation for an event and auto-promote waitlist (event-only logic)
+router.post("/cancel-reservation/:eventId/:reservationId", auth.requireAdmin, eventController.eventCancelReservation);
+
 module.exports = router;  
