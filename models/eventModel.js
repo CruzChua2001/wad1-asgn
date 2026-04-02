@@ -142,15 +142,18 @@ exports.getEventByID = (eventID) => {
                     $cond: {
                         if: { $gt: [{ $size: "$feedbackDetails" }, 0] },
                         then: {
-                            $divide: [
-                                { $sum: {
-                                    $map: {
-                                        input: "$feedbackDetails",
-                                        as: "fb",
-                                        in: { $add: ["$$fb.rating", "$$fb.attend", "$$fb.recommend", "$$fb.goals"] }
-                                    }
-                                }},
-                                { $size: "$feedbackDetails" }
+                            $round: [
+                                { $divide: [
+                                    { $sum: {
+                                        $map: {
+                                            input: "$feedbackDetails",
+                                            as: "fb",
+                                            in: { $add: ["$$fb.rating", "$$fb.attend", "$$fb.recommend", "$$fb.goals"] }
+                                        }
+                                    }},
+                                    { $size: "$feedbackDetails" }
+                                ]},
+                                2
                             ]
                         },
                         else: 0
