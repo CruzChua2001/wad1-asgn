@@ -12,7 +12,13 @@
 ```
 5. Go to `http://localhost:8000`
 6. Click **Login** on the Top Navigation Bar
-7. Enter credentials below & start exploring!
+7. Compass Connection String
+```
+mongodb+srv://adminuser:bXwkR9aayTk1my68@campus-event.8sxztsl.mongodb.net/
+Database: campus_event
+```
+8. Enter credentials below & start exploring!
+
 
 ---
 
