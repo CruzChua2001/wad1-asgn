@@ -7,54 +7,59 @@ const commentModel = require("../models/commentModel");
 
 const generateUUID = require('../utils/uuidUtils').generateUUID;
 
+// User side
 exports.getAllEvents = async (req, res) => {
     try {
+        // Get search input from URL query parameters, default to empty string if not provided
         const searchTerm = req.query.search || "";
-
+        // Retrieve all events with category information as category name is needed as event type
         let events = await eventModel.retrieveAllWithCategory();
 
         // Search by Event Name
         if (searchTerm) {
-            const regex = new RegExp(searchTerm, "i"); // case-insensitive
-            events = events.filter(e => regex.test(e.EventName));
+            // Create a case-insensitive pattern
+            const regex = new RegExp(searchTerm, "i"); 
+            // Keep only events whose name matches the search term
+            events = events.filter(event => regex.test(event.EventName));
         }
 
-        // Only show active events
-        const filteredEvents = events.filter(e => e.Status === 'active');
+        // Only show active events to users
+        const filteredEvents = events.filter(event => event.Status === 'active');
 
-        res.render("events/event", {
-            events: filteredEvents,
-            searchTerm // MUST pass this
-        });
+        res.render("events/event", { events: filteredEvents, searchTerm });
     } catch (err) {
         console.log(err);
-        res.status(500).send("Error loading events");
+        res.status(500).send("Error loading events"); // 500 = server error
     }
 };
 
+// Admin side
 exports.getManageEvents = async (req, res) => {
     try {
-        const searchTerm = req.query.search || ""; // get search query from URL
-        let events = await eventModel.retrieveAllWithCategory(); // fetch all events with category
+        // Get search input from URL, default to empty string if not provided
+        const searchTerm = req.query.search || ""; 
+        let events = await eventModel.retrieveAllWithCategory();
+        // Retrieve all categories for filter dropdown
         const categories = await categoryModel.retrieveAll();
 
         if (searchTerm) {
-            const regex = new RegExp(searchTerm, "i"); // case-insensitive search
-            events = events.filter(e => regex.test(e.EventName));
+            const regex = new RegExp(searchTerm, "i");
+            events = events.filter(event => regex.test(event.EventName));
         }
 
         res.render("events/eventmanage", { events, searchTerm, categories });
     } catch (err) {
         console.log(err);
-        res.status(500).send("Error loading events");
+        res.status(500).send("Error loading events"); 
     }
 }
 
 let newEventErrorMsg = [];
 
+// Load create new event form
 exports.getNewEvent = async (req, res) => {
     try {
-        // get category list
+        // Retrieve categories for dropdown selection
         let categories = await categoryModel.retrieveAll();
 
         if (categories.length === 0) {
@@ -65,18 +70,21 @@ exports.getNewEvent = async (req, res) => {
         }
 
     } catch (error) {
-        // Log your errors
         newEventErrorMsg.push("Error loading page, please try again");
         res.redirect("/event/manage");
     }
 }
 
+// Handle create new event form submission
 exports.postNewEvent = async (req, res) => {
     newEventErrorMsg = [];
 
+    // Validate required fields
     if (!req.body.EventName || !req.body.EventDescription || !req.body.EventType || !req.body.MaxCapacity || !req.body.EndDateTime) {
         newEventErrorMsg.push("Please fill in all the fields");
     }
+
+    // Validate Max Capacity (no negative, no decimal)
     if (req.body.MaxCapacity) {
         const maxCapacity = Number(req.body.MaxCapacity);
 
@@ -84,16 +92,18 @@ exports.postNewEvent = async (req, res) => {
             newEventErrorMsg.push("Maximum capacity must be a positive integer");
         }
     }
+    // If there are validation errors, re-render the form with error messages and previously entered data
     if (newEventErrorMsg.length > 0) {
         let categories = await categoryModel.retrieveAll();
 
         return res.render("events/eventnew", {
             errors: newEventErrorMsg,
             categories,
-            formData: req.body
+            formData: req.body // Pass the previously entered form data back to the template to pre-fill the form
         });
     }
 
+    // Create new event object with form data
     let newEvent = {
         EventID: generateUUID(),
         EventName: req.body.EventName,
@@ -102,7 +112,7 @@ exports.postNewEvent = async (req, res) => {
         EventType: req.body.EventType,
         MaxCapacity: Number(req.body.MaxCapacity),
         CreatedBy: req.user.userId,
-        EndDateTime: new Date(req.body.EndDateTime), // Combine date and time from the form OR however u want to do it
+        EndDateTime: new Date(req.body.EndDateTime), 
         Status: 'active' // Set as default active, only edit can change this 
     }
 
@@ -120,12 +130,15 @@ exports.postNewEvent = async (req, res) => {
     }       
 }
 
+// Event details page
 exports.getEventByID = async (req, res) => {
+    // Get event ID from URL parameters (:id)
     let eventID = req.params.id;
 
     try {
-        let events = await eventModel.getEventByID(eventID); // returns array
-        let event = events[0]; // pick the first (and only) event
+        // getEventByID returns an array even for one event, so events[0] gets the object
+        let events = await eventModel.getEventByID(eventID);
+        let event = events[0];
 
         let comments = await commentModel.retrieveCommentByEventId(eventID);
 
@@ -142,18 +155,19 @@ exports.getEventByID = async (req, res) => {
 
 let editEventErrorMsg = [];
 
+// Event manage details page
 exports.getManageEventByID = async (req, res) => {
     let eventID = req.params.id;
 
     try {
-        let events = await eventModel.getEventByID(eventID); // aggregation returns array
+        let events = await eventModel.getEventByID(eventID); // Aggregation returns array
         let event = events[0];
 
         if (!event) {
             return res.redirect("/event/manage");
         }
 
-        // convert EndDateTime to JS Date if it's not
+        // Ensure EndDateTime is a proper Date object
         if (event.EndDateTime && !(event.EndDateTime instanceof Date)) {
             event.EndDateTime = new Date(event.EndDateTime);
         }
@@ -176,7 +190,7 @@ exports.editEvent = async (req, res) => {
 
     let errors = []; // reset
 
-    // convert this to individual if statements and push to errors array
+    // Validate required fields and push to errors array
     if (!req.body.EventName) {
         errors.push("Event Name is required");
     }
@@ -186,14 +200,16 @@ exports.editEvent = async (req, res) => {
     if (!req.body.EventType) {
         errors.push("Event Type is required");
     }
+
     if (!req.body.MaxCapacity) {
         errors.push("Max Capacity is required");
     } else {
-    const maxCapacity = Number(req.body.MaxCapacity);
-    if (maxCapacity <= 0 || !Number.isInteger(maxCapacity)) {
-        errors.push("Max Capacity must be a positive integer");
+        const maxCapacity = Number(req.body.MaxCapacity);
+        if (maxCapacity <= 0 || !Number.isInteger(maxCapacity)) {
+            errors.push("Max Capacity must be a positive integer");
         }
     }
+
     if (!req.body.EndDateTime) {
         errors.push("End Date & Time is required");
     }
@@ -201,7 +217,9 @@ exports.editEvent = async (req, res) => {
         errors.push("Status is required");
     }
 
+    // If validation fails, send error response to frontend
     if (errors.length > 0) {
+        // 400 = bad request (user input error)
         return res.status(400).json({ message: errors });
     }
 
@@ -228,6 +246,7 @@ exports.editEvent = async (req, res) => {
 
     try {
         await eventModel.updateEvent(eventID, updatedEvent);
+        // 200 = success
         res.status(200).json({ message: "Event updated successfully" });
 
     } catch (error) {
@@ -263,7 +282,6 @@ exports.deleteEvent = async (req, res) => {
                 if (err) console.error("Failed to delete image:", err);
             });
         }
-
         res.status(200).json({ message: "Event deleted successfully" });
     } catch (error) {
         console.error(error);

@@ -57,8 +57,8 @@ const eventSchema = new mongoose.Schema({
 
 const Event = mongoose.model('Event', eventSchema, 'event');
 
-
-
+// Event Management (R)
+// Retrieve all events that are not deleted
 exports.retrieveAll = () => {
     return Event.find({ isDeleted: 0 });
 }
@@ -69,16 +69,17 @@ exports.retrieveAllWithCategory = () => {
         { $match: { isDeleted: 0 } }, 
         {
             $lookup: {
-                from: "category",       // collection name of categories
+                from: "category",       // Collection name of categories
                 localField: "EventType", // Event.EventType
                 foreignField: "CategoryID", // Category.CategoryID
-                as: "categoryDetails"
+                as: "categoryDetails"       // Output field
             }
         },
-        { $unwind: "$categoryDetails" } // convert array to object
+        { $unwind: "$categoryDetails" } // Convert array to object
     ]);
 }
 
+// Get event by ID
 exports.getEventByID = (eventID) => {
     return Event.aggregate([
         { $match: { EventID: eventID, isDeleted: 0 } },
@@ -164,14 +165,17 @@ exports.getEventByID = (eventID) => {
     ]);
 }
 
+// Event Management (C)
 exports.createEvent = (newEvent) => {
     return Event.create(newEvent);
 }
 
+// Event Management (U)
 exports.updateEvent = (eventID, updatedEventData) => {
     return Event.updateOne({ EventID: eventID }, updatedEventData);
 }
 
+// Event Management (D)
 exports.deleteEvent = (eventID) => {
     return Event.deleteOne({ EventID: eventID });
 }

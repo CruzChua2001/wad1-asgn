@@ -26,10 +26,10 @@
         </div>
     <% } %>
 
-    <form action="/event/new" method="POST" enctype="multipart/form-data" novalidate>
+    <form action="/event/new" method="POST" enctype="multipart/form-data" novalidate> <!-- Added novalidate to disable HTML validation so errors are handled by server-side -->
         <label for="EventImage">Event Image:</label><br>
         <input type="file" id="EventImage" name="EventImage" accept="image/*"><br><br>
-
+        <!-- Pre-fill with previous form data if available to avoid retyping after errors -->
         <label for="EventName">Event Name:</label><br>
         <input type="text" id="EventName" name="EventName" value="<%= formData?.EventName || '' %>"><br><br>
 
@@ -51,6 +51,7 @@
         <input type="number" id="MaxCapacity" name="MaxCapacity" value="<%= formData?.MaxCapacity || '' %>"><br><br>
 
         <label for="EndDateTime">End Date and Time:</label><br>
+        <!-- Use show.picker() so that clicking the field will open the date-time picker for better user experience -->
         <input type="datetime-local" id="EndDateTime" name="EndDateTime" onclick="if (this.showPicker) this.showPicker()" value="<%= formData?.EndDateTime || '' %>"><br><br>
 
         <div style="display:flex; align-items:center; gap:10px;">

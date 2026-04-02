@@ -132,8 +132,9 @@
 </html>
 
 <script>
-    // TODO: Fetch and call patch api to update the event details, then redirect back to the event manage page
+    // Fetch and call patch api to update the event details, then redirect back to the event manage page
     async function updateEvent(eventID) {
+        // Create FormData object to send data to backend
         const formData = new FormData();
         formData.append("EventName", document.getElementById("EventName").value);
         formData.append("EventDescription", document.getElementById("EventDescription").value);
@@ -142,12 +143,12 @@
         formData.append("EndDateTime", document.getElementById("EndDateTime").value);
         formData.append("Status", document.getElementById("Status").value);
 
+        // Include image file if selected
         const fileInput = document.getElementById("EventImage");
         if (fileInput.files[0]) {
             formData.append("EventImage", fileInput.files[0]);
         }
 
-        //convert fetch to use await and try catch
         try {
             const response = await fetch(`/event/edit/${eventID}`, {
                 method: "PATCH",
@@ -157,10 +158,12 @@
             const data = await response.json();
 
             if (response.ok) {
-              document.getElementById("errorMsg").innerHTML = ""; // clear old errors
+              // Clear errors
+              document.getElementById("errorMsg").innerHTML = "";
               alert(data.message);
               window.location.href = "/event/manage";
             } else {
+              // Display errors if validation fails
                 let errorHtml = `<div class="note note-danger"><b>Errors</b><ul>`;
                 data.message.forEach(error => {
                   errorHtml += `<li>${error}</li>`;

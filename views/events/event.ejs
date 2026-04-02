@@ -25,6 +25,7 @@
 
         <br>
 
+        <!-- Show message if no events match search term -->
         <% if (events.length===0) { %>
             <div class="note center">No matching events</div>
             <% } else { %>
@@ -46,10 +47,12 @@
                                                 <%= event.EventName %>
                                             </h2>
                                             <div class="meta">
+                                                <!-- Display the category name as event type from the category details fetched via aggregation -->
                                                 <span class="pill">Type: <%= event.categoryDetails.CategoryName %></span>
                                                 <span class="pill">Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></span>
                                             </div>
                                             <p class="movie-desc"><%= event.EventDescription %></p>
+                                            <!-- Link to event details page -->
                                             <a href="/event/<%= event.EventID %>"><button class="btn btn-primary">View Details</button></a>
                                         </div>
                                 </div>
