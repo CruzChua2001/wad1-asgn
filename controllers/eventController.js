@@ -130,11 +130,12 @@ exports.getEventByID = async (req, res) => {
         let comments = await commentModel.retrieveCommentByEventId(eventID);
 
         if (!event) {
-            return res.status(404).send("Event not found");
+            console.log("Event not found for ID:", eventID);
+            return res.redirect("/event");
         }
         res.render("events/eventdetail", { event, comments });
     } catch (error) {
-        // Log your errors
+        console.error("Error occurred while fetching event:", error);
         res.redirect("/event");
     }
 }

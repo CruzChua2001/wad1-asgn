@@ -81,7 +81,9 @@ const getUserById = async (req, res) => { // when admin visits users/:id
     try {
         const user = await userModel.findByUserID(req.params.id);
         if (!user) {
-            return res.status(404).send("User not found.");}
+            console.error("User not found with ID:", req.params.id);
+            return res.redirect("/user");
+        }
         return res.render("users/userDetail", { user });
     } catch (err) {
         console.error(err);
