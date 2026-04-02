@@ -30,6 +30,9 @@
 
           <div class="stack">
             <h2><%= event.EventName %></h2>
+            <div class="movie-meta" style="margin-bottom:-10px">
+              <span class="pill">Review: <%= event.averageScore %> / 20</span>
+            </div>
             <div class="movie-meta">
               <span class="pill">Capacity: <%= event.CurrentCapacity %> / <%= event.MaxCapacity %></span>
               <span class="pill">Status: <%= event.Status === 'active' ? 'Open' : 'Closed' %></span>
