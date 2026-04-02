@@ -84,8 +84,9 @@ exports.getTopEvents = async () => {
 
         if (event) {
             topEvents.push({
-                eventId: event.EventId,
+                eventId: event.EventID,
                 eventName: event.EventName,
+                eventImage: event.EventImage,
                 avgScore: eventMap[eventId].totalScore / eventMap[eventId].numResponses,
                 numResponses: eventMap[eventId].numResponses
             });
