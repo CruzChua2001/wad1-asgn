@@ -177,11 +177,69 @@ exports.retrieveWaitlistByEvent = (eventId) => {
         .sort({ WaitlistNo: 1, CreatedDateTime: 1 });
 };
 exports.retrievePending = () => {
-    return Reservation.find({Status:"pending", isDeleted: 0});
+    // Add FullName field from user collection based on UserId in reservation
+    return Reservation.aggregate([
+        { $match: { Status: "pending", isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        {
+            $addFields: {
+                "FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$UserDetails"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$UserDetails.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$UserDetails.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
+                }
+            }
+        },
+    ]);
 }
+
 exports.retrieveApprovedByAdminId = (adminId) => {
-    return Reservation.find({Status:"approved","ApprovedBy":adminId})
+    // Add FullName field from user collection based on UserId in reservation
+    return Reservation.aggregate([
+        { $match: { Status: "approved", ApprovedBy: adminId, isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        {
+            $addFields: {
+                "FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$UserDetails"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$UserDetails.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$UserDetails.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
+                }
+            }
+        },
+    ]);
 }
+
 exports.create = (reservationData) => {
     const reservation = new Reservation(reservationData);
     return reservation.save();

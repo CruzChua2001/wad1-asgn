@@ -50,13 +50,15 @@ const reserveRouter = require("./routes/reserveRouter");
 const configurationRouter = require("./routes/configurationRouter");
 const feedbackRouter = require("./routes/feedbackRouter");
 const contactusRouter = require("./routes/contactusRouter");
+const commentRouter = require("./routes/commentRouter");
 
-server.use("/user", userRouter);                        // Anumitaa 
-server.use("/event", auth.requireAuth, eventRouter)     // Claudine
-server.use("/reserve",auth.requireAuth, reserveRouter);                  // Zhi Yang
-server.use("/feedback", auth.requireAuth, feedbackRouter);                // Keifer
-server.use("/configuration",auth.requireAuth,auth.requireAdmin, configurationRouter);      // Mahshuk
-server.use("/contactus", auth.requireAuth, contactusRouter);            // Cruz
+server.use("/user", userRouter);
+server.use("/event", auth.requireAuth, eventRouter)
+server.use("/reserve",auth.requireAuth, reserveRouter);
+server.use("/feedback", auth.requireAuth, feedbackRouter);
+server.use("/configuration",auth.requireAuth,auth.requireAdmin, configurationRouter);
+server.use("/contactus", auth.requireAuth, contactusRouter);
+server.use("/comment", auth.requireAuth, commentRouter);
 
 server.use("/", authRouter);
 

@@ -7,26 +7,31 @@ const categoryModel = require("../models/categoryModel.js");
 const eventModel = require("../models/eventModel.js");
 
 const reserveModel = require("../models/reservationModel.js");
+// STATIC DICTIONARY TO MAP ABBREVIATIONS FROM QUERY STRING VALUES 
+// DURING DB CRUD OPERATIONS
 const reserveData = {
   "A":"approved",
   "R":"rejected",
   "W":"waitlist",
 }
-
+// RENDERS VIEW THAT DISPLAYS THE DASHBOARD OPTIONS
 exports.displayDashboard = (req, res) =>{
     res.render("configuration/configuration.ejs")
 }
+// RENDERS VIEW THAT RETRIEVES EXISTING CATEGORIES
 exports.displayCategories = async(req,res)=>{
   const categoryList = await getAllCategories();
   const newCategoryId = req.query.created;
   res.render("configuration/category.ejs",{categoryList,isRegister:false,validEntry:true,adminNameList:null,errorList:null,record:null,newCategoryId})
 }
 
+// RENDERS SAME VIEW AS DISPLAYCATEGORIES BUT INJECTS A CATEGORY REGISTATION FORM
 exports.displayCategoryForm = async(req,res)=>{
-    let adminNameList = await getAllAdmins()
+    let adminNameList = await getAllAdmins() // GENERATE ALL ADMIN NAMES TO ALLOW LOGGED IN ADMIN TO CHOOSE APPROVER FOR A NEW CATEGORY ENTRY
     let categoryList = await getAllCategories();
     res.render("configuration/category.ejs",{categoryList,isRegister:true,validEntry:true,adminNameList,errorList:null,record:null,newCategoryId:null})
 }
+// RENDERS VIEW THAT DISPLAYS OUTCOME OF CATEGORY REGISTRATION AFTER DATA IS PROCESSED AND VALIDATED
 exports.categoryRegistration = async(req,res)=>{
   let categoryName = req.body.categoryName.trim();
   let categoryDescription = req.body.categoryDescription.trim();
@@ -41,16 +46,16 @@ exports.categoryRegistration = async(req,res)=>{
     try {
       result = await categoryModel.addCategory(
       {
-    CategoryID:newCategoryID,
-    CategoryName:categoryName,
-    CategoryDesc:categoryDescription,
-    Approval:approver,
-    CreatedBy:req.user.userId,
-    RejectionReason:" ",
-    isDeleted:0,
-    createdAt:dateUtil.formatDateTime(new Date())
-    });
-    isRegister=false;
+        CategoryID:newCategoryID,
+        CategoryName:categoryName,
+        CategoryDesc:categoryDescription,
+        Approval:approver,
+        CreatedBy:req.user.userId,
+        RejectionReason:" ",
+        isDeleted:0,
+        createdAt:dateUtil.formatDateTime(new Date())
+      });
+    isRegister=false; // PASS BOOLEAN TO HIDE THE CATEGORY REGISTRATION FORM 
     res.redirect(`/configuration/category?created=${newCategoryID}`)
     } catch (error) {
       result = "fail";
@@ -63,6 +68,7 @@ exports.categoryRegistration = async(req,res)=>{
   }
 }
 
+// RENDERS A DETAILED VIEW OF THE CATEGORY INFO PLACEHOLDED IN AN UPDATE FORM AS A 'GET' REQUEST
 exports.displayCategoryDetail = async(req,res)=>{
   const categoryId = req.query.categoryId;
   let catDetail;
@@ -75,7 +81,7 @@ exports.displayCategoryDetail = async(req,res)=>{
     console.error("Error retrieving Category Detail",error)
   }
   try {
-    events = await eventModel.retrieveByCategoryId(categoryId)
+    events = await eventModel.retrieveByCategoryId(categoryId) // TO DISPLAY LIST OF EXISTING EVENTS UNDER THIS CATEGORY 
   } catch (error) {
     console.error("Error retrieving events under a category.",error)
   }
@@ -87,13 +93,15 @@ exports.displayCategoryDetail = async(req,res)=>{
   }
   res.render("configuration/categoryDetail.ejs",{categoryData,errorList:null,message:null})
 }
+
+// RENDERS THE OUTPUT OF THE UPDATE PROCESS WHEN ADMIN CLICKS UPDATE UPON PROCESSING & VALIDATING THE UPDATED DATA
 exports.updateCategoryDetail = async(req,res)=>{
   const id = req.body.categoryId;
-  const newName = req.body.catNameUpdated;
-  const newDesc = req.body.catDescUpdated;
+  const newName = req.body.catNameUpdated.trim();
+  const newDesc = req.body.catDescUpdated.trim();
   
   let result,message;
-  if(newName && newDesc){
+  if((newName !=="") && (newDesc!== "")){ // CHECK FOR VALID ENTRIES
     try {
       result = await categoryModel.updateDetail(id,newName,newDesc)
     } catch (error) {
@@ -127,16 +135,17 @@ exports.updateCategoryDetail = async(req,res)=>{
   }
   
 }
-
+// RENDERS THE OUTPUT OF DELETE FEATURE IF ADMIN CHOOSES TO DELETE A CATEGORY
+// NOTE: ONLY CATEGORIES THAT HAVE NO EXISTING EVENTS WILL BE ALLOWED TO FIRE UP THE THIS ENDPOINT
 exports.deleteCategory = async(req,res) => {
   const id = req.query.categoryId;
   const option = (req.query.option).trim().toLowerCase();
   let result;
   if (option==="delete"){
     try {
-      let event = await eventModel.retrieveByCategoryId(id);
+      let events = await eventModel.retrieveByCategoryId(id);
       
-      if (event.length>=1){
+      if (events.length>=1){ //REDIRECT IF CATEGORY HAS UPCOMING/ONGOING NON-DELETED EVENTS 
         res.redirect("/configuration/category");
         return
       }
@@ -155,7 +164,7 @@ exports.deleteCategory = async(req,res) => {
     res.redirect("/configuration/category")
   }
 }
-
+// RENDERS THE PENDING VIEW WITH ANY RESERVATIONS THAT LOGGED IN ADMIN IS ALLOWED TO APPROVE
 exports.displayPendingReservations = async(req,res)=>{
   let pendingReservations =[];
   let raw =[]
@@ -164,8 +173,8 @@ exports.displayPendingReservations = async(req,res)=>{
   let reservationOutcome=req.query.reservationOutcome;
   if (reservationOutcome){
     reservationOutcome = {
-    id:reservationOutcome.split("!")[1],
-    outcome:reservationOutcome.split("!")[0]
+      id:reservationOutcome.split("!")[1],
+      outcome:reservationOutcome.split("!")[0]
     }
   }
   try {
@@ -204,6 +213,7 @@ exports.displayPendingReservations = async(req,res)=>{
   res.render("configuration/pending",{pendingReservations,missingCategory,reservationOutcome})
 }
 
+// RENDERS THE OUTPUT WHEN ADMIN CLICKS APPROVE OR REJECT RESERVATION
 exports.handleReservationApproval = async(req,res)=>{
   const actionValue = req.body.action;
   if (!actionValue){
@@ -217,17 +227,17 @@ exports.handleReservationApproval = async(req,res)=>{
   let updateRes;
   let approveRes;
   
-  if ( action === "R"){ //reject 
+  if ( action === "R"){ //REJECT
     updateRes = await updateReservationStatus(reservationId,action)
-  }else if(action==="A"){ // accept or waitlist
+  }else if(action==="A"){ // ACCEPT OR WAITLIST
     
-    const isVacant= await checkVacancy(eventId,pax) // check whether reservation can be accepted subjected to event capacity
+    const isVacant= await checkVacancy(eventId,pax) // CHECK WHETHER RESERVATION CAN BE APPROVED SUBJECT TO EVENT CAPACITY
     
    
-    if(isVacant.approvalStatus==="A"){// approve the reservation
-      updateRes = await updateReservationStatus(reservationId,isVacant.approvalStatus,req.user.userId,undefined); // updates the corresponding reservation details
-      approveRes = await updateEventCapacity(eventId,pax+ isVacant.currentCapacity); // updates the corresponding event capacity
-    }else if (isVacant.approvalStatus === "W"){// waitlist the reservation
+    if(isVacant.approvalStatus==="A"){// APPROVE THE RESERVATION
+      updateRes = await updateReservationStatus(reservationId,isVacant.approvalStatus,req.user.userId,undefined); // UPDATES THE CORRESPONDING RESERVATION DETAILS
+      approveRes = await updateEventCapacity(eventId,pax+ isVacant.currentCapacity); // UPDATES THE CORRESPONDING EVENT CAPACITY
+    }else if (isVacant.approvalStatus === "W"){// WAITLIST THE RESERVATION
       action = "W"
       let info =await reserveModel.getReservationsWithEventDetails({"EventId":eventId,"Status":"waitlist"});
       let waitlistIndex =info.length>0?info.length:0;
@@ -235,7 +245,7 @@ exports.handleReservationApproval = async(req,res)=>{
       
       
       if(waitlistIndex>-1){
-        waitlistIndex+=1 // update waitListIndex as the next number in line
+        waitlistIndex+=1 // UPDATE THE waitlistIndex AS THE NEXT QUEUE NUMBER IN LINE
         
         updateRes = await updateReservationStatus(reservationId,isVacant.approvalStatus,undefined,waitlistIndex)
       }
@@ -247,6 +257,8 @@ exports.handleReservationApproval = async(req,res)=>{
   return res.redirect(`/configuration/pending?reservationOutcome=${action}!${reservationId}`)
 
 }
+
+// RENDERS THE APPROVAL HISTORY VIEW OF ALL APPROVED PAST RESERVATIONS TILL CURRENT DATE
 exports.displayApprovalHistory = async(req,res)=>{
   let reservationHistory;
   let err;
@@ -271,7 +283,7 @@ exports.displayApprovalHistory = async(req,res)=>{
   res.render("configuration/approvalHistory",{reservationHistory,err})
 }
 
-//helper functions
+//HELPER FUNCTIONS
 
 async function getAllAdmins(){
     let adminNameList=[]
@@ -296,6 +308,7 @@ async function getAllCategories(){
   }
   return categoryList
 }
+
 function validateCategoryEntry(catDesc,catName,approver,catList){
   let isDuplicateCategory = false;
   let isMissingDescription = !catDesc;
@@ -353,7 +366,7 @@ async function getCategoryById(id){
 
 }
 
-
+// FILTERS OUT ALL THE RESERVATIONS CURRENT ADMIN IS ALLOWED TO APPROVE BASED ON THE CATEGORY OF EVENTS UNDER THE APPROVAL FIELD OF CATEGORY COLLECTION
 async function filterAllowedReservation(EventId,currentUser){
   let app;
   
@@ -369,13 +382,14 @@ async function filterAllowedReservation(EventId,currentUser){
   return (app.Approval=="ALL" ||app.Approval==currentUser) || false
 }
 
+// CHECKS MAX CAPACITY OF EVENT WHETHER REQUESTED NUMBER OF PAX CAN BE ALLOCATED TO EVENT
 async function checkVacancy(eventId,pax){
   let event;
   try {
     
     event = await eventModel.retrieveByEventid(eventId)
 
-    if (!event) {
+    if (!event) { // IN CASE EVENT RECORD CANT BE FOUND, PLACE RESERVATION IN WAITLIST FIRST
       return { currentCapacity: 0, approvalStatus: "W" }
     }
 
@@ -405,14 +419,14 @@ async function updateEventCapacity(eventId,pax){
 
 async function updateReservationStatus (reservationId,action,approverId,waitListData){
     let updateRes;
-    // default updateData for waitlist and approved
+    // DEFAULT updateData FOR WAITLIST AND APPROVED STATUSES
     let updateData={
         "Status":reserveData[action]
       };
-    if (approverId){// if reservation is approved, additonal attribute to be updated
+    if (approverId){// IF RESERVATION IS APPROVED ADDITONAL ATTRIBUTE TO BE UPDATED
       updateData["ApprovedBy"] = approverId;
     }
-    if (waitListData){ // if reservation is waitlisted, update reservation with the current waitlist number
+    if (waitListData){ // ELSE IF RESERVATION IS WAITLISTED, UPDATE RESERVATION WITH THE CURRENT WAITLIST NUMBER
       updateData["WaitlistNo"]=waitListData;
     }
     if(action)
