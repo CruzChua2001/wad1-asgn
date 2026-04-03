@@ -42,16 +42,16 @@
                 <table style="width:100%;margin-top:1em;">
                   <thead>
                     <tr>
-                      <th>User ID</th>
+                      <th></th>
                       <th>User Name</th>
                       <th>Number of People Booked</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% approvedParticipants.forEach(function(p) { %>
+                    <% approvedParticipants.forEach(function(p, index) { %>
                       <tr>
-                        <td><%= p.UserID %></td>
+                        <td><%= index + 1 %></td>
                         <td><%= p.UserName %></td>
                         <td><%= p.numofppl %></td>
                         <td>

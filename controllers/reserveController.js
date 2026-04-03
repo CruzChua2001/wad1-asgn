@@ -1,6 +1,12 @@
+const { formatDateTime } = require("../utils/dateUtils");
+const { generateUUID } = require("../utils/uuidUtils");
+const Reservation = require("../models/reservationModel");
+const EventModel = require("../models/eventModel");
+const UserModel = require("../models/userModel");
+
 // Helper to auto-promote waitlist for an event
 async function autoPromoteWaitlist(eventId) {
-    const event = await Reservation.getEventDetailsById(eventId);
+    const event = await EventModel.retrieveById(eventId);
     if (!event) return 0;
     const maxCapacity = Number(event.MaxCapacity || 0);
     let currentCapacity = Number(event.CurrentCapacity || 0);
@@ -23,15 +29,11 @@ async function autoPromoteWaitlist(eventId) {
             }
         }
         // Persist the new capacity using Reservation model only
-        await Reservation.updateEventCapacityById(event.EventID, currentCapacity);
+        await EventModel.updateCapacityById(event.EventID, currentCapacity);
     }
     return promotedCount;
 }
-const { formatDateTime } = require("../utils/dateUtils");
-const { generateUUID } = require("../utils/uuidUtils");
-const Reservation = require("../models/reservationModel");
-const EventModel = require("../models/eventModel");
-const UserModel = require("../models/userModel");
+
 
 // GET all reservations for the current user
 exports.getAllReservations = async (req, res) => {
@@ -62,7 +64,7 @@ exports.getReservationById = async (req, res) => {
 exports.showCreateReservationForm = async (req, res) => {
 	try {
         const eventId = req.params.EventId;
-        const event = await Reservation.getEventDetailsById(eventId); 
+        const event = await EventModel.retrieveById(eventId);
         if (!event) {
             return res.render("reserveviews/unknownevent.ejs");
         }
@@ -90,7 +92,7 @@ exports.createReservation = async (req, res) => {
 		if (!Number.isInteger(numOfPpl) || numOfPpl < 1) {
 			return res.send('Number of pax must be at least 1. <a href="javascript:history.back()">Go back</a>');
 		}
-		const event = await Reservation.getEventDetailsById(eventId);
+		const event = await EventModel.retrieveById(eventId);
 		
 		if (!event) {
 			return res.render("reserveviews/unknownevent.ejs");
@@ -136,13 +138,14 @@ exports.showUpdateReservationForm = async (req, res) => {
 		if (!reservation || reservation.UserId !== userId) {
 			return res.render("reserveviews/unknownevent.ejs");
 		}
-		const event = await Reservation.getEventDetailsById(reservation.EventId);
+		const event = await EventModel.retrieveById(reservation.EventId);
 		if (!event) {
 			return res.render("reserveviews/unknownevent.ejs");
 		}
 		reservation.EventDetails = event;
 		res.render("reserveviews/updatebooking.ejs", { reservation, formatDateTime });
 	} catch (error) {
+        console.error("showUpdateReservationForm error:", error);
 		res.render("reserveviews/unknownevent.ejs");
 	}
 };
@@ -170,7 +173,7 @@ exports.updateReservation = async (req, res) => {
         }
 
         // --- 4. Verify the linked event still exists ---
-        const event = await Reservation.getEventDetailsById(reservation.EventId);
+        const event = await EventModel.retrieveById(reservation.EventId);
         if (!event) {
             return res.status(404).json({ success: false, message: "Event not found." });
         }
@@ -246,7 +249,7 @@ exports.deleteReservation = async (req, res) => {
         let event = null;
         if (reservation.Status === "approved") {
             // 2. Free up seats if reservation was approved
-            event = await Reservation.getEventDetailsById(reservation.EventId);
+            event = await EventModel.retrieveById(reservation.EventId);
             if (event) {
                 const currentCapacity = Number(event.CurrentCapacity || 0);
                 const canceledPax = Number(reservation.numofppl || 1);
@@ -255,7 +258,7 @@ exports.deleteReservation = async (req, res) => {
                 }
                 let newCapacity = currentCapacity - canceledPax;
                 if (newCapacity < 0) newCapacity = 0;
-                await Reservation.updateEventCapacityById(event.EventID, newCapacity);
+                await EventModel.updateCapacityById(event.EventID, newCapacity);
             }
         }
 
@@ -273,6 +276,7 @@ exports.deleteReservation = async (req, res) => {
             promotedCount
         });
     } catch (error) {
+        console.error("deleteReservation error:", error);
         return res.status(500).json({ success: false, message: "Unable to cancel reservation." });
     }
 };

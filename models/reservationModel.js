@@ -3,12 +3,6 @@
 const mongoose = require('mongoose');
 const { retrieveById } = require('./eventModel');
 
-// Update event's CurrentCapacity by EventID (for use in reserveController)
-exports.updateEventCapacityById = (eventId, newCapacity) => {
-    const Event = mongoose.model('Event');
-    return Event.findOneAndUpdate({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
-};
-
 const reservationSchema = new mongoose.Schema({
     ReservationID: {
         type: String,
@@ -55,32 +49,6 @@ const reservationSchema = new mongoose.Schema({
 
 const Reservation = mongoose.model("Reservation", reservationSchema, "reservation");
 
-exports.getEventDetailsById = async (eventId) => {
-    // Try to get event details via reservation aggregation
-    const results = await Reservation.aggregate([
-        { $match: { EventId: eventId, isDeleted: 0 } },
-        {
-            $lookup: {
-                from: "event",
-                localField: "EventId",
-                foreignField: "EventID",
-                as: "EventDetails"
-            }
-        },
-        {
-            $unwind: {
-                path: "$EventDetails",
-                preserveNullAndEmptyArrays: true
-            }
-        }
-    ]);
-    if (results.length > 0 && results[0].EventDetails) {
-        return results[0].EventDetails;
-    }
-    // If not found, query event collection directly
-    return await retrieveById(eventId);
-};
-
 // Get event details for reservation
 exports.getEventDetailsForReservation = async (reservationId) => {
     const results = await Reservation.aggregate([
@@ -101,6 +69,12 @@ exports.getEventDetailsForReservation = async (reservationId) => {
         }
     ]);
     return results.length > 0 ? results[0].EventDetails : null;
+};
+
+// Update event's CurrentCapacity by EventID (for use in reserveController)
+exports.updateEventCapacityById = (eventId, newCapacity) => {
+    const Event = mongoose.model('Event');
+    return Event.findOneAndUpdate({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
 };
 
 // Aggregation to join event details
