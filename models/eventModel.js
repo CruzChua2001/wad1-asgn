@@ -203,43 +203,36 @@ exports.updateEventPax = (eventId,pax) =>{
 }
 // Cancel a reservation, update event capacity, and promote waitlist users if possible (pipeline/aggregation style)
 exports.cancelReservationAndPromoteWaitlist = async function(eventId, reservationId, numofppl) {
-    const db = mongoose.connection;
-    const reservationCol = db.collection('reservation');
-    const eventCol = db.collection('event');
+    const Reservation = mongoose.model('Reservation');
+    const Event = mongoose.model('Event');
 
     // 1. Cancel the reservation (set isDeleted=1, Status="cancelled")
-    const cancelled = await reservationCol.updateOne(
+    const cancelled = await Reservation.updateOne(
         { ReservationID: reservationId, EventId: eventId, isDeleted: 0 },
-        { $set: { isDeleted: 1, Status: "cancelled" } }
+        { isDeleted: 1, Status: "cancelled" }
     );
     if (!cancelled.matchedCount) return { success: false, message: "Reservation not found or already cancelled." };
 
     // 2. Get event and update current capacity (decrement by numofppl)
-    const eventArr = await eventCol.aggregate([
-        { $match: { EventID: eventId, isDeleted: 0 } },
-        { $limit: 1 }
-    ]).toArray();
-    if (!eventArr.length) return { success: false, message: "Event not found." };
-    let event = eventArr[0];
+    const event = await Event.findOne({ EventID: eventId, isDeleted: 0 });
+    if (!event) return { success: false, message: "Event not found." };
     let newCapacity = Math.max(0, (event.CurrentCapacity || 0) - (numofppl || 1));
-    await eventCol.updateOne({ EventID: eventId, isDeleted: 0 }, { $set: { CurrentCapacity: newCapacity } });
+    await Event.updateOne({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity });
 
-    // 3. Promote waitlist users if possible (aggregation pipeline style)
-    const waitlist = await reservationCol.aggregate([
-        { $match: { EventId: eventId, Status: "waitlist", isDeleted: 0 } },
-        { $sort: { WaitlistNo: 1, CreatedDateTime: 1 } },
-        { $project: { ReservationID: 1, numofppl: 1 } }
-    ]).toArray();
+    // 3. Promote waitlist users if possible
+    const waitlist = await Reservation.find({ EventId: eventId, Status: "waitlist", isDeleted: 0 })
+        .sort({ WaitlistNo: 1, CreatedDateTime: 1 })
+        .select("ReservationID numofppl");
     let promoted = [];
     for (let w of waitlist) {
         if (newCapacity + w.numofppl <= event.MaxCapacity) {
-            await reservationCol.updateOne(
+            await Reservation.updateOne(
                 { ReservationID: w.ReservationID },
-                { $set: { Status: "approved", WaitlistNo: null } }
+                { Status: "approved", WaitlistNo: null }
             );
             newCapacity += w.numofppl;
             promoted.push(w.ReservationID);
-            await eventCol.updateOne({ EventID: eventId, isDeleted: 0 }, { $set: { CurrentCapacity: newCapacity } });
+            await Event.updateOne({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity });
         } else {
             break;
         }

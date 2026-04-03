@@ -1,12 +1,13 @@
-// Update event's CurrentCapacity by EventID (for use in reserveController)
-exports.updateEventCapacityById = (eventId, newCapacity) => {
-    const mongoose = require('mongoose');
-    const Event = mongoose.model('Event');
-    return Event.findOneAndUpdate({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
-};
+
 // Get event details for a single event
 const mongoose = require('mongoose');
 const { retrieveById } = require('./eventModel');
+
+// Update event's CurrentCapacity by EventID (for use in reserveController)
+exports.updateEventCapacityById = (eventId, newCapacity) => {
+    const Event = mongoose.model('Event');
+    return Event.findOneAndUpdate({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
+};
 
 const reservationSchema = new mongoose.Schema({
     ReservationID: {
