@@ -11,11 +11,14 @@
       <div class="panel">
         <div class="panel-header">
           <h1>Edit Feedback</h1>
+          <!-- subtitle for update your response for event name or this event if it does not exist -->
           <p class="subtle">Update your response for <%= feedback ? (feedback.EventName || "this event") : "this event" %>.</p>
         </div>
         <div class="panel-inner">
+          <!-- if the feedback does not exist then error msg feedback not found is shown -->
           <% if (!feedback) { %>
             <div class="note note-danger text-danger">Feedback not found.</div>
+          // else show the edit form
           <% } else { %>
             <form class="feedback-grid" action="/feedback/edit/<%= feedback.FeedbackID %>" method="POST">
               <div class="feedback-question">
@@ -25,7 +28,7 @@
                   <label class="rating-pill"><input type="radio" name="isAnonymous" value="0" <%= feedback.isAnonymous == 0 ? "checked" : "" %>>No</label>
                 </div>
               </div>
-
+              <!-- creates radio for the previous form questions -->
               <div class="feedback-question">
                 <p>How would you rate your overall experience?<b style="color:red">*</b></p>
                 <div class="feedback-options">

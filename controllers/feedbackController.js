@@ -2,6 +2,8 @@ const {addfeedback, getHistory, getFeedbackByID, updateFeedbackByID, deleteFeedb
 const Event = require("../models/eventModel")
 
 const ratings = [1,2,3,4,5]
+
+//render the feedback form
 exports.getFeedbackForm = (req,res) => {
     let eventId = req.params.eventId
 
@@ -11,6 +13,7 @@ exports.getFeedbackForm = (req,res) => {
     res.render("feedback/feedback", {ratings, eventId, errors})
 }
 
+//create new feedback using the data from the form
 exports.submitFeedback = async (req,res) => {
     try {
         const userId = req.user.userId
@@ -49,6 +52,7 @@ exports.submitFeedback = async (req,res) => {
     };
 }
 
+//render the feeedback history from getHostory for the userid
 exports.getHistoryForm = async(req,res) => {
   try{
     const userId = req.user.userId
@@ -61,6 +65,7 @@ exports.getHistoryForm = async(req,res) => {
   }
 }
 
+//render the view segment of each feedback in feedback history
 exports.seeFeedbackForm = async (req, res) => {
     try {
         const userId = req.user.userId
@@ -80,6 +85,7 @@ exports.seeFeedbackForm = async (req, res) => {
     }
 }
 
+// render the edit segment of each feedback in feedback history
 exports.getEditFeedbackForm = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -102,6 +108,7 @@ exports.getEditFeedbackForm = async (req, res) => {
     }
 };
 
+//update form and render the view form page after it is done
 exports.postEditFeedbackForm = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -146,6 +153,7 @@ exports.postEditFeedbackForm = async (req, res) => {
     }
 };
 
+//soft delete feedback and redirect to feedback history page
 exports.deleteFeedback = async (req, res) => {
     try {
         const userId = req.user.userId;
