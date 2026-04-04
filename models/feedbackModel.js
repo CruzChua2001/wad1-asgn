@@ -17,8 +17,7 @@ const feedbackSchema = new mongoose.Schema({
         required: [true, 'Feedback require a UserID']
     },
     Feedback: {
-        type: String,
-        required: [true, 'Feedback require a Feedback']
+        type: String
     },
     CreatedDateTime: {
         type: Date,
@@ -84,8 +83,9 @@ exports.getTopEvents = async () => {
 
         if (event) {
             topEvents.push({
-                eventId: event.EventId,
+                eventId: event.EventID,
                 eventName: event.EventName,
+                eventImage: event.EventImage,
                 avgScore: eventMap[eventId].totalScore / eventMap[eventId].numResponses,
                 numResponses: eventMap[eventId].numResponses
             });
@@ -111,7 +111,7 @@ exports.getHistory = async (userId) => {
         history.push({
             FeedbackID: feedback.FeedbackID,
             EventID: feedback.EventID,
-            EventName: event ? event.eventName : "Unknown Event",
+            EventName: event ? event.EventName : "Unknown Event",
             CreatedDateTime: feedback.CreatedDateTime
         })
     }
@@ -134,7 +134,7 @@ exports.getFeedbackByID = async (feedbackId, userId) => {
     return {
         FeedbackID: feedback.FeedbackID,
         EventID: feedback.EventID,
-        EventName: event ? event.eventName : "Unknown Event",
+        EventName: event ? event.EventName : "Unknown Event",
         Feedback: feedback.Feedback,
         isAnonymous: feedback.isAnonymous,
         rating: feedback.rating,

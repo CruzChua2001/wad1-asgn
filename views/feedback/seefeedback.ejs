@@ -21,7 +21,7 @@
             <div class="feedback-question">
               <h2><%= feedback.EventName || "Unknown Event" %></h2>
               <div class="movie-meta">
-                <span class="pill">Date: <%= feedback.CreatedDateTime %></span>
+                <span class="pill">Date: <%= feedback.CreatedDateTime.toLocaleString() %></span>
                 <span class="pill">Anonymous: <%= feedback.isAnonymous == 1 ? "Yes" : "No" %></span>
                 <span class="pill">Feedback ID: <%= feedback.FeedbackID %></span>
               </div>

@@ -32,8 +32,59 @@
               <input type="file" id="EventImage" name="EventImage" accept="image/*" value=""><br><br>
             </div>
             <div id="errorMsg">
-
             </div>
+
+            <div class="approved-participants-section">
+              <h3>Approved Participants</h3>
+              <% if (typeof approvedParticipants !== 'undefined' && approvedParticipants.length === 0) { %>
+                <p>No approved participants.</p>
+              <% } else if (typeof approvedParticipants !== 'undefined') { %>
+                <table style="width:100%;margin-top:1em;">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>User Name</th>
+                      <th>Number of People Booked</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% approvedParticipants.forEach(function(p, index) { %>
+                      <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= p.UserName %></td>
+                        <td><%= p.numofppl %></td>
+                        <td>
+                          <button class="btn btn-danger" onclick="cancelReservation('<%= event.EventID %>', '<%= p.ReservationID || p.reservationId %>', '<%= p.numofppl %>')">Cancel</button>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              <% } %>
+            </div>
+            <script>
+              async function cancelReservation(eventId, reservationId, numofppl) {
+                if (!reservationId) { alert('Reservation ID missing.'); return; }
+                if (!confirm('Are you sure you want to cancel this reservation?')) return;
+                try {
+                  const response = await fetch(`/event/cancel-reservation/${eventId}/${reservationId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numofppl })
+                  });
+                  const data = await response.json();
+                  if (data.success) {
+                    alert('Reservation cancelled. Waitlist (if any) promoted.');
+                    location.reload();
+                  } else {
+                    alert('Error: ' + (data.message || 'Could not cancel.'));
+                  }
+                } catch (e) {
+                  alert('Server error.');
+                }
+              }
+            </script>
           </div>
             
           <div class="form-card stack">
@@ -58,7 +109,7 @@
                 </div>
                 <div>
                   <label for="EndDateTime">End Date & Time</label>
-                  <input type="datetime-local" id="EndDateTime" name="EndDateTime" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>">
+                  <input type="datetime-local" id="EndDateTime" name="EndDateTime" onclick="if (this.showPicker) this.showPicker()" value="<%= event.EndDateTime.toISOString().slice(0, 16) %>">
                 </div>
               </div>
 
@@ -81,8 +132,9 @@
 </html>
 
 <script>
-    // TODO: Fetch and call patch api to update the event details, then redirect back to the event manage page
+    // Fetch and call patch api to update the event details, then redirect back to the event manage page
     async function updateEvent(eventID) {
+        // Create FormData object to send data to backend
         const formData = new FormData();
         formData.append("EventName", document.getElementById("EventName").value);
         formData.append("EventDescription", document.getElementById("EventDescription").value);
@@ -91,12 +143,12 @@
         formData.append("EndDateTime", document.getElementById("EndDateTime").value);
         formData.append("Status", document.getElementById("Status").value);
 
+        // Include image file if selected
         const fileInput = document.getElementById("EventImage");
         if (fileInput.files[0]) {
             formData.append("EventImage", fileInput.files[0]);
         }
 
-        //convert fetch to use await and try catch
         try {
             const response = await fetch(`/event/edit/${eventID}`, {
                 method: "PATCH",
@@ -106,12 +158,15 @@
             const data = await response.json();
 
             if (response.ok) {
-                alert(data.message);
-                window.location.href = "/event/manage";
+              // Clear errors
+              document.getElementById("errorMsg").innerHTML = "";
+              alert(data.message);
+              window.location.href = "/event/manage";
             } else {
+              // Display errors if validation fails
                 let errorHtml = `<div class="note note-danger"><b>Errors</b><ul>`;
                 data.message.forEach(error => {
-                    errorHtml += `<li>${error}</li>`;
+                  errorHtml += `<li>${error}</li>`;
                 });
                 errorHtml += `</ul></div>`;
                 document.getElementById("errorMsg").innerHTML = errorHtml;  

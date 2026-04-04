@@ -1,9 +1,4 @@
-// Update event's CurrentCapacity by EventID (for use in reserveController)
-exports.updateEventCapacityById = (eventId, newCapacity) => {
-    const mongoose = require('mongoose');
-    const Event = mongoose.model('Event');
-    return Event.findOneAndUpdate({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
-};
+
 // Get event details for a single event
 const mongoose = require('mongoose');
 const { retrieveById } = require('./eventModel');
@@ -54,32 +49,6 @@ const reservationSchema = new mongoose.Schema({
 
 const Reservation = mongoose.model("Reservation", reservationSchema, "reservation");
 
-exports.getEventDetailsById = async (eventId) => {
-    // Try to get event details via reservation aggregation
-    const results = await Reservation.aggregate([
-        { $match: { EventId: eventId, isDeleted: 0 } },
-        {
-            $lookup: {
-                from: "event",
-                localField: "EventId",
-                foreignField: "EventID",
-                as: "EventDetails"
-            }
-        },
-        {
-            $unwind: {
-                path: "$EventDetails",
-                preserveNullAndEmptyArrays: true
-            }
-        }
-    ]);
-    if (results.length > 0 && results[0].EventDetails) {
-        return results[0].EventDetails;
-    }
-    // If not found, query event collection directly
-    return await retrieveById(eventId);
-};
-
 // Get event details for reservation
 exports.getEventDetailsForReservation = async (reservationId) => {
     const results = await Reservation.aggregate([
@@ -100,6 +69,12 @@ exports.getEventDetailsForReservation = async (reservationId) => {
         }
     ]);
     return results.length > 0 ? results[0].EventDetails : null;
+};
+
+// Update event's CurrentCapacity by EventID (for use in reserveController)
+exports.updateEventCapacityById = (eventId, newCapacity) => {
+    const Event = mongoose.model('Event');
+    return Event.findOneAndUpdate({ EventID: eventId, isDeleted: 0 }, { CurrentCapacity: newCapacity }, { new: true });
 };
 
 // Aggregation to join event details
@@ -176,12 +151,99 @@ exports.retrieveWaitlistByEvent = (eventId) => {
     return Reservation.find({ EventId: eventId, Status: "waitlist", isDeleted: 0 })
         .sort({ WaitlistNo: 1, CreatedDateTime: 1 });
 };
-exports.retrievePending = () => {
-    return Reservation.find({Status:"pending", isDeleted: 0});
+exports.retrievePending = (adminName) => {
+    return Reservation.aggregate([
+        { $match: { Status: "pending", isDeleted: 0 } },
+        // Join to event to get EventType (CategoryID)
+        {
+            $lookup: {
+                from: "event",
+                localField: "EventId",
+                foreignField: "EventID",
+                as: "EventDetails"
+            }
+        },
+        { $unwind: { path: "$EventDetails", preserveNullAndEmptyArrays: true } },
+        // Join to category to get Approval field
+        {
+            $lookup: {
+                from: "category",
+                localField: "EventDetails.EventType",
+                foreignField: "CategoryID",
+                as: "CategoryDetails"
+            }
+        },
+        { $unwind: { path: "$CategoryDetails", preserveNullAndEmptyArrays: true } },
+        // Filter: only where Approval is "ALL" or matches the admin name
+        {
+            $match: {
+                $or: [
+                    { "CategoryDetails.Approval": "ALL" },
+                    { "CategoryDetails.Approval": adminName }
+                ]
+            }
+        },
+        // Join to user for FullName
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        {
+            $addFields: {
+                "FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$UserDetails"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$UserDetails.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$UserDetails.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
+                }
+            }
+        },
+    ]);
 }
+
 exports.retrieveApprovedByAdminId = (adminId) => {
-    return Reservation.find({Status:"approved","ApprovedBy":adminId})
+    // Add FullName field from user collection based on UserId in reservation
+    return Reservation.aggregate([
+        { $match: { Status: "approved", ApprovedBy: adminId, isDeleted: 0 } },
+        {
+            $lookup: {
+                from: "user",
+                localField: "UserId",
+                foreignField: "UserID",
+                as: "UserDetails"
+            }
+        },
+        {
+            $addFields: {
+                "FullName": {
+                    $cond: {
+                        if: { $gt: [{$size: "$UserDetails"}, 0]},
+                        then: {
+                            $concat: [
+                                {$arrayElemAt: ["$UserDetails.FirstName", 0]},
+                                " ",
+                                {$arrayElemAt: ["$UserDetails.LastName", 0]}
+                            ]
+                        },
+                        else: "Unknown User"
+                    }
+                }
+            }
+        },
+    ]);
 }
+
 exports.create = (reservationData) => {
     const reservation = new Reservation(reservationData);
     return reservation.save();
